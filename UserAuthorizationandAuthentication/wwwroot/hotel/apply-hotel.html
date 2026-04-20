@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply as Hotel - Hotel Partner Program</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .tabs-header {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 10px 20px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -11px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
+
+        .form-section h3 {
+            margin-bottom: 20px;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .amenity-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 15px;
+        }
+        .amenity-group {
+            background: rgba(255,255,255,0.02);
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .group-title {
+            font-size: 0.95rem;
+            color: var(--gold);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(212,168,83,0.15);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .amenity-grid-sub {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+        }
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-main);
+            padding: 4px 0;
+            transition: all 0.2s;
+        }
+        .amenity-item:hover { transform: translateX(3px); color: var(--gold); }
+
+        .room-row {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .remove-room {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--error);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .status-card {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 40px;
+            font-weight: 700;
+            margin: 20px 0;
+        }
+
+        .pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid #fbbf24; }
+        .approved { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+
+        /* Wizard Styles */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--glass-border);
+            z-index: 1;
+        }
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-main);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            z-index: 2;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .step-dot.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(212, 168, 83, 0.1);
+            transform: scale(1.1);
+        }
+        .step-dot.completed {
+            background: var(--gold);
+            color: var(--bg-main);
+            border-color: var(--gold);
+        }
+
+        .form-step {
+            display: none;
+            animation: slideIn 0.4s ease;
+        }
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            gap: 15px;
+        }
+
+        /* Cancellation Strategy Buttons */
+        .cancel-opt {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 12px 16px;
+            border-radius: 9px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .cancel-opt:hover {
+            border-color: rgba(212, 168, 83, 0.4);
+            background: rgba(212, 168, 83, 0.05);
+        }
+        .cancel-opt.on {
+            border-color: var(--gold);
+            background: rgba(212, 168, 83, 0.12);
+            font-weight: 600;
+        }
+
+        .flbl { display: block; font-size: 13px; font-weight: 600; color: var(--gold); margin-bottom: 6px; }
+        .price-wrap { position: relative; display: flex; align-items: center; }
+        .price-sym { position: absolute; left: 10px; color: var(--text-muted); font-size: 0.8rem; }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <a href="index.html" class="nav-icon"><i class="fas fa-arrow-left"></i></a>
+            <div class="header-title">Partner Hub</div>
+            <div></div>
+        </header>
+
+        <div class="container" style="max-width: 900px; padding: 40px 20px;">
+            <div class="tabs-header">
+                <button id="applyTabBtn" class="tab-btn active" onclick="switchTab('applyForm')">Partner Application</button>
+                <button id="statusTabBtn" class="tab-btn" onclick="switchTab('statusView')">Application Status</button>
+            </div>
+
+            <!-- Application Form -->
+            <div id="applyForm" class="tab-content active">
+                <div class="glass-panel" style="padding: 40px;">
+                    <div class="step-indicator">
+                        <div class="step-dot active" data-step="1">1</div>
+                        <div class="step-dot" data-step="2">2</div>
+                        <div class="step-dot" data-step="3">3</div>
+                        <div class="step-dot" data-step="4">4</div>
+                        <div class="step-dot" data-step="5">5</div>
+                        <div class="step-dot" data-step="6">6</div>
+                    </div>
+
+                    <form id="applyHotelForm" onsubmit="submitApplication(event)">
+                        <!-- Step 1: Identity & Location -->
+                        <div id="step1" class="form-step active">
+                            <div class="form-section">
+                                <h3><i class="fas fa-id-card"></i> Property Identity</h3>
+                                <label class="input-label">Hotel Name</label>
+                                <div class="input-group">
+                                    <i class="fas fa-hotel" style="color:var(--gold);"></i>
+                                    <input type="text" id="hotelName" class="input-field" placeholder="Grand Royal Resort" required>
+                                </div>
+                                <div class="input-grid">
+                                    <div>
+                                        <label class="input-label">Property Type</label>
+                                        <select id="propertyType" class="input-field" required>
+                                            <option value="Hotel">Hotel</option>
+                                            <option value="Apartment">Apartment</option>
+                                            <option value="Resort">Resort</option>
+                                            <option value="Villa">Villa</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="input-label">Accommodation Type</label>
+                                        <select id="accommodationType" class="input-field" required>
+                                            <option value="Room">Hotel Room</option>
+                                            <option value="Suite">Suite</option>
+                                            <option value="Studio">Studio</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="input-grid" style="margin-top:10px;">
+                                    <div>
+                                        <label class="input-label">Star Rating</label>
+                                        <select id="starRating" class="input-field" required>
+                                            <option value="4">4 Stars</option>
+                                            <option value="5">5 Stars</option>
+                                            <option value="3">3 Stars</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="input-label">Description</label>
+                                        <input type="text" id="description" class="input-field" placeholder="A short catchy summary">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3><i class="fas fa-map-marker-alt"></i> Location Details</h3>
+                                <div class="input-grid">
+                                    <div>
+                                        <label class="input-label">Governorate</label>
+                                        <input type="text" id="governorate" class="input-field" placeholder="Cairo" required>
+                                    </div>
+                                    <div>
+                                        <label class="input-label">City/Area</label>
+                                        <input type="text" id="cityArea" class="input-field" placeholder="Maadi" required>
+                                    </div>
+                                </div>
+                                <div class="input-grid" style="margin-top:10px;">
+                                    <div>
+                                        <label class="input-label">Detailed Address</label>
+                                        <input type="text" id="addressDetails" class="input-field" placeholder="Number, Street, Floor" required>
+                                    </div>
+                                    <div>
+                                        <label class="input-label">Country</label>
+                                        <input type="text" id="country" class="input-field" value="Egypt" required>
+                                    </div>
+                                </div>
+                                <div style="margin-top:15px;">
+                                    <label class="input-label">Address Proof <span style="font-size:10px; color:var(--text-gold);">(Upload Lease / Utilities Bill PDF)</span></label>
+                                    <div class="input-group">
+                                        <i class="fas fa-file-pdf"></i>
+                                        <input type="file" id="addressProofFile" class="input-field" accept=".pdf" style="padding-top:8px;" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-actions">
+                                <div></div>
+                                <button type="button" class="btn-primary" onclick="goToStep(2)">Next: Verification <i class="fas fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Contacts & Documents -->
+                        <div id="step2" class="form-step">
+                            <div class="form-section">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h3><i class="fas fa-address-book"></i> Contact Details</h3>
+                                    <button type="button" class="btn-secondary" style="width: auto; padding: 5px 15px;" onclick="addContactRow()">+ Add</button>
+                                </div>
+                                <div id="contactsContainer"></div>
+                            </div>
+                            <div class="form-section">
+                                <h3><i class="fas fa-file-invoice"></i> Legal Documents</h3>
+                                <p style="font-size: 11.5px; color: var(--text-3); margin-bottom: 15px;">Please provide the following required documentation.</p>
+                                <div id="documentsContainer">
+                                    <!-- Dynamic required documents will be listed here -->
+                                </div>
+                            </div>
+                            <div class="step-actions">
+                                <button type="button" class="btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
+                                <button type="button" class="btn-primary" onclick="goToStep(3)">Next: Amenities <i class="fas fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Amenities & Extras -->
+                        <div id="step3" class="form-step">
+                            <div class="form-section">
+                                <h3><i class="fas fa-concierge-bell"></i> Amenities</h3>
+                                <div class="amenity-grid" id="amenityGrid"></div>
+                            </div>
+                            <div id="dynamicFieldsSection" class="form-section">
+                                <h3><i class="fas fa-list-ul"></i> Additional Details</h3>
+                                <div id="dynamicFieldsContainer" class="input-grid"></div>
+                            </div>
+                            <div class="step-actions">
+                                <button type="button" class="btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+                                <button type="button" class="btn-primary" onclick="goToStep(4)">Next: Policies <i class="fas fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Policies & Cancellation (Custom UI) -->
+                        <div id="step4" class="form-step">
+                            <div class="form-section">
+                                <h3 style="margin-bottom: 15px;"><i class="fas fa-hand-holding-usd" style="color:var(--gold);"></i> Taxes & Service Fees</h3>
+                                <p style="font-size: 11.5px; color: var(--text-3); margin-bottom: 20px;">Indicate which taxes and fees are already covered in your quoted rates.</p>
+                                <div class="input-grid">
+                                    <div>
+                                        <label class="input-label">Service Charge % <span style="font-size:10px; color:var(--text-3);">(Optional)</span></label>
+                                        <div class="input-group">
+                                            <i class="fas fa-percent"></i>
+                                            <input type="number" id="serviceChargePct" class="input-field" value="12" placeholder="0">
+                                        </div>
+                                    </div>
+                                    <div class="amenity-grid" style="align-items: center; gap: 10px;">
+                                        <label class="amenity-item" title="12% service fee"><input type="checkbox" id="includeServiceCharge"> Add Srv Charge</label>
+                                        <label class="amenity-item" title="14% Value Added Tax"><input type="checkbox" id="includeVat"> Included VAT</label>
+                                        <label class="amenity-item" title="Fixed city or tourism tax"><input type="checkbox" id="includeCityTax"> Included City Tax</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-section">
+                                <div style="display:flex; align-items:center; margin-bottom:15px;">
+                                    <h3><i class="fas fa-shield-alt"></i> Cancellation Policy</h3>
+                                    <span style="font-size:11.5px; color:var(--text-muted); margin-left:8px;">Global refund rules</span>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap:24px;">
+                                    <div>
+                                        <label class="flbl">Strategy</label>
+                                        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px;" id="cancelStrategyGroup">
+                                            <button type="button" class="cancel-opt on" onclick="setStrategy(this,'FreeAll')">Always Free</button>
+                                            <button type="button" class="cancel-opt" onclick="setStrategy(this,'NonRefundable')">Non-Refundable</button>
+                                            <button type="button" class="cancel-opt" onclick="setStrategy(this,'WindowBased')">Time-Window</button>
+                                        </div>
+                                    </div>
+                                    <div id="cancelWindowSection" style="display:none; padding-top:15px; border-top:1px solid var(--border-1);">
+                                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                                            <label class="flbl" style="margin:0;">Custom Refund Windows</label>
+                                            <button type="button" class="btn-secondary" style="width:auto; padding:4px 12px; font-size:11px;" onclick="addCancelRule()">+ Add Rule</button>
+                                        </div>
+                                        <div id="cancelRulesContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:15px;">
+                                            <!-- Rules will be added here -->
+                                        </div>
+                                        <p style="font-size:10px; color:var(--text-3); margin-bottom:20px;">
+                                            * Define windows in hours before check-in time (e.g. 0 to 24 hours).
+                                        </p>
+                                    </div>
+                                    <div style="padding:14px 16px; background:rgba(212,168,83,0.06); border:1px solid rgba(212,168,83,0.18); border-radius:9px; display:flex; align-items:flex-start; gap:10px;">
+                                        <i class="fas fa-info-circle" style="color:var(--gold); margin-top:4px;"></i>
+                                        <div style="font-size:12px; color:var(--text-1); line-height:1.6;" id="cancelPolicyPreview">
+                                            <strong style="color:var(--gold);">Policy Summary:</strong> Guests can cancel for free at any time.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="step-actions">
+                                <button type="button" class="btn-secondary" onclick="goToStep(3)"><i class="fas fa-arrow-left"></i> Back</button>
+                                <button type="button" class="btn-primary" onclick="goToStep(5)">Next: Rooms <i class="fas fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 5: Rooms -->
+                        <div id="step5" class="form-step">
+                            <div class="form-section">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h3><i class="fas fa-door-open"></i> Room Configuration</h3>
+                                    <button type="button" class="btn-secondary" style="width: auto; padding: 5px 15px;" onclick="addRoomRow()">+ Add</button>
+                                </div>
+                                <div id="roomsContainer"></div>
+                            </div>
+                            <div class="step-actions">
+                                <button type="button" class="btn-secondary" onclick="goToStep(4)"><i class="fas fa-arrow-left"></i> Back</button>
+                                <button type="button" class="btn-primary" onclick="goToStep(6)">Next: Photos <i class="fas fa-arrow-right"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Step 6: Photos & Finish -->
+                        <div id="step6" class="form-step">
+                            <div class="form-section">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                    <h3><i class="fas fa-images"></i> Property Photos</h3>
+                                    <button type="button" class="btn-secondary" style="width: auto; padding: 5px 15px;" onclick="addImageRow()">+ Add</button>
+                                </div>
+                                <div id="imagesContainer"></div>
+                            </div>
+                            <div class="step-actions">
+                                <button type="button" class="btn-secondary" onclick="goToStep(5)"><i class="fas fa-arrow-left"></i> Back</button>
+                                <button id="submitBtn" type="submit" class="btn-primary" style="background:var(--success); border-color:var(--success);">Complete & Submit Application <i class="fas fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+
+                        <div id="applyMsg" style="margin-top: 20px; text-align: center;"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Status View -->
+            <div id="statusView" class="tab-content">
+                <div class="glass-panel status-card">
+                    <div id="statusLoading">
+                        <i class="fas fa-circle-notch fa-spin fa-3x" style="color: var(--gold);"></i>
+                        <p style="margin-top: 20px;">Checking status...</p>
+                    </div>
+                    <div id="statusEmpty" style="display: none;">
+                        <i class="fas fa-hotel fa-4x" style="opacity: 0.2; margin-bottom: 20px;"></i>
+                        <h2>No Application Found</h2>
+                        <button class="btn-primary" onclick="switchTab('applyForm')" style="margin-top: 20px;">Apply Now</button>
+                    </div>
+                    <div id="statusExists" style="display: none;">
+                        <div id="statusIcon"><i class="fas fa-history fa-4x" style="color: var(--gold); margin-bottom: 20px;"></i></div>
+                        <h2 id="viewHotelName">--</h2>
+                        <div id="viewStatusBadge" class="status-badge pending">Pending Review</div>
+                        <p id="viewDetailMsg" style="color: var(--text-muted); max-width: 500px; margin: 0 auto; margin-bottom:25px;">Your application is currently being reviewed by our team.</p>
+                        
+                        <!-- Mini Summary for Details -->
+                        <div id="miniDetailsSummary" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px; background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; margin-bottom:25px; border:1px solid rgba(255,255,255,0.05);">
+                            <!-- Populated dynamically -->
+                        </div>
+
+                        <div class="status-actions" style="display:flex; justify-content:center; gap:12px; margin-top:20px;">
+                            <button class="btn-secondary" onclick="showFullDetails()" style="width:auto;"><i class="fas fa-eye"></i> Show Details</button>
+                            <button id="editBtn" class="btn-secondary" onclick="startEditing()" style="width:auto;"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn-secondary" onclick="deleteApplication()" style="width:auto; color:#ff4444; border-color:rgba(255,68,68,0.3);"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
+
+                        <div id="dashboardLink" style="display: none; margin-top: 30px;">
+                            <a href="owner-dashboard.html" class="btn-primary" style="background:var(--success); border-color:var(--success);">Go to Control Center <i class="fas fa-external-link-alt"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        let currentStep = 1;
+        let metadata = { amenities: [], documentTypes: [], fieldDefinitions: [] };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            if(tabId === 'applyForm') {
+                document.getElementById('applyTabBtn').classList.add('active');
+            } else {
+                document.getElementById('statusTabBtn').classList.add('active');
+            }
+        }
+        let selectedStrategy = 'FreeAll';
+        let selectedWindow = 0;
+
+        async function init() {
+            if (!Auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
+            await loadAllMetadata();
+            await checkStatus();
+            
+            // Add initial dynamic rows
+            addContactRow(); 
+            addRoomRow();
+            addImageRow();
+        }
+
+        async function loadAllMetadata() {
+            try {
+                const [amenRes, docRes, fieldRes] = await Promise.all([
+                    API.get('/Metadata/amenities'),
+                    API.get('/Metadata/document-types'),
+                    API.get('/Metadata/hotel-field-definitions')
+                ]);
+                metadata.amenities = amenRes.data || [];
+                metadata.documentTypes = docRes.data || [];
+                metadata.fieldDefinitions = fieldRes.data || [];
+                renderMetadata();
+            } catch (err) { console.error("Metadata load failed", err); }
+        }
+
+        function renderMetadata() {
+            const highlights = metadata.amenities.filter(a => a.isHighlighted);
+            const groups = {};
+            metadata.amenities.forEach(a => {
+                const cat = a.category || 'General';
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(a);
+            });
+
+            const categoryIcons = {
+                'Internet': 'fa-wifi',
+                'Parking': 'fa-parking',
+                'Food & Drink': 'fa-utensils',
+                'Wellness & Pools': 'fa-swimming-pool',
+                'Reception Services': 'fa-concierge-bell',
+                'Cleaning Services': 'fa-broom',
+                'Business Facilities': 'fa-briefcase',
+                'General': 'fa-hotel',
+                'Safety & Security': 'fa-shield-alt'
+            };
+
+            const sortedTypes = Object.keys(groups).sort((a, b) => a.localeCompare(b));
+
+            let amenHtml = '';
+            
+            // 1. POPULAR HIGHLIGHTS SECTION (At the very top)
+            if (highlights.length > 0) {
+                amenHtml += `
+                <div class="amenity-group" style="border:1px solid rgba(212,168,83,0.3); background:rgba(212,168,83,0.03); margin-bottom: 30px;">
+                    <h4 class="group-title" style="color:var(--gold); border-bottom-color:var(--gold);">
+                        <i class="fas fa-star"></i> POPULAR HIGHLIGHTS (الأكثر طلباً)
+                    </h4>
+                    <div class="amenity-grid-sub">
+                        ${highlights.map(a => `
+                            <label class="amenity-item" style="color:var(--gold); font-weight:600;">
+                                <input type="checkbox" name="amenity" value="${a.id}"> <span>${a.name}</span>
+                            </label>`).join('')}
+                    </div>
+                </div>`;
+            }
+
+            // 2. CATEGORIZED SECTIONS
+            sortedTypes.forEach(type => {
+                const icon = categoryIcons[type] || 'fa-list';
+                amenHtml += `
+                <div class="amenity-group">
+                    <div class="group-title"><i class="fas ${icon}"></i> ${type}</div>
+                    <div class="amenity-grid-sub">
+                        ${groups[type].map(a => `
+                            <label class="amenity-item">
+                                <input type="checkbox" name="amenity" value="${a.id}"> <span>${a.name}</span>
+                            </label>`).join('')}
+                    </div>
+                </div>`;
+            });
+            document.getElementById('amenityGrid').innerHTML = amenHtml;
+
+            // Sync logic
+            document.getElementById('amenityGrid').addEventListener('change', (e) => {
+                if(e.target.name === 'amenity') {
+                    const id = e.target.value;
+                    const checked = e.target.checked;
+                    document.querySelectorAll(`input[name="amenity"][value="${id}"]`).forEach(cb => cb.checked = checked);
+                }
+            });
+
+            // Documents (One row per required record, but frontend validation relaxed)
+            document.getElementById('documentsContainer').innerHTML = metadata.documentTypes.map(d => `
+                <div class="room-row doc-entry" data-type-id="${d.id}">
+                    <label class="flbl">${d.name} ${d.isRequired ? '(Optional via Frontend)' : ''}</label>
+                    <input type="file" class="input-field d-file" accept=".pdf" style="padding-top:8px;">
+                </div>
+            `).join('');
+
+            // Dynamic Fields (Additional Data)
+            document.getElementById('dynamicFieldsContainer').innerHTML = metadata.fieldDefinitions.map(f => {
+                const isTextArea = f.fieldType === 'TextArea';
+                const inputHtml = isTextArea ? 
+                    `<textarea class="input-field d-val" style="height:80px; resize:vertical;" placeholder="Provide ${f.displayName}" ${f.isRequired ? 'required' : ''}></textarea>` :
+                    `<input type="${f.fieldType === 'Number' ? 'number' : 'text'}" class="input-field d-val" placeholder="Provide ${f.displayName}" ${f.isRequired ? 'required' : ''}>`;
+
+                return `
+                <div class="dyn-field-entry" data-def-id="${f.id}" style="${isTextArea ? 'grid-column: 1 / -1;' : ''}">
+                    <label class="input-label">${f.displayName} ${f.isRequired ? '<span style="color:var(--error); margin-left:4px;">* (Required)</span>' : ''}</label>
+                    ${inputHtml}
+                </div>`;
+            }).join('');
+        }
+
+        function goToStep(step) {
+            if (step > currentStep) {
+                const stepDiv = document.getElementById(`step${currentStep}`);
+                let valid = true;
+                stepDiv.querySelectorAll('[required]').forEach(i => { if (!i.value) { i.style.borderColor = 'var(--error)'; valid = false; } else { i.style.borderColor = ''; } });
+                if (!valid) { alert("Please fill all required fields before proceeding."); return; }
+            }
+
+            document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            document.querySelectorAll('.step-dot').forEach((dot, idx) => {
+                dot.classList.toggle('active', (idx + 1) === step);
+                dot.classList.toggle('completed', (idx + 1) < step);
+            });
+            currentStep = step;
+            window.scrollTo(0, 0);
+        }
+
+        function addContactRow() {
+            const row = document.createElement('div');
+            row.className = 'room-row contact-entry';
+            row.innerHTML = `<div class="input-grid">
+                <select class="input-field c-type"><option value="Phone">Phone</option><option value="Email">Email</option><option value="WhatsApp">WhatsApp</option></select>
+                <input type="text" class="input-field c-val" placeholder="Contact Details..." required>
+            </div><i class="fas fa-times remove-room" onclick="this.parentElement.remove()"></i>`;
+            document.getElementById('contactsContainer').appendChild(row);
+        }
+
+        function addRoomRow() {
+            const row = document.createElement('div');
+            row.className = 'room-row room-entry';
+            row.innerHTML = `<div class="input-grid">
+                <select class="input-field r-name"><option value="StandardRoom">Standard Room</option><option value="DeluxeRoom">Deluxe Room</option><option value="Suite">Suite</option></select>
+                <input type="number" class="input-field r-occ" placeholder="Occupancy" value="2">
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin-top:10px;">
+                <div><label class="flbl" style="font-size:10px">RO $</label><input type="number" class="input-field r-ro" required></div>
+                <div><label class="flbl" style="font-size:10px">BB $</label><input type="number" class="input-field r-bb"></div>
+                <div><label class="flbl" style="font-size:10px">HB $</label><input type="number" class="input-field r-hb"></div>
+                <div><label class="flbl" style="font-size:10px">FB $</label><input type="number" class="input-field r-fb"></div>
+                <div><label class="flbl" style="font-size:10px">AI $</label><input type="number" class="input-field r-ai"></div>
+            </div>
+            <div class="input-grid" style="margin-top:10px;">
+                <select class="input-field r-bed"><option value="Single">Single Bed</option><option value="Double">Double Bed</option></select>
+                <input type="number" class="input-field r-qty" value="1" placeholder="Quantity">
+            </div><i class="fas fa-times remove-room" onclick="this.parentElement.remove()"></i>`;
+            document.getElementById('roomsContainer').appendChild(row);
+        }
+
+        function addImageRow() {
+            const row = document.createElement('div');
+            row.className = 'room-row image-entry';
+            row.style = "position:relative; margin-bottom:20px; background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); padding:20px; border-radius:12px;";
+            row.innerHTML = `
+                <div class="input-grid" style="margin-bottom:15px;">
+                    <div style="display:flex; flex-direction:column;">
+                        <label class="flbl" style="font-size:10px;">Select Photo</label>
+                        <input type="file" class="input-field i-file" accept="image/*" style="padding-top:8px;" required>
+                    </div>
+                    <div>
+                        <label class="flbl" style="font-size:10px;">Title</label>
+                        <input type="text" class="input-field i-cap" placeholder="e.g. Entrance">
+                    </div>
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:center;">
+                    <label class="amenity-item" style="background:rgba(212,168,83,0.1); padding:8px 15px; border-radius:8px; border:1px solid rgba(212,168,83,0.3); color:white; cursor:pointer;">
+                        <input type="checkbox" class="i-pri"> <i class="fas fa-star" style="color:var(--gold); margin:0 5px;"></i> Main Photo
+                    </label>
+                    <div style="display:flex; align-items:center; gap:10px; background: #111; padding: 5px 15px; border-radius: 8px; border: 2px solid var(--gold);">
+                        <i class="fas fa-sort-amount-down" style="color:var(--gold);"></i>
+                        <span style="font-size:12px; font-weight:700; color:white;">Rank (الترتيب):</span>
+                        <input type="number" class="i-sort" value="1" min="1" 
+                            style="width: 50px; height: 30px; background: transparent; border: none; color: #fff; font-size: 16px; font-weight: 800; text-align: center; outline: none;" 
+                            title="1 is first">
+                    </div>
+                </div>
+                <i class="fas fa-trash remove-room" style="position:absolute; top:15px; right:15px; color:#ff4444; cursor:pointer; font-size:18px;" onclick="this.parentElement.remove()"></i>`;
+            document.getElementById('imagesContainer').appendChild(row);
+        }
+
+        function addCancelRule(f = 0, t = 24, p = 100) {
+            const row = document.createElement('div');
+            row.className = 'rule-entry';
+            row.style = "display:grid; grid-template-columns: 1fr 1fr 1fr auto; gap:10px; align-items:center; background:var(--bg-2); padding:10px; border-radius:6px;";
+            row.innerHTML = `
+                <div><label class="flbl" style="font-size:9px;">From (Hours)</label><input type="number" class="input-field r-from" value="${f}" style="height:35px;"></div>
+                <div><label class="flbl" style="font-size:9px;">To (Hours)</label><input type="number" class="input-field r-to" value="${t}" style="height:35px;"></div>
+                <div><label class="flbl" style="font-size:9px;">Penalty %</label><input type="number" class="input-field r-pct" value="${p}" style="height:35px;"></div>
+                <i class="fas fa-trash remove-room" style="margin-top:15px; cursor:pointer; color:var(--error);" onclick="this.parentElement.remove(); updatePreview();"></i>
+            `;
+            document.getElementById('cancelRulesContainer').appendChild(row);
+            
+            // Re-bind inputs to update preview
+            row.querySelectorAll('input').forEach(i => i.oninput = updatePreview);
+            updatePreview();
+        }
+
+        function setStrategy(btn, s) { 
+            document.querySelectorAll('#cancelStrategyGroup button').forEach(b => b.classList.remove('on'));
+            btn.classList.add('on'); selectedStrategy = s;
+            const winSec = document.getElementById('cancelWindowSection');
+            winSec.style.display = (s === 'WindowBased' ? 'block' : 'none');
+            
+            if (s === 'WindowBased' && document.querySelectorAll('.rule-entry').length === 0) {
+                addCancelRule(0, 48, 100); // Default rule
+            }
+            updatePreview(); 
+        }
+
+        function updatePreview() {
+            const p = document.getElementById('cancelPolicyPreview');
+            if (selectedStrategy === 'FreeAll') {
+                p.innerHTML = `<strong style="color:var(--gold);">Policy Summary:</strong> 100% Free cancellation is guaranteed for all bookings at any time.`;
+            } else if (selectedStrategy === 'NonRefundable') {
+                p.innerHTML = `<strong style="color:var(--gold);">Policy Summary:</strong> Non-refundable policy applies. No refunds for any cancellation once booked.`;
+            } else {
+                const rules = Array.from(document.querySelectorAll('.rule-entry')).map(r => ({
+                    f: r.querySelector('.r-from').value,
+                    t: r.querySelector('.r-to').value,
+                    p: r.querySelector('.r-pct').value
+                }));
+                if (rules.length === 0) {
+                    p.innerHTML = `<strong style="color:var(--error);">Notice:</strong> Please add at least one window rule.`;
+                } else {
+                    let html = `<strong style="color:var(--gold);">Policy Summary:</strong> Guests pay: <br/>`;
+                    rules.forEach(r => {
+                        html += `• ${r.p}% penalty if canceled between ${r.f} and ${r.t} hours before check-in.<br/>`;
+                    });
+                    html += `<span style="font-size:10px; color:var(--text-3);">Anything outside these windows defaults to free cancellation.</span>`;
+                    p.innerHTML = html;
+                }
+            }
+        }
+
+        function objectToFormData(obj, formData = new FormData(), parentKey = '') {
+            if (obj === null || obj === undefined) return formData;
+
+            if (obj instanceof File) {
+                formData.append(parentKey, obj);
+            } else if (Array.isArray(obj)) {
+                obj.forEach((element, index) => {
+                    objectToFormData(element, formData, `${parentKey}[${index}]`);
+                });
+            } else if (typeof obj === 'object' && !(obj instanceof Date)) {
+                Object.keys(obj).forEach(key => {
+                    const value = obj[key];
+                    const fullKey = parentKey ? `${parentKey}.${key}` : key;
+                    objectToFormData(value, formData, fullKey);
+                });
+            } else {
+                formData.append(parentKey, obj);
+            }
+            return formData;
+        }
+
+        async function submitApplication(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+            const payload = {
+                hotelName: document.getElementById('hotelName').value,
+                description: document.getElementById('description').value,
+                propertyType: document.getElementById('propertyType').value,
+                accommodationType: document.getElementById('accommodationType').value,
+                starRating: parseInt(document.getElementById('starRating').value),
+                governorate: document.getElementById('governorate').value,
+                cityArea: document.getElementById('cityArea').value,
+                addressDetails: document.getElementById('addressDetails').value,
+                country: document.getElementById('country').value,
+                addressProofFile: document.getElementById('addressProofFile').files[0],
+                amenityIds: [...new Set(Array.from(document.querySelectorAll('input[name="amenity"]:checked')).map(i => parseInt(i.value)))],
+                contacts: Array.from(document.querySelectorAll('.contact-entry')).map(r => ({ contactType: r.querySelector('.c-type').value, contactValue: r.querySelector('.c-val').value })),
+                documents: Array.from(document.querySelectorAll('.doc-entry')).map(r => {
+                    const f = r.querySelector('.d-file').files[0];
+                    return f ? { documentTypeId: parseInt(r.dataset.typeId), file: f } : null;
+                }).filter(x => x !== null),
+                dynamicFields: Array.from(document.querySelectorAll('.dyn-field-entry')).map(r => {
+                    const value = r.querySelector('.d-val').value;
+                    return value ? { fieldDefinitionId: parseInt(r.dataset.defId), value: value } : null;
+                }).filter(x => x !== null),
+                policy: { 
+                    serviceChargePct: parseFloat(document.getElementById('serviceChargePct').value) || 0,
+                    includeVat: document.getElementById('includeVat').checked,
+                    includeServiceCharge: document.getElementById('includeServiceCharge').checked,
+                    includeCityTax: document.getElementById('includeCityTax').checked,
+                    cancellationStrategy: selectedStrategy,
+                    cancellationRules: selectedStrategy === 'WindowBased' ? Array.from(document.querySelectorAll('.rule-entry')).map(r => ({
+                        fromHoursBeforeCheckIn: parseInt(r.querySelector('.r-from').value),
+                        toHoursBeforeCheckIn: parseInt(r.querySelector('.r-to').value),
+                        penaltyPct: parseFloat(r.querySelector('.r-pct').value)
+                    })) : []
+                },
+                initialRooms: Array.from(document.querySelectorAll('.room-entry')).map(r => ({
+                    name: r.querySelector('.r-name').value,
+                    occupancy: parseInt(r.querySelector('.r-occ').value),
+                    roPrice: parseFloat(r.querySelector('.r-ro').value),
+                    bbPrice: parseFloat(r.querySelector('.r-bb').value) || null,
+                    hbPrice: parseFloat(r.querySelector('.r-hb').value) || null,
+                    fbPrice: parseFloat(r.querySelector('.r-fb').value) || null,
+                    aiPrice: parseFloat(r.querySelector('.r-ai').value) || null,
+                    bedType: r.querySelector('.r-bed').value,
+                    quantity: parseInt(r.querySelector('.r-qty').value)
+                })),
+                images: Array.from(document.querySelectorAll('.image-entry')).map(r => ({
+                    imageFile: r.querySelector('.i-file').files[0],
+                    caption: r.querySelector('.i-cap').value,
+                    isPrimary: r.querySelector('.i-pri').checked,
+                    sortOrder: parseInt(r.querySelector('.i-sort').value) || 0
+                }))
+            };
+
+            const formData = objectToFormData(payload);
+            const res = await API.post('/Hotels/apply', formData);
+            if (res.success) { 
+                document.getElementById('applyMsg').innerHTML = '<div class="btn-primary" style="background:var(--success)">Succeeded! Checking status...</div>';
+                setTimeout(() => location.reload(), 2000);
+            } else {
+                alert(res.message || "Submission failed");
+                btn.disabled = false; btn.innerText = "Complete & Submit Application";
+            }
+        }
+
+        let myAppData = null;
+
+        async function checkStatus() {
+            try {
+                const res = await API.get('/Hotels/my-application');
+                if (res.success && res.data) {
+                    myAppData = res.data;
+                    document.getElementById('statusLoading').style.display = 'none';
+                    document.getElementById('statusExists').style.display = 'block';
+                    
+                    const h = res.data;
+                    document.getElementById('viewHotelName').innerText = h.hotelName;
+                    const b = document.getElementById('viewStatusBadge');
+                    
+                    if (h.verified) {
+                        b.innerText = 'APPROVED';
+                        b.className = 'status-badge approved';
+                        document.getElementById('viewDetailMsg').innerText = "Congratulations! Your application has been approved. You can now manage your hotel property.";
+                        document.getElementById('statusIcon').innerHTML = '<i class="fas fa-check-circle fa-4x" style="color:var(--success)"></i>';
+                        document.getElementById('dashboardLink').style.display = 'block';
+                        document.getElementById('editBtn').style.display = 'none'; 
+                    } else {
+                        b.innerText = 'PENDING REVIEW';
+                        b.className = 'status-badge pending';
+                        document.getElementById('viewDetailMsg').innerText = "Your application is currently being reviewed by our team. You can still edit or withdraw it.";
+                        document.getElementById('statusIcon').innerHTML = '<i class="fas fa-history fa-4x" style="color:var(--gold)"></i>';
+                    }
+                    // Populate apply form if user switches tabs
+                    populateApplyTab(h);
+                } else {
+                    document.getElementById('statusLoading').style.display = 'none';
+                    document.getElementById('statusEmpty').style.display = 'block';
+                }
+            } catch(e) {
+                console.error(e);
+                document.getElementById('statusLoading').innerHTML = '<p style="color:var(--error)">Error loading status</p>';
+            }
+        }
+
+        function populateApplyTab(h) {
+            document.getElementById('hotelName').value = h.hotelName || '';
+            document.getElementById('description').value = h.description || '';
+            document.getElementById('propertyType').value = h.propertyType || 'Hotel';
+            document.getElementById('accommodationType').value = h.accommodationType || 'Room';
+            document.getElementById('starRating').value = h.starRating || '3';
+            document.getElementById('governorate').value = h.governorate || '';
+            document.getElementById('cityArea').value = h.cityArea || '';
+            document.getElementById('addressDetails').value = h.addressDetails || '';
+            document.getElementById('country').value = h.country || 'Egypt';
+
+            // Multi-Contacts
+            const ctn = document.getElementById('contactsContainer');
+            ctn.innerHTML = '';
+            if (h.contacts && h.contacts.length) {
+                h.contacts.forEach(c => {
+                    addContactRow();
+                    const last = ctn.lastElementChild;
+                    last.querySelector('.c-type').value = c.contactType || 'Phone';
+                    last.querySelector('.c-val').value = c.contactValue || '';
+                });
+            } else { addContactRow(); }
+
+            // Amenities
+            if (h.amenityNames) {
+                document.querySelectorAll('input[name="amenity"]').forEach(i => {
+                    const lbl = i.parentElement.innerText.trim();
+                    if (h.amenityNames.includes(lbl)) i.checked = true;
+                });
+            }
+
+            // Additional Data (Dynamic Fields)
+            if (h.dynamicFields) {
+                h.dynamicFields.forEach(f => {
+                    const el = document.querySelector(`.dyn-field-entry[data-def-id="${f.fieldDefinitionId}"] .d-val`);
+                    if (el) el.value = f.value || '';
+                });
+            }
+
+            // Cancellation Policy
+            if (h.policy) {
+                document.getElementById('serviceChargePct').value = h.policy.serviceChargePct;
+                document.getElementById('includeServiceCharge').checked = h.policy.includeServiceCharge;
+                document.getElementById('includeVat').checked = h.policy.includeVat;
+                document.getElementById('includeCityTax').checked = h.policy.includeCityTax;
+                
+                const strategyBtn = Array.from(document.getElementById('cancelStrategyGroup').children).find(b => b.innerText.toLowerCase().includes(h.policy.cancellationStrategy.toLowerCase()));
+                if (strategyBtn) setStrategy(strategyBtn, h.policy.cancellationStrategy);
+
+                const rctn = document.getElementById('cancelRulesContainer');
+                rctn.innerHTML = '';
+                if (h.policy.cancellationRules && h.policy.cancellationRules.length) {
+                    h.policy.cancellationRules.forEach(r => {
+                        addCancelRule(r.fromHoursBeforeCheckIn || 0, r.toHoursBeforeCheckIn || 0, r.penaltyPct || 0);
+                    });
+                }
+            }
+        }
+
+        function startEditing() {
+            window.location.href = 'edit-hotel-application.html';
+        }
+
+        async function deleteApplication() {
+            if (!confirm("Are you sure you want to withdraw your application? This action cannot be undone.")) return;
+            const res = await API.delete('/Hotels/my-application');
+            if (res.success) {
+                alert("Application deleted successfully.");
+                window.location.reload();
+            } else {
+                alert(res.message);
+            }
+        }
+
+        function showFullDetails() {
+            window.location.href = 'application-details.html';
+        }
+
+        init();
+    </script>
+</body>
+</html>

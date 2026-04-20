@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .booking-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .date-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-muted);
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+
+        <!-- Header -->
+        <header class="app-header">
+            <a href="index.html" style="font-size: 1.2rem;"><i class="fas fa-arrow-left"></i></a>
+            <div class="header-title">My Bookings</div>
+            <div onclick="Auth.logout()" style="cursor: pointer; color: var(--primary-color);">
+                <i class="fas fa-sign-out-alt"></i>
+            </div>
+        </header>
+
+        <div id="bookingsList" style="padding: 20px;">
+            <div style="text-align: center; padding-top: 40px;">
+                <i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary-color);"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Details Modal -->
+    <div id="detailsModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;">
+        <div
+            style="background: #fff; color: #1e293b; width: 90%; max-width: 500px; border-radius: 16px; padding: 24px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                <h3>Booking Details</h3>
+                <span onclick="closeDetailsModal()" style="cursor: pointer; font-size: 1.5rem;">&times;</span>
+            </div>
+            <div id="detailsContent"></div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        if (!Auth.isLoggedIn()) {
+            window.location.href = 'login.html';
+        }
+
+        async function loadBookings() {
+            const res = await API.get('/HotelBookings/mine');
+            const container = document.getElementById('bookingsList');
+
+            if (!res.success) {
+                container.innerHTML = `<p style="text-align:center; color: #ef4444">${res.message}</p>`;
+                return;
+            }
+
+            const bookings = Array.isArray(res.data) ? res.data : [];
+            if (bookings.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; margin-top: 50px;">
+                        <i class="far fa-calendar-times" style="font-size: 3rem; color: #e5e7eb; margin-bottom: 20px;"></i>
+                        <p style="color: var(--text-muted);">No bookings yet</p>
+                        <a href="index.html" class="btn-primary" style="display:inline-block; width:auto; margin-top:20px; padding: 10px 20px;">Explore Hotels</a>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = bookings.map(b => `
+                <div class="booking-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <h3 style="font-size: 1.1rem; margin: 0;">${b.hotelName}</h3>
+                        <span class="status-badge status-${b.status.toLowerCase()}">${b.status}</span>
+                    </div>
+                    
+                    <div class="date-row">
+                        <i class="far fa-calendar-alt"></i>
+                        ${new Date(b.checkInDate).toLocaleDateString()} - ${new Date(b.checkOutDate).toLocaleDateString()}
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                        <div style="font-weight: 700; font-size: 1.1rem;">$${b.totalPrice}</div>
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
+                            <button class="btn-secondary" style="padding: 8px 16px; border-radius: 8px;" onclick="viewBookingDetails(${b.id})">View Details</button>
+                            ${b.status === 'Pending' || b.status === 'Confirmed' ?
+                    `<button class="btn-danger" style="padding: 8px 16px; border-radius: 8px; background: #ef4444; color: #fff; border: none; cursor: pointer;" onclick="cancelBooking(${b.id})">Cancel</button>`
+                    : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function cancelBooking(id) {
+            if (!confirm('Cancel this booking?')) return;
+            const res = await API.put(`/HotelBookings/${id}/cancel`);
+            if (res.success) loadBookings();
+            else alert(res.message);
+        }
+
+        function viewBookingDetails(id) {
+            window.location.href = `booking-details.html?id=${id}`;
+        }
+
+        loadBookings();
+    </script>
+</body>
+
+</html>

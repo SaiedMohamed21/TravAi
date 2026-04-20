@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Reviews</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area" style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="window.location.href='index.html'">
+                <div class="logo-gem" style="width: 24px; height: 24px; background: var(--gold); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);"></div>
+                <div class="header-title">Lumière Egypt</div>
+            </div>
+            <div class="header-actions">
+                <a href="login.html" id="authIcon" class="nav-icon" title="Login">
+                    <i class="far fa-user-circle"></i>
+                </a>
+                <div id="userMenu" class="user-menu-container" style="display: none;">
+                    <button onclick="toggleMenu()" class="menu-trigger-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div id="menuDropdown" class="glass-panel dropdown-menu">
+                        <!-- Menu items loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div style="padding: 30px 20px; display: flex; align-items: center; border-bottom: 1px solid var(--glass-border); background: var(--bg-secondary);">
+            <div onclick="history.back()" style="cursor: pointer; font-size: 1.2rem; margin-right: 15px; color: var(--gold);">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <h2 id="pageTitle" style="margin: 0; font-size: 1.5rem; font-family: 'Cormorant Garamond', serif;">Reviews</h2>
+        </div>
+
+        <div style="padding: 24px;" id="reviewsList" class="container">
+            <!-- Loading -->
+            <div style="text-align: center; padding: 40px;">
+                <i class="fas fa-circle-notch fa-spin" style="color: var(--primary);"></i>
+            </div>
+        </div>
+
+        <div style="text-align: center; padding-bottom: 60px;">
+            <button id="btnLoadMore" class="btn-secondary" onclick="loadMore()"
+                style="display:none; width: auto; padding: 12px 40px;">Load More</button>
+        </div>
+    </div>
+
+    <!-- Edit Review Modal (Shared with hotel-details) -->
+    <div id="reviewModal"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:2000; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); justify-content:center; align-items:center;">
+        <div style="background: var(--bg-secondary); width:90%; max-width:480px; border-radius: 20px; padding:32px; border: 1px solid var(--glass-border); color: #fff;">
+            <h3 style="margin-bottom:20px; font-family: 'Cormorant Garamond', serif; font-size: 1.8rem;">Edit Review</h3>
+
+            <div style="margin-bottom:20px;">
+                <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--gold); font-size: 0.8rem; text-transform: uppercase;">Rating</label>
+                <div style="display: flex; gap: 12px; font-size: 1.8rem;">
+                    <i class="far fa-star" onclick="setRating(1)" id="star1" style="cursor: pointer; color: var(--text-muted);"></i>
+                    <i class="far fa-star" onclick="setRating(2)" id="star2" style="cursor: pointer; color: var(--text-muted);"></i>
+                    <i class="far fa-star" onclick="setRating(3)" id="star3" style="cursor: pointer; color: var(--text-muted);"></i>
+                    <i class="far fa-star" onclick="setRating(4)" id="star4" style="cursor: pointer; color: var(--text-muted);"></i>
+                    <i class="far fa-star" onclick="setRating(5)" id="star5" style="cursor: pointer; color: var(--text-muted);"></i>
+                </div>
+            </div>
+
+            <div style="margin-bottom:24px;">
+                <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--gold); font-size: 0.8rem; text-transform: uppercase;">Your Review</label>
+                <textarea id="reviewComment" rows="5"
+                    style="width: 100%; padding: 14px; border: 1px solid var(--glass-border); border-radius: 12px; font-family: inherit; background: var(--bg-tertiary); color: #fff; outline: none; border-color: var(--primary);"></textarea>
+            </div>
+
+            <div style="display:flex; gap:12px;">
+                <button onclick="closeReviewModal()"
+                    style="flex:1; padding:12px; border:1px solid var(--glass-border); background:transparent; border-radius:12px; cursor: pointer; color: var(--text-secondary);">Cancel</button>
+                <button onclick="submitReview()" class="btn-primary" style="flex:2;">Update Review</button>
+            </div>
+            <div id="reviewMsg" style="text-align:center; margin-top:20px; font-size: 0.9rem;"></div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const hotelId = urlParams.get('id');
+        let currentPage = 1;
+        const pageSize = 10;
+        let totalReviews = 0;
+        let loadedReviews = [];
+        let editingReviewId = null;
+        let selectedRating = 0;
+
+        // Header Menu Logic
+        if (Auth.isLoggedIn()) {
+            const user = Auth.getUser();
+            const userRole = user.role || user.Role;
+
+            document.getElementById('authIcon').style.display = 'none';
+            document.getElementById('userMenu').style.display = 'block';
+
+            let menuItems = '';
+            if (userRole === 'Admin') {
+                menuItems = `<a href="admin-dashboard.html"><i class="fas fa-user-shield"></i> Admin Dashboard</a>`;
+            } else if (userRole === 'Hotel') {
+                menuItems = `<a href="owner-dashboard.html"><i class="fas fa-chart-line"></i> Hotel Dashboard</a>`;
+            } else if (userRole === 'User') {
+                menuItems = `<a href="apply-hotel.html"><i class="fas fa-plus-circle" style="color:var(--gold);"></i> Become a Hotel</a>`;
+            }
+
+            menuItems += `
+                <a href="my-bookings.html"><i class="fas fa-calendar-check"></i> My Bookings</a>
+                <hr style="border:0; border-top:1px solid var(--glass-border); margin:10px 0;">
+                <a href="#" onclick="Auth.logout(); return false;" style="color: var(--error);"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            `;
+            document.getElementById('menuDropdown').innerHTML = menuItems;
+        }
+
+        function toggleMenu() {
+            const dropdown = document.getElementById('menuDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function init() {
+            if (!hotelId) return;
+
+            // Get Hotel Name
+            const hotelRes = await API.get(`/PublicHotels/${hotelId}`);
+            if (hotelRes.success) {
+                document.getElementById('pageTitle').innerText = `${hotelRes.data.hotelName} Reviews`;
+            }
+
+            loadReviews();
+        }
+
+        async function loadReviews() {
+            const res = await API.get(`/PublicHotels/${hotelId}/reviews?page=${currentPage}&pageSize=${pageSize}`);
+            if (res.success) {
+                const reviews = res.data.reviews;
+                totalReviews = res.data.totalCount;
+                loadedReviews = loadedReviews.concat(reviews);
+
+                const container = document.getElementById('reviewsList');
+                if (currentPage === 1) container.innerHTML = '';
+
+                if (reviews.length === 0 && currentPage === 1) {
+                    container.innerHTML = '<p style="text-align:center; color:gray; padding: 40px;">No reviews yet.</p>';
+                    return;
+                }
+
+                const currentUser = Auth.getUser();
+                const currentUserId = currentUser.UserId || currentUser.userId || currentUser.id || currentUser.Id;
+
+                let html = reviews.map(review => {
+                    const isOwner = currentUserId && (currentUserId == (review.userId || review.UserId));
+                    return `
+                        <div class="review-card">
+                            <div class="reviewer-header">
+                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(review.userName)}&background=6366f1&color=fff" class="avatar">
+                                <div class="review-meta">
+                                    <h5 style="color: #fff; font-size: 1.05rem;">${review.userName}</h5>
+                                    <div class="review-date">${new Date(review.createdAt).toLocaleDateString()}</div>
+                                </div>
+                                <div style="margin-left:auto; display:flex; gap:12px; color:var(--gold); font-size:0.85rem; align-items: center;">
+                                    <div>
+                                        ${'<i class="fas fa-star"></i>'.repeat(review.rating)}${'<i class="far fa-star"></i>'.repeat(5 - review.rating)}
+                                    </div>
+                                    ${isOwner ? `
+                                        <div style="display:flex; gap:12px; margin-left:10px; border-left: 1px solid var(--glass-border); padding-left:12px;">
+                                            <i class="fas fa-edit" style="color:var(--text-secondary); cursor:pointer; font-size:1.1rem;" onclick="openEditReview(${review.id})" title="Edit Review"></i>
+                                            <i class="fas fa-trash-alt" style="color:var(--error); opacity: 0.8; cursor:pointer; font-size:1.1rem;" onclick="deleteReview(${review.id})" title="Delete Review"></i>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <p class="review-text" style="color: var(--text-secondary); line-height: 1.6; margin-top: 15px;">${review.comment || ''}</p>
+                        </div>
+                    `;
+                 }).join('');
+
+                container.insertAdjacentHTML('beforeend', html);
+
+                // Handle Load More
+                const btn = document.getElementById('btnLoadMore');
+                if (currentPage * pageSize < totalReviews) {
+                    btn.style.display = 'inline-block';
+                } else {
+                    btn.style.display = 'none';
+                }
+                currentPage++;
+            }
+        }
+
+        function loadMore() {
+            loadReviews();
+        }
+
+        // Review Edit Functions
+        function openEditReview(reviewId) {
+            const review = loadedReviews.find(r => r.id === reviewId);
+            if (!review) return;
+
+            editingReviewId = reviewId;
+            selectedRating = review.rating;
+            document.getElementById('reviewComment').value = review.comment || '';
+            setRating(selectedRating);
+
+            document.getElementById('reviewMsg').innerText = ''; 
+            document.getElementById('reviewModal').style.display = 'flex';
+        }
+
+        function closeReviewModal() {
+            document.getElementById('reviewModal').style.display = 'none';
+        }
+
+        async function deleteReview(reviewId) {
+            if (!confirm('Are you sure you want to delete this review?')) return;
+
+            const res = await API.delete(`/PublicHotels/reviews/${reviewId}`);
+            if (res.success) {
+                alert('Review deleted successfully!');
+                location.reload(); 
+            } else {
+                alert(res.message || 'Failed to delete review');
+            }
+        }
+
+        function setRating(rating) {
+            selectedRating = rating;
+            for (let i = 1; i <= 5; i++) {
+                const star = document.getElementById(`star${i}`);
+                if (i <= rating) {
+                    star.className = 'fas fa-star';
+                    star.style.color = '#fbbf24';
+                } else {
+                    star.className = 'far fa-star';
+                    star.style.color = '#cbd5e1';
+                }
+            }
+        }
+
+        async function submitReview() {
+            const comment = document.getElementById('reviewComment').value.trim();
+            const msgDiv = document.getElementById('reviewMsg');
+
+            if (selectedRating === 0) {
+                msgDiv.style.color = 'var(--error)';
+                msgDiv.innerText = 'Please select a rating';
+                return;
+            }
+
+            const res = await API.put(`/PublicHotels/reviews/${editingReviewId}`, {
+                rating: selectedRating,
+                comment: comment
+            });
+
+            if (res.success) {
+                msgDiv.style.color = 'var(--success)';
+                msgDiv.innerText = 'Review updated!';
+                setTimeout(() => {
+                    closeReviewModal();
+                    location.reload();
+                }, 1500);
+            } else {
+                msgDiv.style.color = 'var(--error)';
+                msgDiv.innerText = res.message || 'Failed to update';
+            }
+        }
+
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('userMenu');
+            if (menu && !menu.contains(e.target)) {
+                if(document.getElementById('menuDropdown')) document.getElementById('menuDropdown').style.display = 'none';
+            }
+        });
+
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details | Luxury Hotels</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-details: #0f172a;
+            --card-details: #1e293b;
+        }
+
+        body {
+            background-color: var(--bg-details);
+            color: #f8fafc;
+        }
+
+        .details-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .booking-id {
+            background: rgba(212, 168, 83, 0.1);
+            color: var(--gold);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            border: 1px solid rgba(212, 168, 83, 0.2);
+        }
+
+        .details-card {
+            background: var(--card-details);
+            border-radius: 24px;
+            padding: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            color: var(--gold);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .info-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .room-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .room-info h4 { margin: 0; font-size: 1.1rem; }
+        .room-info p { margin: 4px 0 0; color: #94a3b8; font-size: 0.9rem; }
+
+        .price-badge {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--gold);
+        }
+
+        .total-section {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-pill {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-confirmed { background: rgba(34, 197, 94, 0.1); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .status-pending { background: rgba(234, 179, 8, 0.1); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.2); }
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        .btn-back {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .btn-back:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="details-container">
+        <button class="btn-back" onclick="location.href='my-bookings.html'">
+            <i class="fas fa-arrow-left"></i> Back to My Bookings
+        </button>
+
+        <div id="bookingContent">
+            <div style="text-align: center; padding: 100px;">
+                <i class="fas fa-circle-notch fa-spin fa-3x" style="color: var(--gold);"></i>
+                <p style="margin-top: 20px; color: #94a3b8;">Refining luxury details...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('id');
+
+        if (!bookingId) {
+            location.href = 'my-bookings.html';
+        }
+
+        async function loadBooking() {
+            const res = await API.get(`/HotelBookings/${bookingId}`);
+            const container = document.getElementById('bookingContent');
+
+            if (!res.success) {
+                container.innerHTML = `
+                    <div class="details-card" style="text-align:center;">
+                        <i class="fas fa-exclamation-circle fa-3x" style="color:#ef4444; margin-bottom:20px;"></i>
+                        <h3>Error Loading Details</h3>
+                        <p style="color:#94a3b8;">${res.message}</p>
+                        <button class="btn-primary" style="margin-top:20px;" onclick="loadBooking()">Try Again</button>
+                    </div>`;
+                return;
+            }
+
+            const b = res.data;
+            const checkIn = new Date(b.checkInDate);
+            const checkOut = new Date(b.checkOutDate);
+            const nights = Math.max(1, Math.round((checkOut - checkIn) / (1000 * 60 * 60 * 24)));
+
+            container.innerHTML = `
+                <div class="booking-header">
+                    <h1 style="font-family:'Cormorant Garamond', serif; font-size:2.4rem;">Booking Review</h1>
+                    <span class="booking-id">ID: #${b.id}</span>
+                </div>
+
+                <!-- Main Info -->
+                <div class="details-card">
+                    <div class="section-title">
+                        <i class="fas fa-hotel"></i> Hotel Information
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Hotel Name</label>
+                            <div class="value">${b.hotelName}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Status</label>
+                            <div class="value">
+                                <span class="status-pill status-${b.status.toLowerCase()}">${b.status}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Info -->
+                <div class="details-card">
+                    <div class="section-title">
+                        <i class="fas fa-calendar-alt"></i> Stay Duration
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Check-in</label>
+                            <div class="value">${checkIn.toLocaleDateString('en-US', {weekday:'short', year:'numeric', month:'long', day:'numeric'})}</div>
+                            <div style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">After 2:00 PM</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Check-out</label>
+                            <div class="value">${checkOut.toLocaleDateString('en-US', {weekday:'short', year:'numeric', month:'long', day:'numeric'})}</div>
+                            <div style="font-size:0.8rem; color:#94a3b8; margin-top:4px;">Before 12:00 PM</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Total Duration</label>
+                            <div class="value">${nights} ${nights > 1 ? 'Nights' : 'Night'}</div>
+                        </div>
+                        <div class="info-item">
+                            <label>Guest</label>
+                            <div class="value">Primary Guest Name</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Info -->
+                <div class="details-card">
+                    <div class="section-title">
+                        <i class="fas fa-door-open"></i> Rooms & Meal Plans
+                    </div>
+                    <div id="rooms-list">
+                        ${b.rooms.map(r => `
+                            <div class="room-item">
+                                <div class="room-info">
+                                    <h4>${r.roomName}</h4>
+                                    <p><i class="fas fa-utensils" style="margin-right:6px; font-size:0.8rem;"></i>Plan: <strong>${formatMealPlan(r.mealPlan)}</strong></p>
+                                </div>
+                                <div class="price-badge">$${r.pricePerNight} <span style="font-size:0.7rem; font-weight:400; color:#94a3b8;">/night</span></div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="total-section">
+                        <div>
+                            <div style="font-size:0.8rem; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Total Bill</div>
+                            <div style="font-size:2rem; font-weight:800; color:var(--gold);">$${b.totalPrice}</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:0.85rem; font-weight:600;">Payment: ${b.paymentStatus || 'Paid Online'}</div>
+                            <div style="font-size:0.75rem; color:#94a3b8;">Includes all taxes and surcharges</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div style="display:flex; justify-content:center; gap:16px; margin-top:40px;">
+                    <button class="btn-secondary" style="width:auto; padding: 14px 32px;" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print Voucher
+                    </button>
+                    ${(b.status === 'Confirmed' || b.status === 'Pending') ? `
+                        <button class="btn-danger" style="width:auto; padding: 14px 32px; background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2);" onclick="cancelBooking()">
+                            Cancel Booking
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function formatMealPlan(p) {
+            const plans = { 'RO': 'Room Only', 'BB': 'Bed & Breakfast', 'HB': 'Half Board', 'FB': 'Full Board', 'AI': 'All Inclusive' };
+            return plans[p] || p;
+        }
+
+        async function cancelBooking() {
+            if (!confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) return;
+            const res = await API.put(`/HotelBookings/${bookingId}/cancel`);
+            if (res.success) {
+                alert('Booking cancelled successfully.');
+                loadBooking();
+            } else {
+                alert(res.message);
+            }
+        }
+
+        loadBooking();
+    </script>
+</body>
+</html>

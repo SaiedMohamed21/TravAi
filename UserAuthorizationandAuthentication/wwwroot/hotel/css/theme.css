@@ -1,0 +1,51 @@
+:root {
+    /* Lumière Premium Color Palette */
+    --navy: #0B0F1A;
+    --navy-2: #111827;
+    --navy-3: #1A2235;
+    --navy-4: #1E2D45;
+    --navy-5: #243352;
+    --gold: #D4A853;
+    --gold-2: #E8C27A;
+    --gold-dim: rgba(212, 168, 83, .12);
+    --gold-dim2: rgba(212, 168, 83, .06);
+    --text-1: #F0EDE8;
+    --text-2: #A8B0C0;
+    --text-3: #5A6478;
+    --border: rgba(255, 255, 255, .07);
+    --border-2: rgba(255, 255, 255, .04);
+    --green: #3ECFA0;
+    --green-dim: rgba(62, 207, 160, .12);
+    --amber: #F5A623;
+    --amber-dim: rgba(245, 166, 35, .12);
+    --red: #F06565;
+    --red-dim: rgba(240, 101, 101, .12);
+    --blue: #5B8DEF;
+    --blue-dim: rgba(91, 141, 239, .12);
+    --purple: #7C6EF0;
+    --purple-dim: rgba(124, 110, 240, .12);
+    
+    /* Global Radius */
+    --r: 16px;
+    --r-sm: 8px;
+    --r-lg: 24px;
+
+    /* Backgrounds */
+    --bg-main: var(--navy);
+    --bg-card: var(--navy-2);
+    --bg-input: var(--navy-3);
+    
+    /* Shadows */
+    --shadow-premium: 0 10px 40px rgba(0,0,0,0.5);
+    --shadow-gold: 0 0 20px rgba(212, 168, 83, 0.15);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}

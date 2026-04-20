@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LuxeStay - Find Your Stay</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="logo-area" style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="window.location.href='index.html'">
+                <div class="logo-gem" style="width: 24px; height: 24px; background: var(--gold); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);"></div>
+                <div class="header-title">Lumière Egypt</div>
+            </div>
+            <div class="header-actions">
+                <a href="login.html" id="authIcon" class="nav-icon" title="Login">
+                    <i class="far fa-user-circle"></i>
+                </a>
+                <div id="userMenu" class="user-menu-container" style="display: none;">
+                    <button onclick="toggleMenu()" class="menu-trigger-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div id="menuDropdown" class="glass-panel dropdown-menu">
+                        <!-- Menu items loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search Bar Container (Web Style) -->
+        <div class="search-container-wrapper" style="background: radial-gradient(circle at center, var(--bg-secondary) 0%, var(--bg-primary) 100%); padding: 80px 20px; border-bottom: 1px solid var(--glass-border);">
+            <div class="search-bar-web">
+                <!-- 1. Destination -->
+                <div class="search-item" style="flex: 2;">
+                    <div class="search-label" style="color: var(--gold); font-weight: 700;">Destination</div>
+                    <div class="search-input-box">
+                        <i class="fas fa-map-marker-alt" style="color: var(--gold); opacity: 0.8;"></i>
+                        <input type="text" id="searchDest" placeholder="e.g., Cairo, Luxor" style="color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- 2. Check In -->
+                <div class="search-item" style="flex: 1.5;">
+                    <div class="search-label" style="color: var(--gold); font-weight: 700;">Check-in</div>
+                    <div class="search-input-box">
+                        <i class="far fa-calendar-alt" style="color: var(--gold); opacity: 0.8;"></i>
+                        <input type="date" id="checkIn" style="color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- 3. Check Out -->
+                <div class="search-item" style="flex: 1.5;">
+                    <div class="search-label" style="color: var(--gold); font-weight: 700;">Check-out</div>
+                    <div class="search-input-box">
+                        <i class="far fa-calendar-check" style="color: var(--gold); opacity: 0.8;"></i>
+                        <input type="date" id="checkOut" style="color: var(--text-primary);">
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- 4. Guests -->
+                <div class="search-item" style="flex: 2; position: relative;">
+                    <div class="search-label" style="color: var(--gold); font-weight: 700;">Guests & Rooms</div>
+
+                    <!-- Trigger -->
+                    <div class="search-input-box clickable" id="guestTrigger" onclick="toggleGuestDropdown(event)"
+                        style="cursor: pointer;">
+                        <i class="fas fa-users" style="color: var(--gold); opacity: 0.8;"></i>
+                        <span id="guestDisplay" style="font-size: 1rem; font-weight: 500; color: var(--text-primary);">1 Person, 1 Room</span>
+                        <i class="fas fa-chevron-down"
+                            style="font-size: 0.8rem; margin-left: auto; color: var(--text-muted);"></i>
+                    </div>
+
+                    <!-- Counter Dropdown -->
+                    <div class="guest-dropdown" id="guestDropdown" onclick="event.stopPropagation()">
+
+                        <!-- Persons -->
+                        <div class="guest-row">
+                            <div class="label-group">
+                                <span class="lbl-main">Persons</span>
+                                <span class="lbl-sub">Total guests</span>
+                            </div>
+                            <div class="counter-control">
+                                <button class="btn-count" onclick="updateCount('persons', -1)">-</button>
+                                <span id="count-persons" class="count-num">1</span>
+                                <button class="btn-count" onclick="updateCount('persons', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <!-- Rooms -->
+                        <div class="guest-row">
+                            <div class="label-group">
+                                <span class="lbl-main">Rooms</span>
+                            </div>
+                            <div class="counter-control">
+                                <button class="btn-count" onclick="updateCount('rooms', -1)">-</button>
+                                <span id="count-rooms" class="count-num">1</span>
+                                <button class="btn-count" onclick="updateCount('rooms', 1)">+</button>
+                            </div>
+                        </div>
+
+                        <button class="btn-guest-done" onclick="toggleGuestDropdown(event)">Done</button>
+                    </div>
+                </div>
+
+                <!-- 5. Button -->
+                <button onclick="searchHotels()" class="btn-search-main">
+                    Search Hotels
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters Row -->
+        <div class="container" style="padding: 40px 24px 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; border-bottom: 1px solid var(--glass-border); padding-bottom: 16px;">
+                <div>
+                    <h2 style="font-family: 'Cormorant Garamond', serif; font-size: 2rem; font-weight: 700;">Luxury Stays</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 4px;">
+                        Showing <span id="resultCount" style="color: var(--gold); font-weight: 700;">0</span> incredible properties in Egypt
+                    </p>
+                </div>
+                <div class="filter-row" style="margin-bottom: 0;">
+                    <button class="filter-btn" onclick="openModal('sortModal')">
+                        <i class="fas fa-sort-amount-down"></i> Sort
+                    </button>
+                    <button class="filter-btn" onclick="openModal('starsModal')">
+                        <i class="fas fa-certificate"></i> Class
+                    </button>
+                    <button class="filter-btn" onclick="openModal('reviewsModal')">
+                        <i class="fas fa-star text-gold"></i> Reviews
+                    </button>
+                    <button class="filter-btn" onclick="openModal('amenitiesModal')">
+                        <i class="fas fa-coffee"></i> Amenities
+                    </button>
+                    <button class="filter-btn" onclick="openModal('bedModal')">
+                        <i class="fas fa-bed"></i> Bed Type
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotel Grid -->
+        <div id="hotelList" class="container hotel-grid">
+            <div class="loading-spinner">
+                <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- 1. Sort Modal -->
+    <div id="sortModal" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Sort By</h3>
+                <span class="close-icon" onclick="closeModal(null, document.getElementById('sortModal'))">&times;</span>
+            </div>
+            <div class="modal-body">
+                <label class="radio-item">
+                    <span>Top Rated</span>
+                    <input type="radio" name="sort" value="rating" checked>
+                </label>
+                <label class="radio-item">
+                    <span>Starting from: Low to High</span>
+                    <input type="radio" name="sort" value="price_low">
+                </label>
+                <label class="radio-item">
+                    <span>Starting from: High to Low</span>
+                    <input type="radio" name="sort" value="price_high">
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-apply" onclick="applySort();">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Stars Modal (Official Class) -->
+    <div id="starsModal" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Hotel Classification</h3>
+                <span class="close-icon"
+                    onclick="closeModal(null, document.getElementById('starsModal'))">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">Filter by official hotel star level</p>
+                <label class="radio-item">
+                    <span><i class="fas fa-certificate text-gold"></i> 1 Star</span>
+                    <input type="radio" name="stars" value="1">
+                </label>
+                <label class="radio-item">
+                    <span><i class="fas fa-certificate text-gold"></i><i class="fas fa-certificate text-gold"></i> 2 Stars</span>
+                    <input type="radio" name="stars" value="2">
+                </label>
+                <label class="radio-item">
+                    <span><i class="fas fa-certificate text-gold"></i><i class="fas fa-certificate text-gold"></i><i
+                            class="fas fa-certificate text-gold"></i> 3 Stars</span>
+                    <input type="radio" name="stars" value="3">
+                </label>
+                <label class="radio-item">
+                    <span><i class="fas fa-certificate text-gold"></i><i class="fas fa-certificate text-gold"></i><i
+                            class="fas fa-certificate text-gold"></i><i class="fas fa-certificate text-gold"></i> 4 Stars</span>
+                    <input type="radio" name="stars" value="4">
+                </label>
+                <label class="radio-item">
+                    <span><i class="fas fa-certificate text-gold"></i><i class="fas fa-certificate text-gold"></i><i
+                            class="fas fa-certificate text-gold"></i><i class="fas fa-certificate text-gold"></i><i
+                            class="fas fa-certificate text-gold"></i> 5 Stars</span>
+                    <input type="radio" name="stars" value="5">
+                </label>
+                <label class="radio-item">
+                    <span>Any Class</span>
+                    <input type="radio" name="stars" value="0" checked>
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-apply" onclick="applyStars()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2.1 Reviews Modal (User Ratings) -->
+    <div id="reviewsModal" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Guest Reviews</h3>
+                <span class="close-icon"
+                    onclick="closeModal(null, document.getElementById('reviewsModal'))">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px;">Filter by average guest rating (from database)</p>
+                <label class="radio-item">
+                    <span>Exceptional: 4.5+</span>
+                    <input type="radio" name="reviews" value="4.5">
+                </label>
+                <label class="radio-item">
+                    <span>Excellent: 4.0+</span>
+                    <input type="radio" name="reviews" value="4.0">
+                </label>
+                <label class="radio-item">
+                    <span>Very Good: 3.5+</span>
+                    <input type="radio" name="reviews" value="3.5">
+                </label>
+                <label class="radio-item">
+                    <span>Good: 3.0+</span>
+                    <input type="radio" name="reviews" value="3.0">
+                </label>
+                <label class="radio-item">
+                    <span>Any Rating</span>
+                    <input type="radio" name="reviews" value="0" checked>
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-apply" onclick="applyReviews()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2.5 Bed Modal -->
+    <div id="bedModal" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Bed Type</h3>
+                <span class="close-icon" onclick="closeModal(null, document.getElementById('bedModal'))">&times;</span>
+            </div>
+            <div class="modal-body">
+                <label class="radio-item">
+                    <span>Any</span>
+                    <input type="radio" name="bed" value="" checked>
+                </label>
+                <label class="radio-item">
+                    <span>Single Bed</span>
+                    <input type="radio" name="bed" value="Single">
+                </label>
+                <label class="radio-item">
+                    <span>Double Bed</span>
+                    <input type="radio" name="bed" value="Double">
+                </label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-apply" onclick="applyBed()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Amenities Modal -->
+    <div id="amenitiesModal" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Amenities</h3>
+                <span class="close-icon"
+                    onclick="closeModal(null, document.getElementById('amenitiesModal'))">&times;</span>
+            </div>
+            <div class="modal-body scrollable" id="amenitiesFilterList">
+                <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                    <i class="fas fa-circle-notch fa-spin"></i> Loading Amenities...
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-apply" onclick="applyAmenities()">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script>
+        // Centralized Search State
+        let searchState = {
+            location: '',
+            checkIn: '',
+            checkOut: '',
+            persons: 1,
+            rooms: 1,
+            bedType: '',
+            sort: 'rating',
+            minStarRating: null,
+            minReviewRating: null,
+            amenities: []
+        };
+
+        // --- Guest Counter Logic ---
+        function toggleGuestDropdown(e) {
+            if (e) e.stopPropagation();
+            const dd = document.getElementById('guestDropdown');
+            const isOpen = dd.style.display === 'block';
+
+            // Close updated logic
+            if (isOpen) {
+                dd.style.display = 'none';
+                updateGuestDisplay();
+            } else {
+                dd.style.display = 'block';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            const dd = document.getElementById('guestDropdown');
+            const trigger = document.getElementById('guestTrigger');
+            if (dd && dd.style.display === 'block' && !dd.contains(e.target) && !trigger.contains(e.target)) {
+                dd.style.display = 'none';
+                updateGuestDisplay();
+            }
+        });
+
+        function updateCount(type, delta) {
+            if (type === 'persons') {
+                searchState.persons = Math.max(1, searchState.persons + delta);
+                document.getElementById('count-persons').innerText = searchState.persons;
+            } else if (type === 'rooms') {
+                searchState.rooms = Math.max(1, searchState.rooms + delta);
+                document.getElementById('count-rooms').innerText = searchState.rooms;
+            }
+            updateGuestDisplay();
+        }
+
+        function updateGuestDisplay() {
+            const ps = searchState.persons;
+            const rs = searchState.rooms;
+            
+            const psTxt = ps === 1 ? 'Person' : 'Persons';
+            const rsTxt = rs === 1 ? 'Room' : 'Rooms';
+            
+            document.getElementById('guestDisplay').innerText = `${ps} ${psTxt}, ${rs} ${rsTxt}`;
+        }
+
+        // Auth Check
+        if (Auth.isLoggedIn()) {
+            const user = Auth.getUser();
+            const userRole = user.role || user.Role; // Handle serialization casing
+
+            document.getElementById('authIcon').style.display = 'none';
+            document.getElementById('userMenu').style.display = 'block';
+
+            let menuItems = '';
+            if (userRole === 'Admin') {
+                menuItems = `<a href="admin-dashboard.html"><i class="fas fa-user-shield"></i> Admin Dashboard</a>`;
+            } else if (userRole === 'Hotel') {
+                menuItems = `<a href="owner-dashboard.html"><i class="fas fa-chart-line"></i> Hotel Dashboard</a>`;
+            } else if (userRole === 'User') {
+                menuItems = `<a href="apply-hotel.html"><i class="fas fa-plus-circle" style="color:var(--gold);"></i> Become a Hotel</a>`;
+            }
+
+            menuItems += `
+                <a href="my-bookings.html"><i class="fas fa-calendar-check"></i> My Bookings</a>
+                <hr style="border:0; border-top:1px solid var(--glass-border); margin:10px 0;">
+                <a href="#" onclick="Auth.logout(); return false;" style="color: var(--error);"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            `;
+            document.getElementById('menuDropdown').innerHTML = menuItems;
+        }
+
+        function toggleMenu() {
+            const dropdown = document.getElementById('menuDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.addEventListener('click', function (e) {
+            const menu = document.getElementById('userMenu');
+            if (menu && !menu.contains(e.target)) {
+                document.getElementById('menuDropdown').style.display = 'none';
+            }
+        });
+
+        // --- Core Search Function (Server-Side) ---
+        async function searchHotels() {
+            // 1. Update State from Inputs
+            searchState.location = document.getElementById('searchDest').value;
+            searchState.checkIn = document.getElementById('checkIn').value;
+            searchState.checkOut = document.getElementById('checkOut').value;
+            // Guests are already in searchState from counter updates
+
+            // 2. Build Query Params
+            const params = new URLSearchParams();
+
+            if (searchState.location) params.append('destination', searchState.location);
+            if (searchState.checkIn) params.append('checkIn', searchState.checkIn);
+            if (searchState.checkOut) params.append('checkOut', searchState.checkOut);
+
+            // People/Rooms Params
+            params.append('persons', searchState.persons);
+            params.append('rooms', searchState.rooms);
+            if (searchState.bedType) params.append('bedType', searchState.bedType);
+
+            // Filters
+            if (searchState.minStarRating) params.append('minStarRating', searchState.minStarRating);
+            if (searchState.minReviewRating) params.append('minReviewRating', searchState.minReviewRating);
+            if (searchState.sort) params.append('sortBy', searchState.sort);
+
+            // Amenities (Array of strings matching backend)
+            searchState.amenities.forEach(amenity => {
+                params.append('amenities', amenity);
+            });
+
+            // Pagination defaults
+            params.append('page', 1);
+            params.append('pageSize', 20);
+
+            // 3. UI Loading
+            const container = document.getElementById('hotelList');
+            container.innerHTML = `<div class="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i> Finding best deals...</div>`;
+            updateFilterBadges();
+
+            // 4. Fetch
+            try {
+                // Ensure API endpoint maps correctly
+                const res = await API.get(`/PublicHotels?${params.toString()}`);
+
+                if (res.success) {
+                    const responseData = res.data;
+                    const hotels = responseData.hotels || responseData.Hotels || [];
+                    document.getElementById('resultCount').innerText = responseData.totalCount || hotels.length;
+                    renderHotels(hotels);
+                } else {
+                    throw new Error(res.message);
+                }
+            } catch (err) {
+                container.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding: 40px;">
+                        <i class="fas fa-exclamation-triangle fa-2x" style="color:#ef4444; margin-bottom:10px;"></i>
+                        <p>Something went wrong. ${err.message}</p>
+                    </div>`;
+            }
+        }
+
+        function renderHotels(hotels) {
+            const container = document.getElementById('hotelList');
+
+            if (hotels.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column:1/-1; text-align:center; padding: 60px; color: var(--text-muted);">
+                        <i class="fas fa-search fa-3x" style="margin-bottom:20px; opacity:0.5;"></i>
+                        <h3>No hotels found</h3>
+                        <p>Try changing your dates or removing some filters.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = hotels.map(h => {
+                let imgUrl = h.primaryImageUrl || 'https://via.placeholder.com/400x250';
+                if(imgUrl && !imgUrl.startsWith('http')) {
+                    imgUrl = BASE_URL + (imgUrl.startsWith('/') ? '' : '/') + imgUrl;
+                }
+                return `
+                <div class="hotel-card" onclick="window.location.href='hotel-details.html?id=${h.id}'">
+                    <div class="card-image-container">
+                        <img src="${imgUrl}" class="card-image" onerror="this.src='https://via.placeholder.com/400x250'">
+                        <div class="wishlist-btn"><i class="far fa-heart"></i></div>
+                        <div class="card-rating">
+                            ${h.reviewCount > 0 
+                                ? `<i class="fas fa-star text-gold"></i> ${(h.avgRating || 0).toFixed(1)} <span style="font-size:0.7rem; font-weight:400; opacity:0.8;">(${h.reviewCount})</span>` 
+                                : '<i class="fas fa-star-half-alt"></i> Not Rated'}
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div style="display:flex; justify-content:space-between; align-items: center;">
+                            <h3 class="hotel-name" style="display: flex; align-items: center; gap: 6px;">
+                                ${h.hotelName}
+                                ${h.verificationStatus === 'Verified' ? '<i class="fas fa-check-circle" style="color:var(--primary); font-size:0.9rem;" title="Verified"></i>' : ''}
+                            </h3>
+                        </div>
+                        <p class="hotel-location"><i class="fas fa-map-marker-alt"></i> ${h.location}</p>
+                        
+                        <div class="amenity-tags">
+                            ${(h.amenityTags || []).slice(0, 3).map(t => `<span>${t}</span>`).join('')}
+                        </div>
+
+                        <div class="price-section">
+                            <div>
+                                <div class="room-status ${h.availableRooms > 0 ? 'avail' : 'full'}">
+                                    ${h.availableRooms > 0 ? `<i class="fas fa-check"></i> ${h.availableRooms} Available` : '<i class="fas fa-times"></i> Sold Out'}
+                                </div>
+                            </div>
+                            <div class="price" style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
+                                <span style="font-size: 0.7rem; font-weight: 500; color: var(--text-muted); text-transform: uppercase;">Starting from</span>
+                                <div>
+                                    $${h.pricePerNight} <span style="font-size:0.8rem; font-weight:400; color: var(--text-muted);">/ night</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;}).join('');
+        }
+
+        // --- Filter Application Logic ---
+
+        function updateFilterBadges() {
+            // Amenities Badge
+            const amenBtn = document.querySelector('button[onclick="openModal(\'amenitiesModal\')"]');
+            if (searchState.amenities.length > 0) {
+                amenBtn.style.borderColor = 'var(--primary)';
+                amenBtn.style.color = 'var(--primary)';
+                amenBtn.innerHTML = `<i class="fas fa-coffee"></i> Amenities (${searchState.amenities.length})`;
+            } else {
+                amenBtn.style.borderColor = '';
+                amenBtn.style.color = '';
+                amenBtn.innerHTML = `<i class="fas fa-coffee"></i> Amenities`;
+            }
+
+            // Stars Badge
+            const starBtn = document.querySelector('button[onclick="openModal(\'starsModal\')"]');
+            if (searchState.minStarRating) {
+                starBtn.style.borderColor = 'var(--primary)';
+                starBtn.style.color = 'var(--gold)';
+                starBtn.innerHTML = `<i class="fas fa-certificate"></i> ${searchState.minStarRating}* Class`;
+            } else {
+                starBtn.style.borderColor = '';
+                starBtn.style.color = '';
+                starBtn.innerHTML = `<i class="fas fa-certificate"></i> Class`;
+            }
+
+            // Reviews Badge
+            const reviewBtn = document.querySelector('button[onclick="openModal(\'reviewsModal\')"]');
+            if (searchState.minReviewRating) {
+                reviewBtn.style.borderColor = 'var(--primary)';
+                reviewBtn.style.color = 'var(--gold)';
+                reviewBtn.innerHTML = `<i class="fas fa-star"></i> ${searchState.minReviewRating}+ Score`;
+            } else {
+                reviewBtn.style.borderColor = '';
+                reviewBtn.style.color = '';
+                reviewBtn.innerHTML = `<i class="fas fa-star"></i> Reviews`;
+            }
+
+            // Bed Badge
+            const bedBtn = document.querySelector('button[onclick="openModal(\'bedModal\')"]');
+            if (bedBtn) {
+                if (searchState.bedType) {
+                    bedBtn.style.borderColor = 'var(--primary)';
+                    bedBtn.style.color = 'var(--primary)';
+                    bedBtn.innerHTML = `<i class="fas fa-bed"></i> ${searchState.bedType}`;
+                } else {
+                    bedBtn.style.borderColor = '';
+                    bedBtn.style.color = '';
+                    bedBtn.innerHTML = `<i class="fas fa-bed"></i> Bed Type`;
+                }
+            }
+        }
+
+        function applyBed() {
+            const radios = document.getElementsByName('bed');
+            for (let r of radios) { if (r.checked) searchState.bedType = r.value; }
+            closeModal(null, document.getElementById('bedModal'));
+            searchHotels();
+        }
+
+        function applySort() {
+            const radios = document.getElementsByName('sort');
+            for (let r of radios) { if (r.checked) searchState.sort = r.value; }
+            closeModal(null, document.getElementById('sortModal'));
+            searchHotels();
+        }
+
+        function applyStars() {
+            const radios = document.getElementsByName('stars');
+            for (let r of radios) { if (r.checked) searchState.minStarRating = parseInt(r.value); }
+            if (searchState.minStarRating === 0) searchState.minStarRating = null;
+            closeModal(null, document.getElementById('starsModal'));
+            searchHotels();
+        }
+
+        function applyReviews() {
+            const radios = document.getElementsByName('reviews');
+            for (let r of radios) { if (r.checked) searchState.minReviewRating = parseFloat(r.value); }
+            if (searchState.minReviewRating === 0) searchState.minReviewRating = null;
+            closeModal(null, document.getElementById('reviewsModal'));
+            searchHotels();
+        }
+
+        function applyAmenities() {
+            const checks = document.querySelectorAll('#amenitiesModal input[type="checkbox"]');
+            searchState.amenities = [];
+            checks.forEach(c => { if (c.checked) searchState.amenities.push(c.value); });
+
+            closeModal(null, document.getElementById('amenitiesModal'));
+            searchHotels();
+        }
+
+        // --- Modal Helpers ---
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(e, el) {
+            if (!e || e.target === el) el.closest('.modal-overlay').style.display = 'none';
+        }
+
+        // --- Init ---
+        async function loadAmenitiesFilter() {
+            try {
+                const res = await API.get('/Metadata/amenities');
+                if (res.success) {
+                    const amenities = res.data.filter(a => a.isHighlighted);
+                    const container = document.getElementById('amenitiesFilterList');
+                    container.innerHTML = amenities.map(a => `
+                        <label class="check-item">
+                            <i class="fas fa-check" style="color: var(--gold); opacity: 0.7;"></i> ${a.name}
+                            <input type="checkbox" value="${a.name}">
+                        </label>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error("Failed to load amenities", err);
+                document.getElementById('amenitiesFilterList').innerHTML = '<p style="color:red">Failed to load amenities.</p>';
+            }
+        }
+
+        // Set default dates (Today -> Tomorrow) if empty
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        document.getElementById('checkIn').valueAsDate = today;
+        document.getElementById('checkOut').valueAsDate = tomorrow;
+
+        loadAmenitiesFilter();
+        searchHotels();
+    </script>
+</body>
+
+</html>

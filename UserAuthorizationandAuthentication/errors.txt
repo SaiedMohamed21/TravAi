@@ -1,0 +1,1894 @@
+
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ReviewS
+ervice\ReviewService.cs(21,41): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ReviewS
+ervice\ReviewService.cs(41,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Reviews' 
+and no accessible extension method 'Reviews' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ReviewS
+ervice\ReviewService.cs(60,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Reviews' 
+and no accessible extension method 'Reviews' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(22,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(54,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(62,45): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(73,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(108,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(25,40): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(37,22): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(127,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(131,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(45,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(57,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(61,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(77,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(28,39): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Tours' and no accessible 
+extension method 'Tours' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(44,22): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(52,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(69,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(63,34): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(86,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(116,58): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Tours' and no accessible 
+extension method 'Tours' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(144,51): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'TourBookings' and no accessible 
+extension method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(68,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(171,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(76,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(110,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourImages' and no accessible extension 
+method 'TourImages' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(206,41): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(224,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(130,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(133,46): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(139,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(146,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(157,40): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(21,47): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(22,48): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(23,48): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(24,50): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(25,47): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(27,49): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(43,43): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(21,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(21,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(51,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(69,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(74,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(39,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(55,36): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(69,32): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(80,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(86,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(90,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(21,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Bookings' and no accessible 
+extension method 'Bookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(33,35): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'ChatMessages' and no accessible 
+extension method 'ChatMessages' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(50,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Bookings' and no accessible 
+extension method 'Bookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(71,22): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'ChatMessages' and no accessible 
+extension method 'ChatMessages' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(173,34): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(21,41): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(29,45): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(107,26): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(111,26): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'WalletTransactions' and no accessible extension method 
+'WalletTransactions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(247,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Reviews' and no accessible extension 
+method 'Reviews' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(26,46): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(81,22): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(89,47): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(108,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(123,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(167,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(138,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(156,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(167,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(183,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(213,44): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(28,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(62,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(70,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(86,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookingParticipants' and no 
+accessible extension method 'TourBookingParticipants' accepting a 
+first argument of type 'ApplicationDbContext' could be found (are 
+you missing a using directive or an assembly reference?) [C:\Users\b
+asant\source\repos\Travai\hotel\UserAuthorizationandAuthentication\U
+serAuthorizationandAuthentication\UserAuthorizationandAuthentication
+.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(144,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(181,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookingPayments' and no accessible 
+extension method 'TourBookingPayments' accepting a first argument 
+of type 'ApplicationDbContext' could be found (are you missing a 
+using directive or an assembly reference?) [C:\Users\basant\source\r
+epos\Travai\hotel\UserAuthorizationandAuthentication\UserAuthorizati
+onandAuthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(231,44): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(247,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuideEmails' and no accessible 
+extension method 'TourGuideEmails' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(254,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuidePhones' and no accessible 
+extension method 'TourGuidePhones' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(261,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuideLanguages' and no accessible 
+extension method 'TourGuideLanguages' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(268,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuideCities' and no accessible 
+extension method 'TourGuideCities' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(212,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(283,42): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'Reviews' and no accessible extension 
+method 'Reviews' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(255,36): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(189,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(222,26): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(231,34): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(260,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(275,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(281,56): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(299,36): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(345,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(365,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(387,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(398,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ReviewS
+ervice\ReviewService.cs(21,41): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ReviewS
+ervice\ReviewService.cs(41,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Reviews' 
+and no accessible extension method 'Reviews' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ReviewS
+ervice\ReviewService.cs(60,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Reviews' 
+and no accessible extension method 'Reviews' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(22,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(54,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(62,45): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(73,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(108,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(25,40): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(37,22): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(127,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Passeng
+erService\PassengerService.cs(131,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(45,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(57,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(61,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Withd
+rawRequestService.cs(77,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'WithdrawRequests' and no 
+accessible extension method 'WithdrawRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(28,39): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Tours' and no accessible 
+extension method 'Tours' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(44,22): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(52,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(69,43): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(63,34): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(86,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'UrgentRequests' and no 
+accessible extension method 'UrgentRequests' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(116,58): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Tours' and no accessible 
+extension method 'Tours' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Urgen
+tRequestService.cs(144,51): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'TourBookings' and no accessible 
+extension method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(68,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(171,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(76,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(110,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourImages' and no accessible extension 
+method 'TourImages' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(206,41): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\FlightS
+ervice\FlightService.cs(224,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(130,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(133,46): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(139,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(146,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(157,40): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(21,47): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(22,48): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(23,48): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(24,50): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(25,47): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(27,49): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Dashboa
+rdService\DashboardService.cs(43,43): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(21,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(21,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(51,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(69,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Compani
+onService\CompanionService.cs(74,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(39,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(55,36): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(69,32): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(80,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(86,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Airport
+Service\AirportService.cs(90,22): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Airports' 
+and no accessible extension method 'Airports' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(21,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Bookings' and no accessible 
+extension method 'Bookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(33,35): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'ChatMessages' and no accessible 
+extension method 'ChatMessages' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(50,42): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'Bookings' and no accessible 
+extension method 'Bookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\ChatSer
+vice\ChatService.cs(71,22): error CS1061: 'ApplicationDbContext' 
+does not contain a definition for 'ChatMessages' and no accessible 
+extension method 'ChatMessages' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(173,34): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(21,41): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Flights' 
+and no accessible extension method 'Flights' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(29,45): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'UserCompanions' and no accessible extension method 
+'UserCompanions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(107,26): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(111,26): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'WalletTransactions' and no accessible extension method 
+'WalletTransactions' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourS
+ervice.cs(247,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Reviews' and no accessible extension 
+method 'Reviews' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(26,46): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(81,22): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(89,47): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(108,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(123,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(167,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(138,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(156,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(167,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(183,38): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(213,44): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(28,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(62,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(70,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(86,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookingParticipants' and no 
+accessible extension method 'TourBookingParticipants' accepting a 
+first argument of type 'ApplicationDbContext' could be found (are 
+you missing a using directive or an assembly reference?) [C:\Users\b
+asant\source\repos\Travai\hotel\UserAuthorizationandAuthentication\U
+serAuthorizationandAuthentication\UserAuthorizationandAuthentication
+.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(144,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(181,22): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookingPayments' and no accessible 
+extension method 'TourBookingPayments' accepting a first argument 
+of type 'ApplicationDbContext' could be found (are you missing a 
+using directive or an assembly reference?) [C:\Users\basant\source\r
+epos\Travai\hotel\UserAuthorizationandAuthentication\UserAuthorizati
+onandAuthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(231,44): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuides' and no accessible 
+extension method 'TourGuides' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(247,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuideEmails' and no accessible 
+extension method 'TourGuideEmails' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(254,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuidePhones' and no accessible 
+extension method 'TourGuidePhones' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(261,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuideLanguages' and no accessible 
+extension method 'TourGuideLanguages' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(268,26): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'TourGuideCities' and no accessible 
+extension method 'TourGuideCities' accepting a first argument of 
+type 'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(212,35): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\TourG
+uideService.cs(283,42): error CS1061: 'ApplicationDbContext' does 
+not contain a definition for 'Reviews' and no accessible extension 
+method 'Reviews' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(255,36): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(189,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(222,26): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(231,34): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(260,42): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(275,39): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'Tours' and no accessible extension method 
+'Tours' accepting a first argument of type 'ApplicationDbContext' 
+could be found (are you missing a using directive or an assembly 
+reference?) [C:\Users\basant\source\repos\Travai\hotel\UserAuthoriza
+tionandAuthentication\UserAuthorizationandAuthentication\UserAuthori
+zationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\TourGuide\Booki
+ngService.cs(281,56): error CS1061: 'ApplicationDbContext' does not 
+contain a definition for 'TourBookings' and no accessible extension 
+method 'TourBookings' accepting a first argument of type 
+'ApplicationDbContext' could be found (are you missing a using 
+directive or an assembly reference?) [C:\Users\basant\source\repos\T
+ravai\hotel\UserAuthorizationandAuthentication\UserAuthorizationandA
+uthentication\UserAuthorizationandAuthentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(299,36): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(345,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(365,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(387,44): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 
+'Passengers' and no accessible extension method 'Passengers' 
+accepting a first argument of type 'ApplicationDbContext' could be 
+found (are you missing a using directive or an assembly reference?) 
+[C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthe
+ntication\UserAuthorizationandAuthentication\UserAuthorizationandAut
+hentication.csproj]
+C:\Users\basant\source\repos\Travai\hotel\UserAuthorizationandAuthen
+tication\UserAuthorizationandAuthentication\Services\Airline\Booking
+Service\BookingService.cs(398,42): error CS1061: 
+'ApplicationDbContext' does not contain a definition for 'Bookings' 
+and no accessible extension method 'Bookings' accepting a first 
+argument of type 'ApplicationDbContext' could be found (are you 
+missing a using directive or an assembly reference?) [C:\Users\basan
+t\source\repos\Travai\hotel\UserAuthorizationandAuthentication\UserA
+uthorizationandAuthentication\UserAuthorizationandAuthentication.csp
+roj]
+
+
+

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile App Endpoint Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #d4a853;
+            --border: rgba(255, 255, 255, 0.1);
+            --method-get: #3b82f6;
+            --method-post: #10b981;
+            --method-put: #f59e0b;
+            --method-delete: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--gold);
+            font-size: 1.5rem;
+        }
+
+        .category-title {
+            padding: 20px 24px 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .endpoint-link {
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .endpoint-link:hover, .endpoint-link.active {
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--gold);
+        }
+
+        .method-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            min-width: 45px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .method-GET { background: rgba(59, 130, 246, 0.2); color: var(--method-get); }
+        .method-POST { background: rgba(16, 185, 129, 0.2); color: var(--method-post); }
+        .method-PUT { background: rgba(245, 158, 11, 0.2); color: var(--method-put); }
+        .method-DELETE { background: rgba(239, 68, 68, 0.2); color: var(--method-delete); }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 24px;
+            animation: fadeIn 0.3s ease-up;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .url-box {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        h2 { font-family: 'Cormorant Garamond', serif; color: var(--gold); font-size: 2rem; margin-top: 0;}
+        h3 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 30px; color: #cbd5e1;}
+
+        pre {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: #a5b4fc;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px;
+            color: var(--text-muted);
+        }
+        
+        /* Highlight specific keys */
+        .hl-req { color: #fca5a5; font-weight: 600; }
+        .hl-res { color: #86efac; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fas fa-server"></i> Mobile API Docs</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 8px;">Complete Endpoints Reference</p>
+        </div>
+        <!-- Loaded Dynamically via JS -->
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="empty-state">
+            <i class="fas fa-code fa-4x" style="color: var(--gold); margin-bottom: 20px; opacity: 0.5;"></i>
+            <h2 style="color: #fff;">Welcome to the API Documentation</h2>
+            <p style="font-size: 1.1rem;">Select an endpoint from the left menu to view its details. Every request payload and expected response data structure is fully documented here.</p>
+        </div>
+    </div>
+
+    <script>
+        // Full comprehensive list of APIs
+        const apiData = [
+            {
+                category: "1. Authentication",
+                endpoints: [
+                    {
+                        title: "Login", method: "POST", url: "/api/Users/login",
+                        desc: "Authenticates user and returns JWT token.",
+                        requestParams: null,
+                        requestBody: "{\n  \"email\": \"user@example.com\",\n  \"password\": \"string\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"token\": \"eyJ...\",\n    \"name\": \"John Doe\",\n    \"role\": \"User\"\n  }\n}"
+                    },
+                    {
+                        title: "Register", method: "POST", url: "/api/Users/register",
+                        desc: "Register a new user.",
+                        requestParams: null,
+                        requestBody: "{\n  \"name\": \"string\",\n  \"userName\": \"string\",\n  \"email\": \"user@example.com\",\n  \"password\": \"string\",\n  \"phoneNumber\": \"string\",\n  \"dateOfBirth\": \"YYYY-MM-DD\",\n  \"gender\": \"Male | Female\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Registration successful\"\n}"
+                    }
+                ]
+            },
+            {
+                category: "2. Public Hotels & Search",
+                endpoints: [
+                    {
+                        title: "List & Search Hotels", method: "GET", url: "/api/PublicHotels",
+                        desc: "Fetch paginated hotels with filters.",
+                        requestParams: [
+                            { name: "destination", type: "Query", desc: "e.g., Cairo" },
+                            { name: "checkIn", type: "Query", desc: "YYYY-MM-DD" },
+                            { name: "checkOut", type: "Query", desc: "YYYY-MM-DD" },
+                            { name: "persons", type: "Query", desc: "Total guests (Int)" },
+                            { name: "rooms", type: "Query", desc: "Total rooms needed (Int)" },
+                            { name: "minStarRating", type: "Query", desc: "Hotel class 1-5 (Int)" },
+                            { name: "minReviewRating", type: "Query", desc: "Score e.g. 4.0 (Float)" },
+                            { name: "sortBy", type: "Query", desc: "'rating', 'price_low', 'price_high'" },
+                            { name: "bedType", type: "Query", desc: "'Single' or 'Double'" },
+                            { name: "amenities", type: "Query (Array)", desc: "List of amenities ids or names" },
+                            { name: "page", type: "Query", desc: "Page number (Int)" },
+                            { name: "pageSize", type: "Query", desc: "Items per page (Int)" }
+                        ],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"totalCount\": 10,\n    \"hotels\": [\n      {\n        \"id\": 1,\n        \"hotelName\": \"String\",\n        \"primaryImageUrl\": \"String\",\n        \"avgRating\": 4.5,\n        \"reviewCount\": 12,\n        \"location\": \"String\",\n        \"pricePerNight\": 150.00,\n        \"availableRooms\": 5,\n        \"verificationStatus\": \"Verified | Pending\",\n        \"amenityTags\": [\"WiFi\", \"Pool\"]\n      }\n    ]\n  }\n}"
+                    },
+                    {
+                        title: "Get Hotel Details", method: "GET", url: "/api/PublicHotels/{id}",
+                        desc: "Fetch single hotel details + room availability. Dates are required for dynamic room pricing.",
+                        requestParams: [
+                            { name: "id", type: "Path", desc: "Hotel ID" },
+                            { name: "checkIn", type: "Query", desc: "YYYY-MM-DD" },
+                            { name: "checkOut", type: "Query", desc: "YYYY-MM-DD" }
+                        ],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 1,\n    \"hotelName\": \"String\",\n    \"description\": \"String\",\n    \"starRating\": 5,\n    \"cityArea\": \"String\",\n    \"country\": \"String\",\n    \"images\": [{ \"imageUrl\": \"url\", \"isPrimary\": true, \"caption\": \"\" }],\n    \"amenityDetails\": [{ \"name\": \"WiFi\", \"isHighlighted\": true }],\n    \"rooms\": [\n      {\n        \"id\": 101,\n        \"name\": \"Deluxe\",\n        \"availability\": 3,\n        \"bedType\": \"Double\",\n        \"occupancy\": 2,\n        \"roPrice\": 100,\n        \"bbPrice\": 120,\n        \"hbPrice\": 150,\n        \"fbPrice\": 180,\n        \"aiPrice\": 200\n      }\n    ]\n  }\n}"
+                    }
+                ]
+            },
+            {
+                category: "3. Comments & Reviews",
+                endpoints: [
+                    {
+                        title: "Get Reviews", method: "GET", url: "/api/PublicHotels/{hotelId}/reviews",
+                        desc: "Get paginated reviews for a hotel.",
+                        requestParams: [
+                            { name: "hotelId", type: "Path", desc: "Hotel ID (Int)" },
+                            { name: "page", type: "Query", desc: "Page (Int)" },
+                            { name: "pageSize", type: "Query", desc: "Size (Int)" }
+                        ],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"totalCount\": 5,\n    \"reviews\": [\n      {\n        \"id\": 1,\n        \"userName\": \"string\",\n        \"rating\": 5,\n        \"comment\": \"string\",\n        \"createdAt\": \"2024-01-01T00:00:00\"\n      }\n    ]\n  }\n}"
+                    },
+                    {
+                        title: "Add Review", method: "POST", url: "/api/PublicHotels/reviews",
+                        desc: "Add a review to a hotel (Requires Auth).",
+                        requestParams: null,
+                        requestBody: "{\n  \"hotelId\": 1,\n  \"rating\": 5,\n  \"comment\": \"string\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Review added successfully\"\n}"
+                    },
+                    {
+                        title: "Edit Review", method: "PUT", url: "/api/PublicHotels/reviews/{id}",
+                        desc: "Edit existing review.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Review ID" }],
+                        requestBody: "{\n  \"rating\": 4,\n  \"comment\": \"updated string\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Review updated\"\n}"
+                    },
+                    {
+                        title: "Delete Review", method: "DELETE", url: "/api/PublicHotels/reviews/{id}",
+                        desc: "Delete a review.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Review ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"message\": \"Review deleted\"\n}"
+                    }
+                ]
+            },
+            {
+                category: "4. Bookings (Guest)",
+                endpoints: [
+                    {
+                        title: "Create Booking", method: "POST", url: "/api/HotelBookings",
+                        desc: "Make a booking involving single or multiple rooms + meal plan selection.",
+                        requestParams: null,
+                        requestBody: "{\n  \"hotelId\": 1,\n  \"checkInDate\": \"2024-04-10T14:00:00Z\",\n  \"checkOutDate\": \"2024-04-15T12:00:00Z\",\n  \"rooms\": [\n    { \"roomId\": 101, \"mealPlan\": \"HB\" },\n    { \"roomId\": 102, \"mealPlan\": \"RO\" }\n  ]\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Successfully booked!\",\n  \"data\": { \"bookingId\": 501 }\n}"
+                    },
+                    {
+                        title: "Get My Bookings", method: "GET", url: "/api/HotelBookings/mine",
+                        desc: "Get all bookings owned by the current authenticated user.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 501,\n      \"hotelName\": \"String\",\n      \"checkInDate\": \"2024-04-10T00:00:00\",\n      \"checkOutDate\": \"2024-04-15T00:00:00\",\n      \"status\": \"Pending | Confirmed | Cancelled\",\n      \"totalPrice\": 100.00\n    }\n  ]\n}"
+                    },
+                    {
+                        title: "Get Booking Details", method: "GET", url: "/api/HotelBookings/{id}",
+                        desc: "Get full details of a specific booking including chosen rooms.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 501,\n    \"hotelName\": \"String\",\n    \"status\": \"Confirmed\",\n    \"checkInDate\": \"Date\",\n    \"checkOutDate\": \"Date\",\n    \"paymentStatus\": \"Paid Online\",\n    \"totalPrice\": 100.00,\n    \"rooms\": [\n      { \"roomName\": \"Deluxe\", \"mealPlan\": \"HB\", \"pricePerNight\": 50 }\n    ]\n  }\n}"
+                    },
+                    {
+                        title: "Cancel Booking", method: "PUT", url: "/api/HotelBookings/{id}/cancel",
+                        desc: "Cancel a user's booking.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"message\": \"Booking cancelled successfully\"\n}"
+                    }
+                ]
+            },
+            {
+                category: "5. Metadata (Lookups)",
+                endpoints: [
+                    {
+                        title: "Get Amenities Defaults", method: "GET", url: "/api/Metadata/amenities",
+                        desc: "Get all standard amenities for filters, chips and forms.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    { \"id\": 1, \"name\": \"WiFi\", \"type\": \"Internet\", \"isHighlighted\": true }\n  ]\n}"
+                    },
+                    {
+                        title: "Get Document Types", method: "GET", url: "/api/Metadata/document-types",
+                        desc: "Get types of documents needed for hotel application (Identity, Registration, etc).",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    { \"id\": 1, \"name\": \"Commercial Register\", \"keyName\": \"reg\", \"isRequired\": true }\n  ]\n}"
+                    },
+                    {
+                        title: "Get Dynamic Fields", method: "GET", url: "/api/Metadata/hotel-field-definitions",
+                        desc: "Get custom dynamic fields needed for hotel application (Dynamic questions).",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    { \"id\": 1, \"displayName\": \"Company Name\", \"fieldType\": \"Text\", \"isRequired\": true }\n  ]\n}"
+                    }
+                ]
+            },
+            {
+                category: "6. Partner & Onboarding",
+                endpoints: [
+                    {
+                        title: "Submit Application", method: "POST", url: "/api/Hotels/apply",
+                        desc: "Submit a comprehensive hotel application. This relies on 'multipart/form-data' since it includes files.",
+                        requestParams: null,
+                        requestBody: "FormData Format Requires:\n- hotelName (String)\n- description (String)\n- starRating (Int)\n- propertyType (String) e.g., 'Hotel'\n- accommodationType (String) e.g. 'Room'\n- governorate (String)\n- cityArea (String)\n- addressDetails (String)\n- addressProofFile (File Upload)\n- amenityIds (Array/List of Integers)\n- contacts[0].contactType (String: Phone|Email)\n- contacts[0].contactValue (String)\n- dynamicFields[0].fieldDefinitionId (Int)\n- dynamicFields[0].value (String)\n- policy.serviceChargePct (Float)\n- policy.includeVat (Boolean)\n- policy.cancellationStrategy (FreeAll|NonRefundable|WindowBased)\n- policy.cancellationRules[0].penaltyPct (Float)\n- initialRooms[0].name (String)\n- initialRooms[0].occupancy (Int)\n- initialRooms[0].roPrice (Float)\n- initialRooms[0].bbPrice (Float)\n- initialRooms[0].quantity (Int)\n- images[0].imageFile (File)\n- documents[0].documentTypeId (Int)\n- documents[0].file (File)",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Application submitted\"\n}"
+                    },
+                    {
+                        title: "Get My Application", method: "GET", url: "/api/Hotels/my-application",
+                        desc: "Check current application details if it's pending, rejected, or approved.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"hotelName\": \"Grand Resort\",\n    \"verificationStatus\": \"Pending | Approved | Rejected\",\n    \"rejectionReason\": \"Missing document\",\n    \"amenityNames\": [],\n    \"rooms\": []\n   }\n}"
+                    },
+                    {
+                        title: "Delete Application", method: "DELETE", url: "/api/Hotels/my-application",
+                        desc: "Withdraw application and remove records.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true\n}"
+                    }
+                ]
+            },
+            {
+                category: "7. Owner Dashboard Tasks",
+                endpoints: [
+                    {
+                        title: "Get Settings", method: "GET", url: "/api/Hotels/my",
+                        desc: "Fetch details of the verified, currently managed hotel.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 1,\n    \"hotelName\": \"Grand Resort\",\n    \"description\": \"Luxury Stay\",\n    \"starRating\": 5\n  }\n}"
+                    },
+                    {
+                        title: "Get Amenities List", method: "GET", url: "/api/Hotels/{id}/amenities",
+                        desc: "Get current binary flags of top amenities.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Hotel ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"freeWifi\": true,\n    \"swimmingPool\": true,\n    \"parking\": false,\n    \"airConditioning\": true\n  }\n}"
+                    },
+                    {
+                        title: "Update Settings", method: "PUT", url: "/api/Hotels/{id}",
+                        desc: "Update basic properties of the hotel.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Hotel ID" }],
+                        requestBody: "{\n  \"hotelName\": \"String\",\n  \"description\": \"String\",\n  \"cityArea\": \"String\",\n  \"governorate\": \"String\",\n  \"starRating\": 5,\n  \"propertyType\": \"Hotel\",\n  \"accommodationType\": \"Room\"\n}",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Update Amenities List", method: "PUT", url: "/api/Hotels/{id}/amenities",
+                        desc: "Update quick binary flags of top amenities.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Hotel ID" }],
+                        requestBody: "{\n  \"freeWifi\": true,\n  \"swimmingPool\": true,\n  \"parking\": false,\n  \"airConditioning\": true,\n  \"breakfast\": true,\n  \"gym\": false,\n  \"restaurant\": true,\n  \"spa\": false,\n  \"roomService\": true\n}",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Get Property Bookings", method: "GET", url: "/api/HotelBookings/hotel/{hotelId}",
+                        desc: "Get all incoming bookings for this hotel.",
+                        requestParams: [{ name: "hotelId", type: "Path", desc: "Hotel ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 501,\n      \"checkInDate\": \"2024-04-10T00:00:00\",\n      \"checkOutDate\": \"2024-04-15T00:00:00\",\n      \"status\": \"Pending\",\n      \"userName\": \"Guest User\",\n      \"totalPrice\": 100.00\n    }\n  ]\n}"
+                    },
+                    {
+                        title: "Approve/Reject Booking", method: "PUT", url: "/api/HotelBookings/{id}/status",
+                        desc: "Confirm or cancel a booking from the hotel side.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Booking ID" }],
+                        requestBody: "{\n  \"action\": \"Confirmed\" // or \"Cancelled\"\n}",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Get Hotel Rooms", method: "GET", url: "/api/HotelRooms/hotel/{id}",
+                        desc: "Get list of physical rooms tied to the hotel.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Hotel ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 101,\n      \"name\": \"Standard\",\n      \"occupancy\": 2,\n      \"roPrice\": 100.00,\n      \"bbPrice\": 120.00,\n      \"quantity\": 5\n    }\n  ]\n}"
+                    },
+                    {
+                        title: "Add Hotel Room", method: "POST", url: "/api/HotelRooms",
+                        desc: "Add a new room definition.",
+                        requestParams: null,
+                        requestBody: "{\n  \"name\": \"Standard\",\n  \"roomCode\": \"STD-01\",\n  \"bedType\": \"Single | Double\",\n  \"occupancy\": 2,\n  \"price\": 100,\n  \"roPrice\": 100,\n  \"bbPrice\": 120,\n  \"hbPrice\": 150,\n  \"fbPrice\": 180,\n  \"aiPrice\": 200,\n  \"quantity\": 5\n}",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Delete Hotel Room", method: "DELETE", url: "/api/HotelRooms/{id}",
+                        desc: "Delete a room type.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Room ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Upload Hotel Image", method: "POST", url: "/api/HotelImages",
+                        desc: "Upload a new photo via multipart/form-data.",
+                        requestParams: null,
+                        requestBody: "FormData containing:\n- file (File binary)\n- hotelId (Int)\n- caption (String)\n- isPrimary (Boolean)\n- sortOrder (Int)",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Delete Hotel Image", method: "DELETE", url: "/api/HotelImages/{id}",
+                        desc: "Delete an existing gallery image.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Image ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true\n}"
+                    }
+                ]
+            },
+            {
+                category: "8. Admin Control Panel",
+                endpoints: [
+                    {
+                        title: "Get All Applications", method: "GET", url: "/api/admin/applications",
+                        desc: "Fetch all global hotel applications for admin overview.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"hotelName\": \"String\",\n      \"ownerName\": \"String\",\n      \"cityArea\": \"String\",\n      \"verificationStatus\": \"Pending | Approved | Rejected\",\n      \"verified\": false,\n      \"createdAt\": \"2024-01-01T00:00:00\"\n    }\n  ]\n}"
+                    },
+                    {
+                        title: "Approve Application", method: "POST", url: "/api/admin/applications/{id}/approve",
+                        desc: "Approve a pending application and convert it to a verified hotel.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Application ID" }],
+                        requestBody: "{}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Application approved!\"\n}"
+                    },
+                    {
+                        title: "Reject Application", method: "POST", url: "/api/admin/applications/{id}/reject",
+                        desc: "Reject a pending application with a required reason.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Application ID" }],
+                        requestBody: "{\n  \"reason\": \"Missing documentation\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Application rejected.\"\n}"
+                    }
+                ]
+            },
+            {
+                category: "9. Admin Dictionaries",
+                endpoints: [
+                    {
+                        title: "Manage Amenities", method: "POST", url: "/api/AdminManagement/amenities",
+                        desc: "Create a new Amenity. (To update, use PUT and /[id] via URL).",
+                        requestParams: null,
+                        requestBody: "{\n  \"id\": 0,\n  \"name\": \"Free WiFi\",\n  \"type\": \"General\",\n  \"isHighlighted\": true\n}",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Delete Amenity", method: "DELETE", url: "/api/AdminManagement/amenities/{id}",
+                        desc: "Remove an Amenity globally.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Amenity ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Manage Doc Types", method: "POST", url: "/api/AdminManagement/document-types",
+                        desc: "Create a new document type requirement. (To update, use PUT and /[id]).",
+                        requestParams: null,
+                        requestBody: "{\n  \"id\": 0,\n  \"name\": \"ID Card\",\n  \"keyName\": \"id_card\",\n  \"isRequired\": true,\n  \"isActive\": true\n}",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Delete Doc Type", method: "DELETE", url: "/api/AdminManagement/document-types/{id}",
+                        desc: "Remove a document type.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Doc Type ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Manage Dynamic Fields", method: "POST", url: "/api/AdminManagement/field-definitions",
+                        desc: "Create a new dynamic field. FieldType: (0=Text, 1=TextArea, 2=Number, 3=Date, 4=File)",
+                        requestParams: null,
+                        requestBody: "{\n  \"id\": 0,\n  \"displayName\": \"Label Name\",\n  \"keyName\": \"system_key\",\n  \"fieldType\": 0,\n  \"isRequired\": true,\n  \"isActive\": true\n}",
+                        response: "{\n  \"success\": true\n}"
+                    },
+                    {
+                        title: "Delete Field", method: "DELETE", url: "/api/AdminManagement/field-definitions/{id}",
+                        desc: "Remove a dynamic field definition.",
+                        requestParams: [{ name: "id", type: "Path", desc: "Field ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true\n}"
+                    }
+                ]
+            }
+        ];
+
+        // --- Render Sidebar ---
+        const sidebar = document.getElementById('sidebar');
+        let html = '';
+        
+        apiData.forEach((cat, catIdx) => {
+            html += `<div class="category-title">${cat.category}</div>`;
+            cat.endpoints.forEach((ep, epIdx) => {
+                html += `
+                    <div class="endpoint-link" onclick="showDetails(${catIdx}, ${epIdx}, this)">
+                        <span class="method-badge method-${ep.method}">${ep.method}</span>
+                        <span style="font-size: 0.95rem;">${ep.title}</span>
+                    </div>
+                `;
+            });
+        });
+        sidebar.innerHTML += html;
+
+        // --- Render Content ---
+        function showDetails(catIdx, epIdx, el) {
+            // Update Active State
+            document.querySelectorAll('.endpoint-link').forEach(link => link.classList.remove('active'));
+            if(el) el.classList.add('active');
+
+            const ep = apiData[catIdx].endpoints[epIdx];
+            const content = document.getElementById('mainContent');
+
+            let paramsHtml = '';
+            if (ep.requestParams && ep.requestParams.length > 0) {
+                paramsHtml = `
+                    <h3><span style="color:#93c5fd; font-weight:600;"><i class="fas fa-filter"></i> Request Parameters</span> (Query/Path)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type / Location</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ep.requestParams.map(p => `
+                                <tr>
+                                    <td style="color:var(--text-main);"><code>${p.name}</code></td>
+                                    <td style="color:var(--text-muted);">${p.type}</td>
+                                    <td>${p.desc}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            let bodyHtml = '';
+            if (ep.requestBody) {
+                bodyHtml = `
+                    <h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span> (Data Sent to Backend)</h3>
+                    <pre><code>${ep.requestBody}</code></pre>
+                `;
+            } else {
+                bodyHtml = `
+                    <h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span> (Data Sent to Backend)</h3>
+                    <pre><code style="color: #64748b; font-style: italic;">// No JSON body required for this ${ep.method} request.\n// Please use the query/path parameters listed above.</code></pre>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="card">
+                    <h2>${ep.title.split('. ').pop()}</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.5;">${ep.desc}</p>
+                    
+                    <div class="url-box">
+                        <span class="method-badge method-${ep.method}" style="font-size: 0.9rem; padding: 6px 12px; margin-right: 10px;">${ep.method}</span>
+                        <span style="color: #a5b4fc; font-weight: 600;">https://travi-hkc4hhejdjcxech3.westeurope-01.azurewebsites.net</span>${ep.url}
+                    </div>
+
+                    ${paramsHtml}
+                    ${bodyHtml}
+
+                    <h3><span class="hl-res"><i class="fas fa-file-import"></i> Response</span> (Data Accepted from Backend)</h3>
+                    <pre><code>${ep.response}</code></pre>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

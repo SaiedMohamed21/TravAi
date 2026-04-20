@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .tab-nav {
+            display: flex;
+            gap: 15px;
+            padding: 0 40px;
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+            background: var(--bg-secondary);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 16px 24px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--gold);
+        }
+
+        .tab-btn.active {
+            color: var(--gold);
+            border-bottom-color: var(--gold);
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--r);
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--gold);
+            box-shadow: var(--shadow-gold);
+        }
+
+        .stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        .item-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--r);
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .item-card:hover {
+            border-color: var(--glass-border-light);
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-area" style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="window.location.href='index.html'">
+                <div class="logo-gem" style="width: 24px; height: 24px; background: var(--gold); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);"></div>
+                <div class="header-title">Hotel Control Center</div>
+            </div>
+            <div class="header-actions">
+                <a href="index.html" class="nav-icon" title="View Site"><i class="fas fa-external-link-alt"></i></a>
+                <div onclick="Auth.logout()" class="nav-icon" style="cursor: pointer;" title="Logout"><i class="fas fa-sign-out-alt"></i></div>
+            </div>
+        </header>
+
+        <div id="loadingState" style="text-align: center; padding: 50px;">
+            <i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary-color);"></i>
+        </div>
+
+        <div id="noHotelState" style="display: none; text-align: center; padding: 50px;">
+            <i class="fas fa-hotel fa-3x" style="color: var(--text-muted); margin-bottom: 20px;"></i>
+            <h2>No Hotel Found</h2>
+            <p style="color: var(--text-muted); margin: 20px 0;">Please contact an administrator to configure your hotel profile.</p>
+            <a href="index.html" class="btn-primary" style="display:inline-block; padding: 10px 20px; text-decoration: none;">Return Home</a>
+        </div>
+
+        <div id="dashboardContent" style="display: none;">
+            <!-- Stats -->
+            <div class="container">
+                <div class="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statBookings">0</div>
+                        <div class="stat-label">Pending Bookings</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statRooms">0</div>
+                        <div class="stat-label">Total Rooms</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statImages">0</div>
+                        <div class="stat-label">Photos</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tab-nav container">
+                <button class="tab-btn active" onclick="switchTab('bookings')">Bookings</button>
+                <button class="tab-btn" onclick="switchTab('rooms')">Rooms</button>
+                <button class="tab-btn" onclick="switchTab('images')">Images</button>
+                <button class="tab-btn" onclick="switchTab('amenities')">Amenities</button>
+                <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="container">
+                <!-- 1. Bookings Tab -->
+                <div id="bookings" class="tab-content active">
+                    <h3>Booking Requests</h3>
+                    <div id="bookingsList"></div>
+                </div>
+
+                <!-- 2. Rooms Tab -->
+                <div id="rooms" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h3>Room Types</h3>
+                        <button class="btn-primary" style="width: auto; padding: 10px 20px;"
+                            onclick="showAddRoomModal()">+ Add Room</button>
+                    </div>
+                    <div id="roomsList"></div>
+                </div>
+
+                <!-- 3. Images Tab -->
+                <div id="images" class="tab-content">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+                        <h3>Hotel Photos</h3>
+                        <button class="btn-primary" style="width: auto; padding: 10px 20px;"
+                            onclick="showUploadImageModal()">+ Upload Image</button>
+                    </div>
+                    <div id="imagesList" class="image-grid"></div>
+                </div>
+
+                <!-- 4. Amenities Tab -->
+                <div id="amenities" class="tab-content">
+                    <h3>Hotel Amenities</h3>
+                    <form id="amenitiesForm" onsubmit="updateAmenities(event)">
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="freeWifi"> <i class="fas fa-wifi"></i> Free Wi-Fi
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="swimmingPool"> <i class="fas fa-swimming-pool"></i>
+                                Swimming Pool
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="parking"> <i class="fas fa-parking"></i> Parking
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="airConditioning"> <i class="fas fa-wind"></i> Air
+                                Conditioning
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="breakfast"> <i class="fas fa-coffee"></i> Breakfast
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="gym"> <i class="fas fa-dumbbell"></i> Gym
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="restaurant"> <i class="fas fa-utensils"></i> Restaurant
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="spa"> <i class="fas fa-spa"></i> Spa
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" name="roomService"> <i class="fas fa-concierge-bell"></i> Room
+                                Service
+                            </label>
+                        </div>
+                        <button type="submit" class="btn-primary">Save Amenities</button>
+                    </form>
+                </div>
+
+                <!-- 5. Settings Tab -->
+                <div id="settings" class="tab-content">
+                    <h3>Hotel Settings</h3>
+                    <form id="settingsForm" onsubmit="updateHotel(event)">
+                        <label class="input-label">Hotel Name</label>
+                        <div class="input-group">
+                            <input type="text" id="editHotelName" class="input-field" required>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div>
+                                <label class="input-label">Property Type</label>
+                                <select id="editPropertyType" class="input-field">
+                                    <option value="Hotel">Hotel</option>
+                                    <option value="Apartment">Apartment</option>
+                                    <option value="Resort">Resort</option>
+                                    <option value="Villa">Villa</option>
+                                    <option value="Guesthouse">Guesthouse</option>
+                                    <option value="Hostel">Hostel</option>
+                                    <option value="Motel">Motel</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="input-label">Accommodation Type</label>
+                                <select id="editAccommodationType" class="input-field">
+                                    <option value="Room">Hotel Room</option>
+                                    <option value="Suite">Suite</option>
+                                    <option value="Studio">Studio</option>
+                                    <option value="Apartment">Apartment</option>
+                                    <option value="Villa">Villa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label class="input-label">Description</label>
+                        <div class="input-group">
+                            <textarea id="editDescription" class="input-field" style="min-height: 100px; padding: 10px;"></textarea>
+                        </div>
+
+                        <label class="input-label">City/Area</label>
+                        <div class="input-group">
+                            <input type="text" id="editCityArea" class="input-field">
+                        </div>
+
+                        <label class="input-label">Governorate</label>
+                        <div class="input-group">
+                            <input type="text" id="editGovernorate" class="input-field">
+                        </div>
+
+                        <label class="input-label">Star Rating</label>
+                        <div class="input-group">
+                            <select id="editStarRating" class="input-field">
+                                <option value="1">1 Star</option>
+                                <option value="2">2 Stars</option>
+                                <option value="3">3 Stars</option>
+                                <option value="4">4 Stars</option>
+                                <option value="5">5 Stars</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Update Hotel</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Room Modal -->
+    <div id="addRoomModal" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Add Room Type</h3>
+                <span class="close-icon"
+                    onclick="closeModal(null, document.getElementById('addRoomModal'))">&times;</span>
+            </div>
+            <form onsubmit="addRoom(event)">
+                <div class="modal-body" style="padding: 24px;">
+                    <label class="input-label">Room Type</label>
+                    <select id="roomName" class="input-field" style="width: 100%;" required>
+                        <option value="StandardRoom">Standard Room</option>
+                        <option value="DeluxeRoom">Deluxe Room</option>
+                        <option value="SuperiorRoom">Superior Room</option>
+                        <option value="Suite">Suite</option>
+                        <option value="ExecutiveRoom">Executive Room</option>
+                        <option value="FamilyRoom">Family Room</option>
+                    </select>
+
+                    <label class="input-label">Room Code (optional)</label>
+                    <input type="text" id="roomCode" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+
+                    <label class="input-label">Bed Type</label>
+                    <select id="bedType" class="input-field" style="width: 100%;">
+                        <option value="Single">Single</option>
+                        <option value="Double">Double</option>
+                    </select>
+
+                    <label class="input-label">Max Occupancy</label>
+                    <input type="number" id="occupancy" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" value="2"
+                        min="1">
+
+                    <label class="input-label">RO Price ($)</label>
+                    <input type="number" id="price" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" required min="0" step="0.01">
+
+                    <label class="input-label">BB Price ($)</label>
+                    <input type="number" id="bbPrice" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" min="0" step="0.01">
+
+                    <label class="input-label">HB Price ($)</label>
+                    <input type="number" id="hbPrice" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" min="0" step="0.01">
+
+                    <label class="input-label">FB Price ($)</label>
+                    <input type="number" id="fbPrice" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" min="0" step="0.01">
+
+                    <label class="input-label">AI Price ($)</label>
+                    <input type="number" id="aiPrice" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" min="0" step="0.01">
+
+                    <label class="input-label">Quantity (Number of rooms)</label>
+                    <input type="number" id="availability" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;" value="1"
+                        min="1">
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn-apply">Add Room</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upload Image Modal -->
+    <div id="uploadImageModal" class="modal-overlay" onclick="closeModal(event, this)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Upload Image</h3>
+                <span class="close-icon"
+                    onclick="closeModal(null, document.getElementById('uploadImageModal'))">&times;</span>
+            </div>
+            <form onsubmit="uploadImage(event)">
+                <div class="modal-body" style="padding: 24px;">
+                    <label class="input-label">Select Image</label>
+                    <input type="file" id="imageFile" accept="image/*" style="width: 100%; padding: 10px;" required>
+
+                    <label class="input-label">Caption (optional)</label>
+                    <input type="text" id="imageCaption" class="input-field"
+                        style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;">
+
+                    <label style="display: flex; align-items: center; gap: 10px; margin-top: 16px; cursor: pointer;">
+                        <input type="checkbox" id="isPrimary"> Set as primary image
+                    </label>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn-apply">Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        let myHotelId = null;
+
+        if (!Auth.isLoggedIn()) window.location.href = 'login.html';
+
+        async function init() {
+            // Get my hotel
+            const res = await API.get('/Hotels/my');
+
+            if (!res.success || !res.data) {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('noHotelState').style.display = 'block';
+                return;
+            }
+
+            myHotelId = res.data.id;
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+
+            loadAll();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadAll() {
+            loadBookings();
+            loadRooms();
+            loadImages();
+            loadAmenities();
+            loadHotelDetails();
+        }
+
+        // === BOOKINGS ===
+        async function loadBookings() {
+            const res = await API.get(`/HotelBookings/hotel/${myHotelId}`);
+            if (!res.success) return;
+
+            const bookings = (Array.isArray(res.data) ? res.data : []).filter(b => b.status === 'Pending');
+            document.getElementById('statBookings').innerText = bookings.length;
+
+            const html = bookings.map(b => `
+                <div class="item-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <div>
+                            <strong>Booking #${b.id}</strong>
+                            <p style="font-size: 0.9rem; color: var(--text-muted); margin: 4px 0;">
+                                ${new Date(b.checkInDate).toLocaleDateString()} - ${new Date(b.checkOutDate).toLocaleDateString()}
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">
+                                User: ${(b.user && b.user.name) || b.userName || 'Guest'}
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                                Rooms: ${b.rooms?.map(r => r.roomName + ' (' + (r.mealPlan || 'RO') + ')').join(', ') || 'N/A'}
+                            </p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.2rem; font-weight: 700; color: #fbbf24;">$${b.totalPrice}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-action btn-success" onclick="updateBookingStatus(${b.id}, 'Confirmed')">Confirm</button>
+                        <button class="btn-action btn-danger" onclick="updateBookingStatus(${b.id}, 'Cancelled')">Reject</button>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('bookingsList').innerHTML = html || '<p style="color: var(--text-muted);">No pending bookings</p>';
+        }
+
+        async function updateBookingStatus(id, action) {
+            const res = await API.put(`/HotelBookings/${id}/status`, { action });
+            if (res.success) loadBookings();
+            else alert(res.message);
+        }
+
+        // === ROOMS ===
+        async function loadRooms() {
+            const res = await API.get(`/HotelRooms/hotel/${myHotelId}`);
+            if (!res.success) return;
+
+            const rooms = res.data || [];
+            document.getElementById('statRooms').innerText = rooms.length;
+
+            const html = rooms.map(r => `
+                <div class="item-card">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <strong>${r.name || r.roomName}</strong>
+                            <p style="font-size: 0.85rem; color: var(--text-muted);">${r.bedType} • Max ${r.occupancy} guests</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-weight: 700;">RO: $${r.roPrice ?? r.price ?? 0}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">BB: $${r.bbPrice ?? (r.roPrice ?? r.price ?? 0)} • HB: $${r.hbPrice ?? (r.roPrice ?? r.price ?? 0)}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">FB: $${r.fbPrice ?? (r.roPrice ?? r.price ?? 0)} • AI: $${r.aiPrice ?? (r.roPrice ?? r.price ?? 0)}</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">${r.availability} units</div>
+                        </div>
+                    </div>
+                    <button class="btn-action btn-danger" style="margin-top: 12px;" onclick="deleteRoom(${r.id})">Delete</button>
+                </div>
+            `).join('');
+            document.getElementById('roomsList').innerHTML = html || '<p style="color: var(--text-muted);">No rooms added yet</p>';
+        }
+
+        function showAddRoomModal() {
+            document.getElementById('addRoomModal').style.display = 'flex';
+        }
+
+        async function addRoom(e) {
+            e.preventDefault();
+            const ro = parseFloat(document.getElementById('price').value);
+            const bbRaw = document.getElementById('bbPrice').value;
+            const hbRaw = document.getElementById('hbPrice').value;
+            const fbRaw = document.getElementById('fbPrice').value;
+            const aiRaw = document.getElementById('aiPrice').value;
+            const data = {
+                name: document.getElementById('roomName').value,
+                roomCode: document.getElementById('roomCode').value || null,
+                bedType: document.getElementById('bedType').value,
+                occupancy: parseInt(document.getElementById('occupancy').value),
+                price: ro,
+                roPrice: ro,
+                bbPrice: bbRaw === '' ? null : parseFloat(bbRaw),
+                hbPrice: hbRaw === '' ? null : parseFloat(hbRaw),
+                fbPrice: fbRaw === '' ? null : parseFloat(fbRaw),
+                aiPrice: aiRaw === '' ? null : parseFloat(aiRaw),
+                quantity: parseInt(document.getElementById('availability').value)
+            };
+
+            const res = await API.post('/HotelRooms', data);
+            if (res.success) {
+                closeModal(null, document.getElementById('addRoomModal'));
+                loadRooms();
+                loadHotelDetails(); // To refresh PriceUsd
+                e.target.reset();
+            } else {
+                alert(res.message);
+            }
+        }
+
+        async function deleteRoom(id) {
+            if (!confirm('Delete this room type?')) return;
+            const res = await API.delete(`/HotelRooms/${id}`);
+            if (res.success) {
+                loadRooms();
+                loadHotelDetails(); // To refresh PriceUsd
+            }
+        }
+
+        // === IMAGES ===
+        async function loadImages() {
+            const res = await API.get(`/HotelImages/hotel/${myHotelId}`);
+            if (!res.success) return;
+
+            const images = res.data || [];
+            document.getElementById('statImages').innerText = images.length;
+
+            const html = images.map(img => `
+                <div class="image-item">
+                    <img src="${img.imageUrl}" alt="${img.caption || 'Hotel'}">
+                    <button class="delete-btn" onclick="deleteImage(${img.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    ${img.isPrimary ? '<div style="position: absolute; bottom: 8px; left: 8px; background: var(--primary-color); color: #fff; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem;">Primary</div>' : ''}
+                </div>
+            `).join('');
+            document.getElementById('imagesList').innerHTML = html || '<p style="grid-column: 1/-1; color: var(--text-muted);">No images uploaded</p>';
+        }
+
+        function showUploadImageModal() {
+            document.getElementById('uploadImageModal').style.display = 'flex';
+        }
+
+        async function uploadImage(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('imageFile');
+            if (!fileInput.files[0]) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('hotelId', myHotelId);
+            formData.append('caption', document.getElementById('imageCaption').value || '');
+            formData.append('isPrimary', document.getElementById('isPrimary').checked);
+            formData.append('sortOrder', '1');
+
+            const token = Auth.getToken();
+            try {
+                const response = await fetch(`${API_BASE_URL}/HotelImages`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                if (response.ok) {
+                    closeModal(null, document.getElementById('uploadImageModal'));
+                    loadImages();
+                    e.target.reset();
+                } else {
+                    const error = await response.json();
+                    alert('Upload failed: ' + (error.message || 'Unknown error'));
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
+        }
+
+        async function deleteImage(id) {
+            if (!confirm('Delete this image?')) return;
+            const res = await API.delete(`/HotelImages/${id}`);
+            if (res.success) loadImages();
+        }
+
+        // === AMENITIES ===
+        async function loadAmenities() {
+            const res = await API.get(`/Hotels/${myHotelId}/amenities`);
+            if (!res.success) return;
+
+            const amenities = res.data;
+            const form = document.getElementById('amenitiesForm');
+            form.elements.freeWifi.checked = amenities.freeWifi;
+            form.elements.swimmingPool.checked = amenities.swimmingPool;
+            form.elements.parking.checked = amenities.parking;
+            form.elements.airConditioning.checked = amenities.airConditioning;
+            form.elements.breakfast.checked = amenities.breakfast;
+            form.elements.gym.checked = amenities.gym;
+            form.elements.restaurant.checked = amenities.restaurant;
+            form.elements.spa.checked = amenities.spa;
+            form.elements.roomService.checked = amenities.roomService;
+        }
+
+        async function updateAmenities(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                freeWifi: form.elements.freeWifi.checked,
+                swimmingPool: form.elements.swimmingPool.checked,
+                parking: form.elements.parking.checked,
+                airConditioning: form.elements.airConditioning.checked,
+                breakfast: form.elements.breakfast.checked,
+                gym: form.elements.gym.checked,
+                restaurant: form.elements.restaurant.checked,
+                spa: form.elements.spa.checked,
+                roomService: form.elements.roomService.checked
+            };
+
+            const res = await API.put(`/Hotels/${myHotelId}/amenities`, data);
+            if (res.success) alert('Amenities updated!');
+            else alert(res.message);
+        }
+
+        // === HOTEL SETTINGS ===
+        async function loadHotelDetails() {
+            const res = await API.get(`/Hotels/my`);
+            if (!res.success) return;
+
+            const hotel = res.data;
+            document.getElementById('editHotelName').value = hotel.hotelName;
+            document.getElementById('editDescription').value = hotel.description || ''; 
+            document.getElementById('editCityArea').value = hotel.cityArea || '';
+            document.getElementById('editGovernorate').value = hotel.governorate || '';
+            document.getElementById('editStarRating').value = hotel.starRating || 3;
+            document.getElementById('editPropertyType').value = hotel.propertyType || 'Hotel';
+            document.getElementById('editAccommodationType').value = hotel.accommodationType || 'Room';
+        }
+
+        async function updateHotel(e) {
+            e.preventDefault();
+            const data = {
+                hotelName: document.getElementById('editHotelName').value,
+                description: document.getElementById('editDescription').value,
+                cityArea: document.getElementById('editCityArea').value,
+                governorate: document.getElementById('editGovernorate').value,
+                starRating: parseInt(document.getElementById('editStarRating').value),
+                propertyType: document.getElementById('editPropertyType').value,
+                accommodationType: document.getElementById('editAccommodationType').value
+            };
+
+            const res = await API.put(`/Hotels/${myHotelId}`, data);
+            if (res.success) alert('Hotel updated!');
+            else alert(res.message);
+        }
+
+        function closeModal(e, el) {
+            if (!e || e.target === el) {
+                el.style.display = 'none';
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

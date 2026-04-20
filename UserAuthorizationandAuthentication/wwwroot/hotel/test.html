@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>API Test</title>
+</head>
+
+<body>
+    <h1>API Test Page</h1>
+    <button onclick="testAPI()">Test Search Hotels API</button>
+    <pre id="result"></pre>
+
+    <script>
+        const API_BASE_URL = '/api';
+
+        async function testAPI() {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Loading...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/PublicHotels`);
+                const data = await response.json();
+                resultEl.textContent = JSON.stringify(data, null, 2);
+                console.log('API Response:', data);
+            } catch (error) {
+                resultEl.textContent = 'Error: ' + error.message;
+                console.error('Error:', error);
+            }
+        }
+
+        // Auto-run on load
+        testAPI();
+    </script>
+</body>
+
+</html>

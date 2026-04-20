@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Review - Hotel Partner Hub</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .details-container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .back-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; color: var(--text-secondary); cursor: pointer; transition: 0.3s; }
+        .back-nav:hover { color: var(--gold); transform: translateX(-5px); }
+        
+        .details-header { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 20px; padding: 40px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center; }
+        .status-pill { padding: 10px 30px; border-radius: 40px; font-weight: 800; font-size: 14px; text-transform: uppercase; border: 2px solid; }
+        .status-pill.pending { background: rgba(251, 191, 36, 0.1); color: #fbbf24; border-color: #fbbf24; }
+        .status-pill.approved { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: #10b981; }
+        .status-pill.verified { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: #10b981; }
+        .status-pill.rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444; }
+
+        .det-section { margin-bottom: 40px; background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border); border-radius: 20px; padding: 30px; position: relative; }
+        .det-section h2 { font-size: 1.5rem; color: var(--gold); margin-bottom: 30px; display: flex; align-items: center; gap: 12px; font-weight: 800; border-bottom: 1px solid rgba(212,168,83,0.1); padding-bottom: 15px; }
+        
+        .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .info-card { background: rgba(255,255,255,0.04); padding: 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); }
+        .info-lbl { display: block; font-size: 11px; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; font-weight: 800; opacity: 0.7; }
+        .info-val { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+
+        .room-collapsible { background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid var(--glass-border); margin-bottom: 20px; overflow: hidden; }
+        .room-header { padding: 20px; background: rgba(212,168,83,0.05); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .room-prices-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; padding: 20px; background: rgba(0,0,0,0.2); }
+        .price-item { text-align: center; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); }
+
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .photo-card { position: relative; border-radius: 15px; overflow: hidden; aspect-ratio: 16/10; border: 2px solid rgba(255,255,255,0.07); transition: 0.3s; }
+        .photo-card:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .photo-card img { width: 100%; height: 100%; object-fit: cover; }
+        .photo-meta { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); display: flex; justify-content: space-between; align-items: center; }
+
+        .doc-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); padding: 20px; border-radius: 15px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+        .doc-item i { font-size: 28px; color: #ff4444; margin-right: 15px; }
+
+        .tax-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 10px; font-weight: 700; font-size: 13px; margin-right: 10px; }
+        .tax-badge.included { background: rgba(62, 207, 160, 0.1); color: var(--success); border: 1px solid rgba(62, 207, 160, 0.3); }
+        .tax-badge.excluded { background: rgba(240, 101, 101, 0.1); color: var(--error); border: 1px solid rgba(240, 101, 101, 0.3); }
+
+        .arabic-lbl { position: absolute; top: 30px; right: 30px; font-size: 13px; opacity: 0.5; font-family: 'Outfit', sans-serif; font-weight: 500; }
+        
+        /* Amenity Grouping Styles */
+        .amen-review-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        .amen-review-group { background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 15px; padding: 20px; }
+        .amen-review-title { font-size: 12px; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(212,168,83,0.1); padding-bottom: 10px; }
+        .amen-review-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .amen-review-item { background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 6px 15px; border-radius: 30px; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 13px; font-weight: 600; }
+        .amen-review-item.highlight { background: rgba(212, 168, 83, 0.12); color: var(--gold); border-color: rgba(212, 168, 83, 0.4); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <a href="apply-hotel.html" id="backArrow" class="nav-icon"><i class="fas fa-arrow-left"></i></a>
+            <div class="header-title">Application Review</div>
+            <div></div>
+        </header>
+
+        <div class="details-container">
+            <div id="backLinkWrap" class="back-nav" onclick="location.href='apply-hotel.html'">
+                <i class="fas fa-chevron-left"></i> <span id="backLink">Back to Dashboard / العودة للوحة التحكم</span>
+            </div>
+
+            <div id="loadingSec" class="text-center" style="padding: 100px 0;">
+                <i class="fas fa-circle-notch fa-spin fa-4x" style="color:var(--gold)"></i>
+                <p style="margin-top:20px; font-weight:600; opacity:0.6;">Retrieving all application data...</p>
+            </div>
+
+            <div id="mainContent" style="display:none;">
+                <div class="details-header">
+                    <div>
+                        <h1 id="viewHotelName" style="font-size: 3rem; margin-bottom: 5px;">--</h1>
+                        <p id="viewLocationSummary" style="font-size: 1.1rem; color: var(--text-secondary);"><i class="fas fa-map-marker-alt" style="color:var(--gold)"></i> --</p>
+                    </div>
+                    <div id="viewStatus" class="status-pill pending">Pending Review</div>
+                </div>
+
+                <!-- 1. Identity & Location -->
+                <div class="det-section">
+                    <span class="arabic-lbl">الهوية والموقع</span>
+                    <h2><i class="fas fa-id-card"></i> 1. Property Identity & Location</h2>
+                    <div class="info-grid">
+                        <div class="info-card"><span class="info-lbl">Property Type (نوع المنشأة)</span><div id="propType" class="info-val">--</div></div>
+                        <div class="info-card"><span class="info-lbl">Accommodation (نوع الإقامة)</span><div id="accType" class="info-val">--</div></div>
+                        <div class="info-card"><span class="info-lbl">Star Rating (النجوم)</span><div id="starRating" class="info-val">--</div></div>
+                        <div class="info-card"><span class="info-lbl">Country (البلد)</span><div id="propCountry" class="info-val">--</div></div>
+                        <div class="info-card"><span class="info-lbl">Governorate (المحافظة)</span><div id="propGov" class="info-val">--</div></div>
+                        <div class="info-card"><span class="info-lbl">City / Area (المدينة)</span><div id="propCity" class="info-val">--</div></div>
+                        <div class="info-card" style="grid-column: span 2;"><span class="info-lbl">Detailed Address (العنوان بالتفصيل)</span><div id="propAddr" class="info-val">--</div></div>
+                    </div>
+                    <div style="margin-top:25px; background:rgba(255,255,255,0.03); padding:20px; border-radius:12px;">
+                        <span class="info-lbl">Description (الوصف)</span>
+                        <p id="propDesc" style="line-height:1.7; font-size:15px; color:var(--text-secondary);">--</p>
+                    </div>
+                </div>
+
+                <!-- 2. Contacts -->
+                <div class="det-section">
+                    <span class="arabic-lbl">بيانات التواصل</span>
+                    <h2><i class="fas fa-address-book"></i> 2. Contact Personnel</h2>
+                    <div id="contactsGrid" class="info-grid">
+                        <!-- Contacts rendered here -->
+                    </div>
+                </div>
+
+                <!-- 3. Amenities -->
+                <div class="det-section">
+                    <span class="arabic-lbl">المرافق</span>
+                    <h2><i class="fas fa-list-ul"></i> 3. Property Amenities</h2>
+                    <div id="amenitiesReviewGrid" class="amen-review-grid">
+                        <!-- Grouped amenities here -->
+                    </div>
+                </div>
+
+                <!-- 4. Additional Details -->
+                <div class="det-section">
+                    <span class="arabic-lbl">بيانات إضافية</span>
+                    <h2><i class="fas fa-info-circle"></i> 4. Additional Details</h2>
+                    <div id="dynamicFieldsGrid" class="info-grid">
+                        <!-- Dynamic fields here -->
+                    </div>
+                </div>
+
+                <!-- 4. Policies -->
+                <div class="det-section">
+                    <span class="arabic-lbl">السياسات والضرائب</span>
+                    <h2><i class="fas fa-shield-alt"></i> 4. Pricing Policies & Taxes</h2>
+                    <div class="info-grid" style="margin-bottom:30px;">
+                        <div class="info-card">
+                            <span class="info-lbl">Service Charge (رسوم الخدمة)</span>
+                            <div id="polSrvVal" class="info-val">--</div>
+                        </div>
+                        <div class="info-card" style="grid-column: span 2;">
+                            <span class="info-lbl">Tax Inclusions (الضرائب المشمولة بالأسعار)</span>
+                            <div id="taxList"></div>
+                        </div>
+                        <div class="info-card">
+                            <span class="info-lbl">Cancellation Strategy (الإلغاء)</span>
+                            <div id="polStrategy" class="info-val">--</div>
+                        </div>
+                    </div>
+                    <div id="cancelRulesSec" style="background:rgba(255,255,255,0.03); padding:20px; border-radius:15px;">
+                        <span class="info-lbl">Cancellation Refund Windows</span>
+                        <div id="cancelRulesList" style="margin-top:10px;"></div>
+                    </div>
+                </div>
+
+                <!-- 5. Room Inventory -->
+                <div class="det-section">
+                    <span class="arabic-lbl">تكوين الغرف</span>
+                    <h2><i class="fas fa-door-open"></i> 5. Room Inventory & Pricing</h2>
+                    <div id="roomsList">
+                        <!-- Rooms rendered here -->
+                    </div>
+                </div>
+
+                <!-- 6. Photos & Media -->
+                <div class="det-section">
+                    <span class="arabic-lbl">الصور والميديا</span>
+                    <h2><i class="fas fa-images"></i> 6. Property Photos Gallery</h2>
+                    <div id="photosGrid" class="photo-grid">
+                        <!-- Photos rendered here -->
+                    </div>
+                </div>
+
+                <!-- 7. Legal Documents -->
+                <div class="det-section">
+                    <span class="arabic-lbl">المستندات القانونية</span>
+                    <h2><i class="fas fa-file-contract"></i> 7. Legal Documentation</h2>
+                    <div id="docsList">
+                        <!-- Documents rendered here -->
+                    </div>
+                </div>
+
+                <!-- Admin Actions Area -->
+                <div id="adminActions" class="det-section" style="display:none; border-color: var(--gold); border-width: 2px; background: rgba(212,168,83,0.05); text-align: center;">
+                    <h2 style="color: var(--gold); justify-content: center;"><i class="fas fa-gavel"></i> Admin Decision Area (مساحة قرار المشرف)</h2>
+                    <p style="margin-bottom: 30px; opacity: 0.8;">As an administrator, you can either approve this property to go live or reject it with a reason.</p>
+                    <div style="display: flex; gap: 20px; max-width: 600px; margin: 0 auto;">
+                        <button onclick="approveApp()" class="btn-primary" style="flex: 1; height: 56px; border-radius: 16px; font-size: 1rem;">Approve & Verify</button>
+                        <button onclick="showRejectModal()" class="btn-secondary" style="flex: 1; height: 56px; border-radius: 16px; border-color: #ef4444; color: #ef4444; font-size: 1rem;">Reject Application</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        async function loadAllDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const adminMode = urlParams.get('admin') === 'true';
+            const appId = urlParams.get('id');
+
+            try {
+                let endpoint = '/Hotels/my-application';
+                if (adminMode && appId) {
+                    endpoint = `/PublicHotels/${appId}`;
+                }
+
+                const res = await API.get(endpoint);
+                if (res.success && res.data) {
+                    const baseUrl = API_BASE_URL.replace('/api', '');
+                    renderFullMirror(res.data, baseUrl);
+
+                    if (adminMode && (res.data.verificationStatus === 'Pending' || !res.data.verified)) {
+                        document.getElementById('adminActions').style.display = 'block';
+                    }
+
+                    if (adminMode) {
+                        document.getElementById('backArrow').href = 'admin-dashboard.html';
+                        document.getElementById('backLinkWrap').onclick = () => location.href = 'admin-dashboard.html';
+                        document.getElementById('backLink').innerText = 'Back to Admin Dashboard';
+                    }
+                } else {
+                    alert("Application data not found.");
+                    location.href = adminMode ? 'admin-dashboard.html' : 'apply-hotel.html';
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Critical error loading details.");
+            }
+        }
+
+        async function approveApp() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            if (!confirm("Are you sure you want to approve this hotel?")) return;
+
+            const res = await API.post(`/admin/applications/${id}/approve`);
+            if (res.success) {
+                alert("Hotel approved successfully!");
+                location.reload();
+            } else {
+                alert("Failed to approve: " + res.message);
+            }
+        }
+
+        function showRejectModal() {
+            const reason = prompt("Please provide a reason for rejection:");
+            if (reason === null) return;
+            if (!reason) { alert("Reason is required."); return; }
+            rejectApp(reason);
+        }
+
+        async function rejectApp(reason) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('id');
+            const res = await API.post(`/admin/applications/${id}/reject`, { reason: reason });
+            if (res.success) {
+                alert("Application rejected.");
+                location.reload();
+            } else {
+                alert("Failed to reject: " + res.message);
+            }
+        }
+
+        function renderFullMirror(h, baseUrl) {
+            document.getElementById('loadingSec').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+
+            // Header
+            document.getElementById('viewHotelName').innerText = h.hotelName;
+            document.getElementById('viewLocationSummary').innerText = `${h.governorate || '--'}, ${h.cityArea || '--'}, ${h.country}`;
+            const b = document.getElementById('viewStatus');
+            const status = h.verificationStatus || (h.verified ? 'Verified' : 'Pending');
+            if (status === 'Verified') { b.innerText = "Approved / مقبول"; b.className = "status-pill verified"; }
+            else if (status === 'Rejected') { b.innerText = "Rejected / مرفوض"; b.className = "status-pill rejected"; }
+            else { b.innerText = "Pending / قيد المراجعة"; b.className = "status-pill pending"; }
+
+            // 1. Identity
+            document.getElementById('propType').innerText = h.propertyType;
+            document.getElementById('accType').innerText = h.accommodationType;
+            document.getElementById('starRating').innerText = h.starRating + " Stars";
+            document.getElementById('propCountry').innerText = h.country || 'Egypt';
+            document.getElementById('propGov').innerText = h.governorate || '--';
+            document.getElementById('propCity').innerText = h.cityArea || '--';
+            document.getElementById('propAddr').innerText = h.addressDetails || '--';
+            document.getElementById('propDesc').innerText = h.description || "No description provided.";
+
+            // 2. Contacts
+            const cList = document.getElementById('contactsGrid');
+            if(h.contacts && h.contacts.length) {
+                cList.innerHTML = h.contacts.map(c => `
+                    <div class="info-card">
+                        <span class="info-lbl">${c.contactType} (وسيلة الاتصال)</span>
+                        <div class="info-val">${c.contactValue}</div>
+                    </div>
+                `).join('');
+            } else { cList.innerHTML = '<div style="opacity:0.5">No contact info provided.</div>'; }
+
+            // 3. Amenities (Grouped)
+            const amCont = document.getElementById('amenitiesReviewGrid');
+            const amGroups = {};
+            (h.amenityDetails || []).forEach(a => {
+                const t = a.type || 'Other';
+                if(!amGroups[t]) amGroups[t] = [];
+                amGroups[t].push(a);
+            });
+            const sortedAmTypes = Object.keys(amGroups).sort((a,b) => a.localeCompare(b));
+
+            if(sortedAmTypes.length > 0) {
+                amCont.innerHTML = sortedAmTypes.map(type => `
+                    <div class="amen-review-group">
+                        <div class="amen-review-title"><i class="fas fa-list"></i> ${type}</div>
+                        <div class="amen-review-list">
+                            ${amGroups[type].map(a => `
+                                <div class="amen-review-item ${a.isHighlighted ? 'highlight' : ''}">
+                                    <i class="fas ${a.isHighlighted ? 'fa-star' : 'fa-check-circle'}"></i> ${a.name}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            } else { amCont.innerHTML = '<p style="opacity:0.5">No amenities assigned.</p>'; }
+            
+            // 4. Dyn Fields
+            const dfCont = document.getElementById('dynamicFieldsGrid');
+            if(h.dynamicFields && h.dynamicFields.length) {
+                dfCont.innerHTML = h.dynamicFields.map(f => `
+                    <div class="info-card" style="${f.fieldType === 'TextArea' ? 'grid-column: span 2;' : ''}">
+                        <span class="info-lbl">${f.displayName}</span>
+                        <div class="info-val" style="white-space: pre-wrap;">${f.value || '--'}</div>
+                    </div>
+                `).join('');
+            } else {
+                dfCont.innerHTML = '<p style="opacity:0.5; padding:20px; grid-column: 1/-1;">No additional details provided.</p>';
+            }
+
+            // 4. Policies
+            document.getElementById('polSrvVal').innerText = (h.policy?.serviceChargePct || 0) + "%";
+            document.getElementById('taxList').innerHTML = `
+                <span class="tax-badge ${h.policy?.includeVat ? 'included' : 'excluded'}">${h.policy?.includeVat ? 'VAT Included' : 'No VAT'}</span>
+                <span class="tax-badge ${h.policy?.includeServiceCharge ? 'included' : 'excluded'}">${h.policy?.includeServiceCharge ? 'Srv Included' : 'No Srv'}</span>
+                <span class="tax-badge ${h.policy?.includeCityTax ? 'included' : 'excluded'}">${h.policy?.includeCityTax ? 'City Tax Inc' : 'No City Tax'}</span>
+            `;
+            document.getElementById('polStrategy').innerText = h.policy?.cancellationStrategy || "N/A";
+            
+            const rulesCont = document.getElementById('cancelRulesList');
+            if(h.policy?.cancellationRules?.length) {
+                rulesCont.innerHTML = h.policy.cancellationRules.map(r => `
+                    <div style="font-size:14px; margin-bottom:12px; display:flex; align-items:center; gap:12px; color:var(--gold);">
+                        <i class="fas fa-clock"></i> Between ${r.fromHoursBeforeCheckIn}h and ${r.toHoursBeforeCheckIn}h: 
+                        <strong style="color:white; font-size:16px;">${r.penaltyPct}% Penalty</strong>
+                    </div>
+                `).join('');
+            } else { rulesCont.innerHTML = '<p style="opacity:0.6">Free cancellation at all times.</p>'; }
+
+            // 5. Rooms
+            const roomsCont = document.getElementById('roomsList');
+            roomsCont.innerHTML = h.rooms.map(r => `
+                <div class="room-collapsible">
+                    <div class="room-header">
+                        <div>
+                            <div style="font-size:1.3rem; font-weight:800; color:var(--gold);">${r.name}</div>
+                            <div style="font-size:12px; opacity:0.6; margin-top:5px;">
+                                <i class="fas fa-users"></i> Max ${r.occupancy} | <i class="fas fa-bed"></i> ${r.bedType} Bed | <i class="fas fa-cubes"></i> ${r.quantity} available
+                            </div>
+                        </div>
+                        <div style="text-align:right">
+                            <span style="font-size:10px; opacity:0.6; display:block;">Starting (RO)</span>
+                            <span style="font-size:1.5rem; font-weight:900; color:var(--success)">$${r.roPrice}</span>
+                        </div>
+                    </div>
+                    <div class="room-prices-grid">
+                        <div class="price-item"><span class="info-lbl" style="font-size:9px">Room Only</span><div style="font-weight:700">$${r.roPrice||'--'}</div></div>
+                        <div class="price-item"><span class="info-lbl" style="font-size:9px">Breakfast (BB)</span><div style="font-weight:700">$${r.bbPrice||'--'}</div></div>
+                        <div class="price-item"><span class="info-lbl" style="font-size:9px">Half Board (HB)</span><div style="font-weight:700">$${r.hbPrice||'--'}</div></div>
+                        <div class="price-item"><span class="info-lbl" style="font-size:9px">Full Board (FB)</span><div style="font-weight:700">$${r.fbPrice||'--'}</div></div>
+                        <div class="price-item"><span class="info-lbl" style="font-size:9px">All Inclusive (AI)</span><div style="font-weight:700">$${r.aiPrice||'--'}</div></div>
+                    </div>
+                </div>
+            `).join('');
+
+            // 6. Photos
+            const pCont = document.getElementById('photosGrid');
+            if(h.images && h.images.length) {
+                pCont.innerHTML = h.images.map(img => {
+                    const iUrl = (img.imageUrl && img.imageUrl.startsWith('/')) ? `${baseUrl}${img.imageUrl}` : img.imageUrl;
+                    return `
+                        <div class="photo-card" onclick="window.open('${iUrl}','_blank')">
+                            <img src="${iUrl}" alt="${img.caption}" onerror="this.src='https://placehold.co/400x300?text=Image+Not+Found'">
+                            <div class="photo-meta">
+                                <span style="font-size:10px; font-weight:700; background:rgba(212,168,83,0.8); color:black; padding:2px 8px; border-radius:5px;">RANK: ${img.sortOrder}</span>
+                                ${img.isPrimary ? '<i class="fas fa-star" title="Main Photo" style="color:var(--gold)"></i>' : ''}
+                            </div>
+                            ${img.caption ? `<div style="position:absolute; top:10px; left:10px; background:rgba(0,0,0,0.6); font-size:10px; padding:3px 10px; border-radius:5px;">${img.caption}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            } else { pCont.innerHTML = '<p style="opacity:0.5; padding:20px;">No photos uploaded.</p>'; }
+
+            // 7. Docs
+            const dCont = document.getElementById('docsList');
+            let dHtml = '';
+            if(h.addressProofUrl) {
+                const u = h.addressProofUrl.startsWith('/') ? `${baseUrl}${h.addressProofUrl}` : h.addressProofUrl;
+                dHtml += `
+                    <div class="doc-item">
+                        <div style="display:flex; align-items:center;">
+                            <i class="far fa-file-pdf"></i>
+                            <div>
+                                <div style="font-weight:700; color:white;">Address Proof / Contract</div>
+                                <div style="font-size:11px; opacity:0.6;">Required for verification</div>
+                            </div>
+                        </div>
+                        <a href="${u}" download class="btn-primary" style="letter-spacing:0; height:auto; padding:10px 20px;"><i class="fas fa-download"></i> Download</a>
+                    </div>
+                `;
+            }
+            (h.documents || []).forEach(d => {
+                const u = d.fileUrl.startsWith('/') ? `${baseUrl}${d.fileUrl}` : d.fileUrl;
+                dHtml += `
+                    <div class="doc-item">
+                        <div style="display:flex; align-items:center;">
+                            <i class="far fa-file-pdf"></i>
+                            <div>
+                                <div style="font-weight:700; color:white;">${d.documentTypeName}</div>
+                                <div style="font-size:11px; opacity:0.6;">Legal Document</div>
+                            </div>
+                        </div>
+                        <a href="${u}" download class="btn-primary" style="letter-spacing:0; height:auto; padding:10px 20px;"><i class="fas fa-download"></i> Download</a>
+                    </div>
+                `;
+            });
+            dCont.innerHTML = dHtml || '<p style="opacity:0.5; padding:20px;">No documents uploaded.</p>';
+        }
+
+        loadAllDetails();
+    </script>
+</body>
+</html>
