@@ -1,4 +1,4 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.Booking;
@@ -24,6 +24,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
         
         // Get user's bookings (all statuses or specific status)
         Task<List<BookingResponseDto>> GetUserBookingsAsync(long userId, BookingStatus? status = null);
+        Task<List<BookingResponseDto>> GetUserTripsAsync(long userId, string tab);
         Task<BookingResponseDto> GetBookingByIdAsync(long userId, long bookingId);
         
         // Admin - Get all bookings

@@ -1,4 +1,5 @@
 using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 using UserAuthorizationandAuthentication.Airline.DTOs.Chat;
 
 namespace UserAuthorizationandAuthentication.Airline.Services.ChatService

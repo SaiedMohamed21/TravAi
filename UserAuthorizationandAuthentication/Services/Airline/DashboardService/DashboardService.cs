@@ -1,4 +1,5 @@
 using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 using Microsoft.EntityFrameworkCore;
 
 using UserAuthorizationandAuthentication.Airline.DTOs.Dashboard;

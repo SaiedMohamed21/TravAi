@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.Airline.DTOs.Chat;
 using UserAuthorizationandAuthentication.Airline.Services.ChatService;
 

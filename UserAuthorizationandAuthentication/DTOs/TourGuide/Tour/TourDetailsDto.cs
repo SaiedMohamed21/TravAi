@@ -58,6 +58,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Tour
 
     public class TourGuideInfoDto
     {
+        public long Id { get; set; }
         public string Name { get; set; }
         public string? Image { get; set; }
         public List<string> Languages { get; set; } = new List<string>();

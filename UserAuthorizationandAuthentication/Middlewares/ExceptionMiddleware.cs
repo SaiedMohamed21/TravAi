@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
+using UserAuthorizationandAuthentication.Models.Common;
 
 namespace UserAuthorizationandAuthentication.Middlewares
 {
@@ -27,22 +29,33 @@ namespace UserAuthorizationandAuthentication.Middlewares
             {
                 _logger.LogError(ex, ex.Message);
                 context.Response.ContentType = "application/json";
-                context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-                var response = _env.IsDevelopment()
-                    ? new ApiResponse<string>(false, ex.Message, new List<string> { ex.StackTrace?.ToString() })
-                    : new ApiResponse<string>(false, "Internal Server Error. Please contact support.", null);
                 
-                // Handle specific exceptions if needed (e.g. key not found -> 404)
-                if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)) 
+                var response = new ApiResponse<string>(
+                    success: false, 
+                    message: ex.Message, 
+                    errors: new List<string>()
+                );
+
+                if (ex is AppException appEx)
+                {
+                    context.Response.StatusCode = (int)appEx.StatusCode;
+                }
+                else if (ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase)) 
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.NotFound;
-                    response.Message = ex.Message;
                 }
                 else if (ex.Message.Contains("registered", StringComparison.OrdinalIgnoreCase) || ex.Message.Contains("Invalid", StringComparison.OrdinalIgnoreCase))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                    response.Message = ex.Message;
+                }
+                else
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                    if (_env.IsDevelopment())
+                    {
+                        response.Errors.Add(ex.InnerException?.Message ?? "No Inner Exception");
+                        response.Errors.Add(ex.StackTrace ?? "");
+                    }
                 }
 
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };

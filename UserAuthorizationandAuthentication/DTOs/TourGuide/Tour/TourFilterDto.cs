@@ -1,4 +1,4 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using System;
 
 namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Tour

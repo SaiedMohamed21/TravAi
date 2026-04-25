@@ -1,11 +1,14 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using Microsoft.EntityFrameworkCore;
+using UserAuthorizationandAuthentication.Data;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.UrgentRequest;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
 using PaymentStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.PaymentStatus;

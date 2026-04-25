@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace UserAuthorizationandAuthentication.Airline.Models.Airlines
 {
@@ -8,6 +9,7 @@ namespace UserAuthorizationandAuthentication.Airline.Models.Airlines
 
         public long FlightId { get; set; }
         [ForeignKey("FlightId")]
+        [JsonIgnore]
         public Flight Flight { get; set; } = null!;
 
         public int LayoverOrder { get; set; } 

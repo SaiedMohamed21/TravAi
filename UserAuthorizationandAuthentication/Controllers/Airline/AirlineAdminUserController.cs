@@ -2,8 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.Models.Enums;
+using UserAuthorizationandAuthentication.Data;
+using UserAuthorizationandAuthentication.DTOs.AdminManagement;
+using UserAuthorizationandAuthentication.Models.Auth;
+
 
 namespace UserAuthorizationandAuthentication.Airline.Controllers
 {

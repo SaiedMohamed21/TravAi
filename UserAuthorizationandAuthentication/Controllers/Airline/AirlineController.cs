@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.Data;
+
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.Airline.Models.Airlines;
 using UserAuthorizationandAuthentication.Airline.DTOs.Airline;
 using UserAuthorizationandAuthentication.Models.Enums;
@@ -57,7 +60,7 @@ namespace UserAuthorizationandAuthentication.Airline.Controllers
         public async Task<IActionResult> GetAll()
         {
             var airlines = await _context.Airlines
-                .Select(a => new { a.Id, a.Name, a.Country, a.LogoUrl })
+                .Select(a => new { id = a.Id, name = a.Name, country = a.Country, logoUrl = a.LogoUrl })
                 .ToListAsync();
 
             return Ok(new ApiResponse<object>(airlines));

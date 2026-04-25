@@ -123,8 +123,11 @@ async function register(userData) {
 }
 
 function logout() {
-    localStorage.clear();
-    location.reload();
+    localStorage.removeItem('token');
+    localStorage.removeItem('userValues');
+    localStorage.removeItem('role');
+    localStorage.removeItem('userId');
+    window.location.href = '/auth/login.html';
 }
 
 function updateUIForAuth() {
@@ -1115,14 +1118,7 @@ async function showETicket(bookingId) {
 }
 
 function showAuth() {
-    const modalBody = document.getElementById('modal-body');
-    modalBody.innerHTML = `
-        <input type="email" id="login-email" placeholder="Email">
-        <input type="password" id="login-pass" placeholder="Password">
-        <button class="btn" onclick="login(document.getElementById('login-email').value, document.getElementById('login-pass').value)">Login</button>
-        <p style="text-align:center; margin-top:15px; cursor:pointer; color:var(--primary)" onclick="showRegisterForm()">Create a new account</p>
-    `;
-    showModal('Member Access');
+    window.location.href = '/auth/login.html';
 }
 
 function showRegisterForm() {

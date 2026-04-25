@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.Airline.DTOs.Review;
 using UserAuthorizationandAuthentication.Airline.Services.ReviewService;
 

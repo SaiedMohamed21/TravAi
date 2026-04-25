@@ -1,4 +1,4 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using TourGuide = UserAuthorizationandAuthentication.TourGuide.Models.TourGuide;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,6 +19,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
         Task<bool> UpdateLicenseAsync(long tourGuideId, UpdateLicenseDto model);
         Task<bool> UpdateProfileAsync(long tourGuideId, UpdateProfileDto model);
         Task<List<ReviewDto>> GetTourGuideReviewsAsync(long tourGuideId);
+        Task<TourGuideProfileDto> GetProfileAsync(long id);
     }
 }
 

@@ -1,4 +1,5 @@
 using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 using UserAuthorizationandAuthentication.Airline.DTOs.Passenger;
 
 namespace UserAuthorizationandAuthentication.Airline.Services.PassengerService

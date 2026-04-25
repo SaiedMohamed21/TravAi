@@ -1,4 +1,3 @@
-using UserAuthorizationandAuthentication;
 using UserAuthorizationandAuthentication.Airline.DTOs.Flight;
 
 namespace UserAuthorizationandAuthentication.Airline.Services.FlightService
@@ -12,6 +11,3 @@ namespace UserAuthorizationandAuthentication.Airline.Services.FlightService
         Task CancelAsync(long id);
     }
 }
-
-
-

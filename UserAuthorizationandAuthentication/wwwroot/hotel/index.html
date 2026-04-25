@@ -20,7 +20,7 @@
                 <div class="header-title">Lumière Egypt</div>
             </div>
             <div class="header-actions">
-                <a href="login.html" id="authIcon" class="nav-icon" title="Login">
+                <a href="/auth/login.html" id="authIcon" class="nav-icon" title="Login">
                     <i class="far fa-user-circle"></i>
                 </a>
                 <div id="userMenu" class="user-menu-container" style="display: none;">
@@ -398,6 +398,7 @@
 
             menuItems += `
                 <a href="my-bookings.html"><i class="fas fa-calendar-check"></i> My Bookings</a>
+                <a href="../my-trips.html"><i class="fas fa-suitcase"></i> My Trips</a>
                 <hr style="border:0; border-top:1px solid var(--glass-border); margin:10px 0;">
                 <a href="#" onclick="Auth.logout(); return false;" style="color: var(--error);"><i class="fas fa-sign-out-alt"></i> Logout</a>
             `;

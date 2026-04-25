@@ -1,12 +1,15 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using TourGuide = UserAuthorizationandAuthentication.TourGuide.Models.TourGuide;
 using Microsoft.EntityFrameworkCore;
+using UserAuthorizationandAuthentication.Data;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.Review;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
 
@@ -297,6 +300,32 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 Comment = r.Comment,
                 CreatedAt = r.CreatedAt
             }).ToList();
+        }
+
+        public async Task<TourGuideProfileDto> GetProfileAsync(long id)
+        {
+            var guide = await _context.TourGuides
+                .Include(tg => tg.User)
+                .Include(tg => tg.TourGuideLanguages)
+                .FirstOrDefaultAsync(tg => tg.Id == id);
+
+            if (guide == null) return null;
+
+            // Calculate rating and reviews count from tours
+            var tours = await _context.Tours.Where(t => t.TourGuideId == id).ToListAsync();
+            decimal avgRating = tours.Where(t => t.Rating.HasValue).Any() ? tours.Average(t => t.Rating.Value) : 0;
+            int totalReviews = tours.Sum(t => t.NumberOfReviews ?? 0);
+
+            return new TourGuideProfileDto
+            {
+                Id = guide.Id,
+                Name = guide.Name,
+                Image = guide.User?.ProfilePic,
+                Languages = guide.TourGuideLanguages.Select(l => l.Language.ToString()).ToList(),
+                Rating = Math.Round(avgRating, 1),
+                ReviewsCount = totalReviews,
+                ExperienceYears = guide.ExperienceYears
+            };
         }
 
         private async Task<TourGuideResponseDto> MapToDto(UserAuthorizationandAuthentication.TourGuide.Models.TourGuide tg)

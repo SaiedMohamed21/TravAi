@@ -1,5 +1,6 @@
 using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -66,6 +67,3 @@ namespace UserAuthorizationandAuthentication.TourGuide.Models
         public ICollection<TourImage> TourImages { get; set; } = new List<TourImage>();
     }
 }
-
-
-

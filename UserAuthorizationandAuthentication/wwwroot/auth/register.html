@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Register</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card fade-in-up">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join us and start booking amazing stays</p>
+            </div>
+
+            <form onsubmit="handleRegister(event)">
+                <div class="input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label class="input-label">Full Name</label>
+                        <div class="input-group">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="name" class="input-field" placeholder="John Doe" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="input-label">Username</label>
+                        <div class="input-group">
+                            <i class="fas fa-at"></i>
+                            <input type="text" id="username" class="input-field" placeholder="johndoe" required>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="input-label">Email Address</label>
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" class="input-field" placeholder="you@example.com" required>
+                </div>
+
+                <div class="input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label class="input-label">Password</label>
+                        <div class="input-group">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" class="input-field" placeholder="••••••••" required
+                                minlength="8" maxlength="50">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="input-label">Phone Number</label>
+                        <div class="input-group">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="phoneNumber" class="input-field" placeholder="1234567890" required
+                                minlength="10" maxlength="15">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label class="input-label">Date of Birth</label>
+                        <div class="input-group">
+                            <i class="fas fa-calendar"></i>
+                            <input type="date" id="dob" class="input-field" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="input-label">Gender</label>
+                        <div class="input-group">
+                            <i class="fas fa-venus-mars"></i>
+                            <select id="gender" class="input-field" required style="appearance: none; background: transparent; border: none; width: 100%; color: var(--text-main);">
+                                <option value="" disabled selected hidden>Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; margin-top: 24px;">
+                    Create Account
+                </button>
+
+                <div id="message" style="text-align: center; margin-top: 16px;"></div>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="login.html">Sign In</a>
+                <br><br>
+                <a href="../index.html" style="color: var(--text-muted);">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const dateOfBirth = document.getElementById('dob').value;
+            const gender = document.getElementById('gender').value;
+            
+            const msgDiv = document.getElementById('message');
+            const btn = e.target.querySelector('button[type="submit"]');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating account...';
+            msgDiv.textContent = '';
+
+            const res = await API.post('/Users/register', { 
+                name, 
+                userName: username, 
+                email, 
+                password,
+                phoneNumber,
+                dateOfBirth,
+                gender
+            });
+
+            if (res.success) {
+                msgDiv.style.color = 'var(--success)';
+                msgDiv.innerHTML = '<i class="fas fa-check-circle"></i> Account created! Redirecting to login...';
+
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            } else {
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+                msgDiv.style.color = 'var(--error)';
+                
+                let errorMsg = res.message || 'Registration failed';
+                if (res.errors && res.errors.length > 0) {
+                    errorMsg += ': ' + res.errors.join(', ');
+                } else if (typeof res.errors === 'object' && Object.keys(res.errors).length > 0) {
+                    // Handle ASP.NET Core Validation errors object
+                    errorMsg += ': ' + Object.entries(res.errors).map(([key, value]) => `${key}: ${value}`).join(', ');
+                }
+                
+                msgDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + errorMsg;
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,11 +1,14 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using Microsoft.EntityFrameworkCore;
+using UserAuthorizationandAuthentication.Data;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.Booking;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
 using PaymentStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.PaymentStatus;
@@ -320,6 +323,31 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
             return (confirmedParticipants + participantsCount) <= tour.GroupSizeMax.Value;
         }
 
+        public async Task<List<BookingResponseDto>> GetUserTripsAsync(long userId, string tab)
+        {
+            var query = _context.TourBookings
+                .Include(b => b.Tour)
+                .Include(b => b.TourGuide)
+                .Include(b => b.Participants)
+                .Where(b => b.UserId == userId)
+                .AsQueryable();
+
+            if (tab == "upcoming")
+                query = query.Where(b => b.Status != BookingStatus.Cancelled && b.TourDate.HasValue && b.TourDate.Value > DateTime.UtcNow);
+            else if (tab == "past")
+                query = query.Where(b => b.Status != BookingStatus.Cancelled && b.TourDate.HasValue && b.TourDate.Value <= DateTime.UtcNow);
+            else if (tab == "cancelled")
+                query = query.Where(b => b.Status == BookingStatus.Cancelled);
+
+            var bookings = await query.OrderByDescending(b => b.TourDate).ToListAsync();
+            var dtos = new List<BookingResponseDto>();
+            foreach (var booking in bookings)
+            {
+                dtos.Add(await MapToDto(booking));
+            }
+            return dtos;
+        }
+
         private async Task<BookingResponseDto> MapToDto(TourBooking booking)
         {
             if (booking.Tour == null)
@@ -330,6 +358,8 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 await _context.Entry(booking).Reference(b => b.TourGuide).LoadAsync();
             if (!booking.Participants.Any())
                 await _context.Entry(booking).Collection(b => b.Participants).LoadAsync();
+
+            var tourDate = booking.TourDate ?? DateTime.Now;
 
             return new BookingResponseDto
             {
@@ -351,6 +381,10 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 Status = booking.Status,
                 CreatedAt = booking.CreatedAt,
                 UpdatedAt = booking.UpdatedAt,
+                PrimaryImageUrl = booking.Tour?.TourImages?.FirstOrDefault()?.ImageUrl,
+                UiBadge = booking.Status == BookingStatus.Cancelled ? "Cancelled" : (tourDate > DateTime.UtcNow ? "Upcoming" : "Completed"),
+                CanCancel = booking.Status != BookingStatus.Cancelled && tourDate > DateTime.UtcNow.AddHours(48),
+                CanReview = booking.Status == BookingStatus.Completed || (booking.Status == BookingStatus.Confirmed && tourDate <= DateTime.UtcNow),
                 Participants = booking.Participants.Select(p => new ParticipantResponseDto
                 {
                     Id = p.Id,

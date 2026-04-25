@@ -1,8 +1,10 @@
 using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 using Microsoft.EntityFrameworkCore;
 
 using UserAuthorizationandAuthentication.Airline.DTOs.Companion;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Airline.Models;
 
 namespace UserAuthorizationandAuthentication.Airline.Services.CompanionService

@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travai Unified Platform</title>
+    <script>
+        // Check authentication before page renders
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'auth/login.html';
+        }
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -177,7 +183,15 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <header style="position: relative;">
+            <div style="position: absolute; top: -20px; right: 0;">
+                <button onclick="localStorage.removeItem('token'); window.location.reload();" 
+                        style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s;"
+                        onmouseover="this.style.background='#ef4444'; this.style.color='white';"
+                        onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';">
+                    Logout
+                </button>
+            </div>
             <h1>Travai Unified</h1>
             <p class="subtitle">Experience the future of travel management. Consolidated hotels, airlines, and expert guide services in one powerful platform.</p>
         </header>
@@ -205,6 +219,22 @@
                 <h2>TourGuide & APIs</h2>
                 <p>Access our powerful API ecosystem and expert tour guide management services directly via Swagger.</p>
                 <div class="btn">Open Swagger</div>
+            </a>
+
+            <!-- My Trips -->
+            <a href="my-trips.html" class="card">
+                <div class="icon-box">🧳</div>
+                <h2>My Trips</h2>
+                <p>View your upcoming adventures, past journeys, and manage your bookings across all services.</p>
+                <div class="btn">View My Trips</div>
+            </a>
+
+            <!-- API Docs -->
+            <a href="my-trips-docs.html" class="card">
+                <div class="icon-box">📝</div>
+                <h2>API Docs</h2>
+                <p>Detailed documentation for the My Trips integration, including endpoints, parameters, and response structures.</p>
+                <div class="btn">View Docs</div>
             </a>
         </div>
     </div>

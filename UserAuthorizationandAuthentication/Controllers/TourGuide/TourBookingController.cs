@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.Booking;
 using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
 using UserAuthorizationandAuthentication.TourGuide.Services;
@@ -126,6 +127,16 @@ namespace UserAuthorizationandAuthentication.TourGuide.Controllers
 
             var bookings = await _bookingService.GetUserBookingsAsync(userId, status);
             return Ok(bookings);
+        }
+
+        [HttpGet("my-trips")]
+        public async Task<IActionResult> GetMyTrips([FromQuery] string tab)
+        {
+            var userId = GetUserIdFromToken();
+            if (userId == 0) return Unauthorized();
+
+            var result = await _bookingService.GetUserTripsAsync(userId, tab);
+            return Ok(new ApiResponse<List<BookingResponseDto>>(result, $"Retrieved {tab} tour trips."));
         }
 
         /// <summary>

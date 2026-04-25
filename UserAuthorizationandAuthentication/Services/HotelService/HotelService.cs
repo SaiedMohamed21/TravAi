@@ -1,7 +1,11 @@
 using Microsoft.EntityFrameworkCore;
+using UserAuthorizationandAuthentication.Data;
+
 using UserAuthorizationandAuthentication.DTOs.Hotel;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.Models.Hotels;
 using UserAuthorizationandAuthentication.Models.Hotels.Bookings;
@@ -1164,22 +1168,49 @@ namespace UserAuthorizationandAuthentication.Services.HotelService
             };
         }
 
+        public async Task<List<BookingDto>> GetUserTripsAsync(long userId, string tab)
+        {
+            var query = _context.HotelBookings
+                .Include(b => b.Hotel).ThenInclude(h => h.Images)
+                .Include(b => b.BookingRooms)
+                .Where(b => b.UserId == userId)
+                .AsQueryable();
+
+            if (tab == "upcoming")
+                query = query.Where(b => b.Status != BookingStatus.Cancelled && b.CheckInDate.HasValue && b.CheckInDate.Value > DateTime.UtcNow);
+            else if (tab == "past")
+                query = query.Where(b => b.Status != BookingStatus.Cancelled && b.CheckOutDate.HasValue && b.CheckOutDate.Value <= DateTime.UtcNow);
+            else if (tab == "cancelled")
+                query = query.Where(b => b.Status == BookingStatus.Cancelled);
+
+            var bookings = await query.OrderByDescending(b => b.CheckInDate).ToListAsync();
+            return bookings.Select(MapBookingToDto).ToList();
+        }
+
         private static BookingDto MapBookingToDto(HotelBooking booking)
         {
+            var checkInDate = booking.CheckInDate ?? DateTime.Now;
+            var checkOutDate = booking.CheckOutDate ?? DateTime.Now;
+            
             var dto = new BookingDto
             {
                 Id = booking.Id,
                 HotelId = booking.HotelId,
                 HotelName = booking.Hotel?.HotelName ?? "Unknown Hotel",
                 PropertyType = booking.Hotel?.PropertyType.ToString() ?? "Hotel",
-                CheckInDate = booking.CheckInDate ?? DateTime.MinValue,
-                CheckOutDate = booking.CheckOutDate ?? DateTime.MinValue,
+                CheckInDate = checkInDate,
+                CheckOutDate = checkOutDate,
                 Nights = booking.Nights ?? 0,
                 TotalRooms = booking.TotalRooms,
                 TotalPrice = booking.TotalPrice,
                 PaymentStatus = booking.PaymentStatus.ToString(),
                 Status = booking.Status.ToString(),
                 CreatedAt = booking.CreatedAt,
+                ImageUrl = booking.Hotel?.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? booking.Hotel?.Images?.FirstOrDefault()?.ImageUrl,
+                RoomName = booking.BookingRooms?.FirstOrDefault()?.RoomName ?? "Various Rooms",
+                CanCancel = booking.Status != BookingStatus.Cancelled && checkInDate > DateTime.UtcNow.AddDays(2),
+                CanReview = booking.Status == BookingStatus.Completed || (booking.Status == BookingStatus.Confirmed && checkOutDate <= DateTime.UtcNow),
+                CanRebook = checkOutDate <= DateTime.UtcNow || booking.Status == BookingStatus.Cancelled,
                 Rooms = booking.BookingRooms?.Select(br => new BookingRoomDto
                 {
                     RoomId = br.RoomId ?? 0,

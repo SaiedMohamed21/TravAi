@@ -1,4 +1,4 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using System.ComponentModel.DataAnnotations;
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.TourGuide.Models.Enums;

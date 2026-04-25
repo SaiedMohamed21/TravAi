@@ -11,6 +11,7 @@ namespace UserAuthorizationandAuthentication.Services.FileStorage
     {
         Task<string?> SaveHotelImageAsync(IFormFile? file);
         Task<string?> SaveHotelDocumentAsync(IFormFile? file);
+        Task<string?> SaveProfileImageAsync(IFormFile? file);
     }
 
     public class FileService : IFileService
@@ -26,12 +27,17 @@ namespace UserAuthorizationandAuthentication.Services.FileStorage
 
         public async Task<string?> SaveHotelImageAsync(IFormFile? file)
         {
-            return await SaveFileInternalAsync(file, "images", "hotelimg", AllowedImageExtensions);
+            return await SaveFileInternalAsync(file, "hotels/images", "hotelimg", AllowedImageExtensions);
         }
 
         public async Task<string?> SaveHotelDocumentAsync(IFormFile? file)
         {
-            return await SaveFileInternalAsync(file, "documents", "hoteldoc", AllowedDocExtensions);
+            return await SaveFileInternalAsync(file, "hotels/documents", "hoteldoc", AllowedDocExtensions);
+        }
+
+        public async Task<string?> SaveProfileImageAsync(IFormFile? file)
+        {
+            return await SaveFileInternalAsync(file, "profiles", "profile", AllowedImageExtensions);
         }
 
         private async Task<string?> SaveFileInternalAsync(IFormFile? file, string subFolder, string prefix, string[] allowedExtensions)
@@ -43,7 +49,7 @@ namespace UserAuthorizationandAuthentication.Services.FileStorage
                 throw new Exception($"File type {ext} not allowed for {subFolder}.");
 
             // Define absolute path
-            var baseFolder = Path.Combine(_env.WebRootPath, "uploads", "hotels", subFolder);
+            var baseFolder = Path.Combine(_env.WebRootPath, "uploads", subFolder);
             if (!Directory.Exists(baseFolder))
                 Directory.CreateDirectory(baseFolder);
 
@@ -57,7 +63,7 @@ namespace UserAuthorizationandAuthentication.Services.FileStorage
             }
 
             // Return relative URL for DB
-            return $"/uploads/hotels/{subFolder}/{uniqueName}";
+            return $"/uploads/{subFolder}/{uniqueName}";
         }
     }
 }

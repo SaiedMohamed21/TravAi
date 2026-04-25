@@ -1,4 +1,4 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 namespace UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide
 {
     public class UpdateLicenseDto

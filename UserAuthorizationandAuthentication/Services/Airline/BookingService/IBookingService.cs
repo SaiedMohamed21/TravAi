@@ -1,4 +1,5 @@
 using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 using UserAuthorizationandAuthentication.Airline.DTOs.Booking;
 
 namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
@@ -7,6 +8,7 @@ namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
     {
         Task<BookingResponseDto> BookFlightAsync(long userId, BookingRequestDto dto);
         Task<List<BookingResponseDto>> GetUserBookingsAsync(long userId);
+        Task<List<BookingResponseDto>> GetUserTripsAsync(long userId, string tab);
         Task<List<BookingResponseDto>> GetFlightBookingsAsync(long flightId);
         Task<List<BookingResponseDto>> GetAllBookingsAsync();
         Task<BookingResponseDto?> GetByIdAsync(long bookingId);

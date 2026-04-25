@@ -47,6 +47,7 @@ namespace UserAuthorizationandAuthentication.Services.HotelService
         // 8. Bookings
         Task<BookingDto> CreateBookingAsync(long userId, CreateBookingRequest request);
         Task<List<BookingDto>> GetMyBookingsAsync(long userId); // For regular users
+        Task<List<BookingDto>> GetUserTripsAsync(long userId, string tab);
         Task<List<BookingDto>> GetHotelBookingsAsync(long userId, long hotelId); // For hotel owners
         Task<BookingDto> GetBookingByIdAsync(long userId, long bookingId);
         Task<bool> CancelBookingAsync(long userId, long bookingId);

@@ -1,4 +1,4 @@
-﻿using UserAuthorizationandAuthentication.TourGuide.Models;
+using UserAuthorizationandAuthentication.TourGuide.Models;
 using System;
 using System.Collections.Generic;
 using UserAuthorizationandAuthentication.Models.Enums;
@@ -28,6 +28,10 @@ namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Booking
         public BookingStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public string? PrimaryImageUrl { get; set; }
+        public string? UiBadge { get; set; }
+        public bool CanCancel { get; set; }
+        public bool CanReview { get; set; }
 
         public List<ParticipantResponseDto> Participants { get; set; } = new List<ParticipantResponseDto>();
     }

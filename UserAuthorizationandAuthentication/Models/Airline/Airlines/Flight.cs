@@ -1,6 +1,8 @@
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using System.ComponentModel.DataAnnotations.Schema;
+
 namespace UserAuthorizationandAuthentication.Airline.Models.Airlines
 {
     public class Flight
@@ -8,28 +10,32 @@ namespace UserAuthorizationandAuthentication.Airline.Models.Airlines
         public long Id { get; set; }
 
         [ForeignKey("DepartureAirport")]
-        public string DepartureAirportCode { get; set; } = null!;
-        public Airport DepartureAirport { get; set; } = null!;
+        public string? DepartureAirportCode { get; set; }
+        public Airport? DepartureAirport { get; set; }
 
         [ForeignKey("ArrivalAirport")]
-        public string ArrivalAirportCode { get; set; } = null!;
-        public Airport ArrivalAirport { get; set; } = null!;
+        public string? ArrivalAirportCode { get; set; }
+        public Airport? ArrivalAirport { get; set; }
 
-        public DateTime DepartureTime { get; set; }
-        public DateTime ArrivalTime { get; set; }
+        public DateTime? DepartureTime { get; set; }
+        public DateTime? ArrivalTime { get; set; }
 
-        public decimal Price { get; set; }
-        public int AvailableSeats { get; set; }
+        public decimal? Price { get; set; }
+        public int? AvailableSeats { get; set; } = 100;
 
-        public long AirlineId { get; set; }
-        public Airline Airline { get; set; } = null!;
+        public long? AirlineId { get; set; }
+        public Airline? Airline { get; set; }
 
-        public int NumberOfStops { get; set; } = 0; // 0 = Direct, 1 = 1 Stop, etc.
+        public int? NumberOfStops { get; set; }
         public string? FlightNumber { get; set; }
         public string? DestinationImageUrl { get; set; }
-        public string? FlightClass { get; set; } // Economy, Business, PremiumEconomy
+        public string? FlightClass { get; set; }
+        public string Currency { get; set; } = "USD";
+        
+        public string? Duration { get; set; }
+        public int? DurationMinutes { get; set; }
 
-        public string Status { get; set; } = "Active"; // Active, Cancelled, Delayed
+        public string Status { get; set; } = "Active";
 
         public long? CreatedByUserId { get; set; }
         [ForeignKey("CreatedByUserId")]
@@ -39,5 +45,3 @@ namespace UserAuthorizationandAuthentication.Airline.Models.Airlines
         public ICollection<FlightLayover> Layovers { get; set; } = new List<FlightLayover>();
     }
 }
-
-

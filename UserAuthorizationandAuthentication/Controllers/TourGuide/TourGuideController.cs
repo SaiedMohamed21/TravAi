@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -146,6 +146,18 @@ namespace UserAuthorizationandAuthentication.TourGuide.Controllers
         {
             var reviews = await _service.GetTourGuideReviewsAsync(id);
             return Ok(reviews);
+        }
+
+        /// <summary>
+        /// Get full profile information for a specific tour guide
+        /// </summary>
+        [AllowAnonymous]
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProfile(long id)
+        {
+            var profile = await _service.GetProfileAsync(id);
+            if (profile == null) return NotFound("Tour Guide profile not found.");
+            return Ok(profile);
         }
     }
 }

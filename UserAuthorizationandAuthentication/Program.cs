@@ -1,10 +1,12 @@
 using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 using UserAuthorizationandAuthentication.Middlewares;
 using Microsoft.EntityFrameworkCore;
 using UserAuthorizationandAuthentication.Repositories.GenericRepository;
 
 using UserAuthorizationandAuthentication.Repositories.UserRepository;
 using UserAuthorizationandAuthentication.Services;
+using UserAuthorizationandAuthentication.Services.Auth;
 // Final sync after manual drop
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -23,13 +25,15 @@ builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepositor
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ISecurityService, SecurityService>();
+
 builder.Services.AddScoped<UserAuthorizationandAuthentication.Services.HotelService.IHotelService, UserAuthorizationandAuthentication.Services.HotelService.HotelService>();
 builder.Services.AddScoped<UserAuthorizationandAuthentication.Services.FileStorage.IFileService, UserAuthorizationandAuthentication.Services.FileStorage.FileService>();
 
 // --- Airline Services ---
 builder.Services.AddScoped<UserAuthorizationandAuthentication.Airline.Services.AirportService.IAirportService, UserAuthorizationandAuthentication.Airline.Services.AirportService.AirportService>();
 builder.Services.AddScoped<UserAuthorizationandAuthentication.Airline.Services.BookingService.IBookingService, UserAuthorizationandAuthentication.Airline.Services.BookingService.BookingService>();
-builder.Services.AddScoped<UserAuthorizationandAuthentication.Airline.Services.ChatService.IChatService, UserAuthorizationandAuthentication.Airline.Services.ChatService.ChatService>();
+
 builder.Services.AddScoped<UserAuthorizationandAuthentication.Airline.Services.CompanionService.ICompanionService, UserAuthorizationandAuthentication.Airline.Services.CompanionService.CompanionService>();
 builder.Services.AddScoped<UserAuthorizationandAuthentication.Airline.Services.DashboardService.IDashboardService, UserAuthorizationandAuthentication.Airline.Services.DashboardService.DashboardService>();
 builder.Services.AddScoped<UserAuthorizationandAuthentication.Airline.Services.FlightService.IFlightService, UserAuthorizationandAuthentication.Airline.Services.FlightService.FlightService>();
@@ -85,7 +89,12 @@ builder.Services.AddAuthorization(options =>
     // Add more policies as needed
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

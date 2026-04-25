@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trip Unified API Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0a0f1d;
+            --bg-card: #161e31;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --primary: #6366f1;
+            --accent: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --method-get: #3b82f6;
+            --method-post: #10b981;
+            --method-put: #f59e0b;
+            --method-delete: #ef4444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: rgba(22, 30, 49, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 30px 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-title {
+            padding: 24px 24px 10px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .endpoint-link {
+            padding: 14px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .endpoint-link:hover, .endpoint-link.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-left-color: var(--primary);
+        }
+
+        .method-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 3px 6px;
+            border-radius: 4px;
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .method-GET { background: rgba(59, 130, 246, 0.15); color: var(--method-get); }
+        .method-POST { background: rgba(16, 185, 129, 0.15); color: var(--method-post); }
+        .method-PUT { background: rgba(245, 158, 11, 0.15); color: var(--method-put); }
+        .method-DELETE { background: rgba(239, 68, 68, 0.15); color: var(--method-delete); }
+
+        .main-content {
+            flex: 1;
+            padding: 50px;
+            overflow-y: auto;
+        }
+
+        .doc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .url-box {
+            background: #0a0f1d;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-family: 'Fira Code', monospace;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 25px 0;
+            color: #818cf8;
+        }
+
+        h2 { font-size: 2.2rem; margin: 0 0 10px 0; font-weight: 700; }
+        .desc { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; }
+        
+        h3 { 
+            font-size: 1.2rem; 
+            margin-top: 40px; 
+            margin-bottom: 15px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 i { color: var(--primary); }
+
+        pre {
+            background: #0a0f1d;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid var(--border);
+            color: var(--primary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        .badge-req { background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .empty-state i { font-size: 5rem; margin-bottom: 20px; opacity: 0.2; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fas fa-route"></i> My Trips Docs</h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 5px;">Unified Mobile Integration Guide</p>
+        </div>
+        <!-- Categories will be injected here -->
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="empty-state">
+            <i class="fas fa-project-diagram"></i>
+            <h2>My Trips API Documentation</h2>
+            <p>Select an endpoint from the sidebar to view detailed request/response specifications.</p>
+        </div>
+    </div>
+
+    <script>
+        const apiData = [
+            {
+                category: "Authentication",
+                endpoints: [
+                    {
+                        title: "Authorization Header", method: "INFO", url: "Header",
+                        desc: "All private endpoints require a Bearer token in the Authorization header.",
+                        requestParams: null,
+                        requestBody: "Authorization: Bearer {your_jwt_token}",
+                        response: "Status 401 Unauthorized if token is missing or expired."
+                    }
+                ]
+            },
+            {
+                category: "Hotel My Trips",
+                endpoints: [
+                    {
+                        title: "Get My Hotel Trips", method: "GET", url: "/api/user/trips/hotels",
+                        desc: "Fetch paginated hotel bookings classified by tab.",
+                        requestParams: [
+                            { name: "tab", type: "Query", req: true, desc: "Values: upcoming | past | cancelled" }
+                        ],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"bookingId\": 501,\n      \"hotelId\": 1,\n      \"hotelName\": \"Grand Resort\",\n      \"roomName\": \"Deluxe Room\",\n      \"imageUrl\": \"url\",\n      \"checkInDate\": \"2024-04-22\",\n      \"checkOutDate\": \"2024-04-25\",\n      \"totalPrice\": 300.00,\n      \"bookingStatus\": \"Confirmed\",\n      \"canCancel\": true,\n      \"canReview\": false,\n      \"canRebook\": false\n    }\n  ]\n}"
+                    },
+                    {
+                        title: "Get Hotel Booking Details", method: "GET", url: "/api/HotelBookings/{id}",
+                        desc: "Full details for a specific hotel booking.",
+                        requestParams: [{ name: "id", type: "Path", req: true, desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 501,\n    \"hotelName\": \"String\",\n    \"rooms\": [{ \"roomName\": \"Deluxe\", \"mealPlan\": \"HB\" }],\n    \"paymentStatus\": \"Paid\"\n  }\n}"
+                    },
+                    {
+                        title: "Cancel Hotel Booking", method: "PUT", url: "/api/HotelBookings/{id}/cancel",
+                        desc: "Cancel a hotel booking.",
+                        requestParams: [{ name: "id", type: "Path", req: true, desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"message\": \"Booking cancelled successfully\"\n}"
+                    },
+                    {
+                        title: "Submit Hotel Review", method: "POST", url: "/api/PublicHotels/reviews",
+                        desc: "Add a review for a hotel after stay.",
+                        requestParams: null,
+                        requestBody: "{\n  \"hotelId\": 1,\n  \"rating\": 5,\n  \"comment\": \"Perfect stay!\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Review submitted successfully\"\n}"
+                    }
+                ]
+            },
+            {
+                category: "Tour My Trips",
+                endpoints: [
+                    {
+                        title: "Get My Tour Trips", method: "GET", url: "/api/tourguide/bookings/my-trips",
+                        desc: "Fetch tour bookings classified by tab.",
+                        requestParams: [
+                            { name: "tab", type: "Query", req: true, desc: "Values: upcoming | past | cancelled" }
+                        ],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"bookingId\": 201,\n      \"tourId\": 10,\n      \"tourTitle\": \"Great Pyramids Tour\",\n      \"primaryImageUrl\": \"url\",\n      \"tourDate\": \"2024-04-22\",\n      \"tourTime\": \"09:00\",\n      \"totalPrice\": 50.00,\n      \"uiBadge\": \"Confirmed\",\n      \"canCancel\": true,\n      \"canReview\": false\n    }\n  ]\n}"
+                    },
+                    {
+                        title: "Get Tour Booking Details", method: "GET", url: "/api/tourguide/bookings/{id}",
+                        desc: "Details for a specific tour booking.",
+                        requestParams: [{ name: "id", type: "Path", req: true, desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 201,\n    \"tourTitle\": \"String\",\n    \"participants\": 2,\n    \"status\": \"Confirmed\"\n  }\n}"
+                    },
+                    {
+                        title: "Cancel Tour Booking", method: "DELETE", url: "/api/tourguide/bookings/{id}",
+                        desc: "Cancel a tour booking.",
+                        requestParams: [{ name: "id", type: "Path", req: true, desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"message\": \"Tour booking cancelled successfully\"\n}"
+                    },
+                    {
+                        title: "Submit Tour Review", method: "POST", url: "/api/tourguide/bookings/reviews",
+                        desc: "Add a review for a completed tour.",
+                        requestParams: null,
+                        requestBody: "{\n  \"tourId\": 10,\n  \"rating\": 5,\n  \"comment\": \"Amazing!\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Review added\"\n}"
+                    }
+                ]
+            },
+            {
+                category: "Airline My Trips",
+                endpoints: [
+                    {
+                        title: "Get My Flight Trips", method: "GET", url: "/api/airline/bookings/my-trips",
+                        desc: "Fetch flight bookings classified by tab.",
+                        requestParams: [
+                            { name: "tab", type: "Query", req: true, desc: "Values: upcoming | past | cancelled" }
+                        ],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"bookingId\": 101,\n      \"flightNumber\": \"MS964\",\n      \"routeTitle\": \"Cairo to Tokyo\",\n      \"airlineName\": \"EgyptAir\",\n      \"departureTime\": \"2024-04-22T14:30:00\",\n      \"uiBadge\": \"On Time\",\n      \"canCancel\": true,\n      \"boardingTime\": \"13:45\"\n    }\n  ]\n}"
+                    },
+                    {
+                        title: "Get Flight Booking Details", method: "GET", url: "/api/airline/bookings/{id}",
+                        desc: "Detailed info about booking + passengers.",
+                        requestParams: [{ name: "id", type: "Path", req: true, desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 101,\n    \"passengers\": [{ \"firstName\": \"John\", \"lastName\": \"Doe\" }],\n    \"paymentStatus\": \"Paid\"\n  }\n}"
+                    },
+                    {
+                        title: "Get E-Ticket", method: "GET", url: "/api/airline/bookings/{id}/eticket",
+                        desc: "Fetch PNR and digital ticket data.",
+                        requestParams: [{ name: "id", type: "Path", req: true, desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"data\": {\n    \"pnr\": \"PNR-000101\",\n    \"airlineName\": \"Emirates\",\n    \"departureTime\": \"...\"\n  }\n}"
+                    },
+                    {
+                        title: "Cancel Flight Booking", method: "DELETE", url: "/api/airline/bookings/{id}",
+                        desc: "Cancel a flight booking.",
+                        requestParams: [{ name: "id", type: "Path", req: true, desc: "Booking ID" }],
+                        requestBody: null,
+                        response: "{\n  \"success\": true,\n  \"message\": \"Booking cancelled successfully\"\n}"
+                    },
+                    {
+                        title: "Submit Flight Review", method: "POST", url: "/api/airline/reviews",
+                        desc: "Add a review for a completed flight.",
+                        requestParams: null,
+                        requestBody: "{\n  \"flightId\": 50,\n  \"rating\": 4,\n  \"comment\": \"Great service\"\n}",
+                        response: "{\n  \"success\": true,\n  \"message\": \"Review added\"\n}"
+                    }
+                ]
+            },
+            {
+                category: "Rebook Navigation",
+                endpoints: [
+                    {
+                        title: "Rebook Flow", method: "UI", url: "Navigation",
+                        desc: "When user clicks 'Rebook' on a past or cancelled trip, the app should navigate to the details page of that service.",
+                        requestParams: null,
+                        requestBody: "Hotel: /hotel-details.html?id={hotelId}\nTour: /tour/tour-details.html?id={tourId}\nFlight: /airline/flight-details.html?id={flightId}",
+                        response: "The app should pre-fill the search if possible, or just open the service details for a new booking."
+                    }
+                ]
+            }
+        ];
+
+        function renderSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            apiData.forEach((cat, catIdx) => {
+                const catEl = document.createElement('div');
+                catEl.className = 'category-title';
+                catEl.innerText = cat.category;
+                sidebar.appendChild(catEl);
+
+                cat.endpoints.forEach((ep, epIdx) => {
+                    const link = document.createElement('div');
+                    link.className = 'endpoint-link';
+                    link.onclick = () => showDetails(catIdx, epIdx, link);
+                    link.innerHTML = `
+                        <span class="method-badge method-${ep.method}">${ep.method}</span>
+                        <span>${ep.title}</span>
+                    `;
+                    sidebar.appendChild(link);
+                });
+            });
+        }
+
+        function showDetails(catIdx, epIdx, el) {
+            document.querySelectorAll('.endpoint-link').forEach(l => l.classList.remove('active'));
+            el.classList.add('active');
+
+            const ep = apiData[catIdx].endpoints[epIdx];
+            const content = document.getElementById('mainContent');
+
+            let paramsHtml = '';
+            if (ep.requestParams) {
+                paramsHtml = `
+                    <h3><i class="fas fa-sliders-h"></i> Parameters</h3>
+                    <table>
+                        <thead>
+                            <tr><th>Name</th><th>Location</th><th>Description</th></tr>
+                        </thead>
+                        <tbody>
+                            ${ep.requestParams.map(p => `
+                                <tr>
+                                    <td><code>${p.name}</code> ${p.req ? '<span class="badge-req">Required</span>' : ''}</td>
+                                    <td>${p.type}</td>
+                                    <td>${p.desc}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="doc-card">
+                    <h2>${ep.title}</h2>
+                    <p class="desc">${ep.desc}</p>
+                    
+                    <div class="url-box">
+                        <span class="method-badge method-${ep.method}" style="padding: 6px 12px; font-size: 0.8rem;">${ep.method}</span>
+                        <span>/api${ep.url === 'Header' ? '' : ep.url}</span>
+                    </div>
+
+                    ${paramsHtml}
+
+                    <h3><i class="fas fa-sign-in-alt"></i> Request Payload</h3>
+                    <pre><code>${ep.requestBody || "// No body required"}</code></pre>
+
+                    <h3><i class="fas fa-sign-out-alt"></i> Success Response</h3>
+                    <pre><code>${ep.response}</code></pre>
+                </div>
+            `;
+        }
+
+        renderSidebar();
+    </script>
+</body>
+</html>

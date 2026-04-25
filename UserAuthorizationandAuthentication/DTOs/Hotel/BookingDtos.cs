@@ -46,6 +46,11 @@ namespace UserAuthorizationandAuthentication.DTOs.Hotel
         public string Status { get; set; }
         
         public DateTime CreatedAt { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? RoomName { get; set; }
+        public bool CanCancel { get; set; }
+        public bool CanReview { get; set; }
+        public bool CanRebook { get; set; }
         
         public List<BookingRoomDto> Rooms { get; set; }
         public UserSummaryDto User { get; set; } // For hotel owner view

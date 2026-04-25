@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Models;
+using Microsoft.EntityFrameworkCore;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Repositories.GenericRepository;
+using UserAuthorizationandAuthentication.Data;
 
 namespace UserAuthorizationandAuthentication.Repositories.UserRepository
 {
@@ -8,11 +9,8 @@ namespace UserAuthorizationandAuthentication.Repositories.UserRepository
     {
         public UserRepository(ApplicationDbContext context) : base(context)
         {
-
-
-
-
         }
+
         public async Task<User> GetByEmailAsync(string email)
         {
             return await _context.Users
@@ -55,5 +53,11 @@ namespace UserAuthorizationandAuthentication.Repositories.UserRepository
             }
         }
 
+        public async Task<User> GetFullUserByIdAsync(long id)
+        {
+            return await _context.Users
+                .Include(u => u.UserPhones)
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
     }
 }

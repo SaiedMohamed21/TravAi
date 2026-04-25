@@ -1,5 +1,6 @@
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UserAuthorizationandAuthentication.Airline.Models.Airlines

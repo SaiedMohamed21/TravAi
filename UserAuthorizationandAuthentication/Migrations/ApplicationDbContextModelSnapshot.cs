@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 
 #nullable disable
 
@@ -72,31 +72,39 @@ namespace UserAuthorizationandAuthentication.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long>("AirlineId")
+                    b.Property<long?>("AirlineId")
                         .HasColumnType("bigint");
 
                     b.Property<string>("ArrivalAirportCode")
-                        .IsRequired()
                         .HasColumnType("nvarchar(3)");
 
-                    b.Property<DateTime>("ArrivalTime")
+                    b.Property<DateTime?>("ArrivalTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("AvailableSeats")
+                    b.Property<int?>("AvailableSeats")
                         .HasColumnType("int");
 
                     b.Property<long?>("CreatedByUserId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("DepartureAirportCode")
+                    b.Property<string>("Currency")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DepartureAirportCode")
                         .HasColumnType("nvarchar(3)");
 
-                    b.Property<DateTime>("DepartureTime")
+                    b.Property<DateTime?>("DepartureTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DestinationImageUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Duration")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("int");
 
                     b.Property<string>("FlightClass")
                         .HasColumnType("nvarchar(max)");
@@ -104,10 +112,10 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Property<string>("FlightNumber")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("NumberOfStops")
+                    b.Property<int?>("NumberOfStops")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Price")
+                    b.Property<decimal?>("Price")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Status")
@@ -166,8 +174,17 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Property<string>("Amenities")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("ArrivalTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DepartureTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<long>("FlightId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("FromAirportCode")
+                        .HasColumnType("nvarchar(3)");
 
                     b.Property<double?>("LegroomInches")
                         .HasColumnType("float");
@@ -175,9 +192,16 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Property<int>("SegmentNumber")
                         .HasColumnType("int");
 
+                    b.Property<string>("ToAirportCode")
+                        .HasColumnType("nvarchar(3)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FlightId");
+
+                    b.HasIndex("FromAirportCode");
+
+                    b.HasIndex("ToAirportCode");
 
                     b.ToTable("airline_FlightSegments", (string)null);
                 });
@@ -521,6 +545,140 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("airline_WalletTransactions", (string)null);
+                });
+
+            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.RefreshToken", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedByIp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
+            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.User", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("IsBanned")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsEmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nationality")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PassportImage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PassportNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePic")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("WalletBalance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.UserPhone", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("varchar(20)");
+
+                    b.Property<bool>("PhoneVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("PhoneVerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPhones", (string)null);
                 });
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Amenity", b =>
@@ -1135,140 +1293,6 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.HasIndex("HotelId");
 
                     b.ToTable("hotel_HotelRooms", (string)null);
-                });
-
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.RefreshToken", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedByIp")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Expires")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("RefreshTokens", (string)null);
-                });
-
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.User", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<bool>("IsBanned")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsEmailConfirmed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Nationality")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PassportImage")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PassportNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordHash")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfilePic")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("WalletBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("UserName")
-                        .IsUnique();
-
-                    b.ToTable("Users", (string)null);
-                });
-
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.UserPhone", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("PhoneNumber")
-                        .IsRequired()
-                        .HasColumnType("varchar(20)");
-
-                    b.Property<bool>("PhoneVerified")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("PhoneVerifiedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<long>("UserId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserPhones", (string)null);
                 });
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Review", b =>
@@ -1913,7 +1937,7 @@ namespace UserAuthorizationandAuthentication.Migrations
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1926,25 +1950,21 @@ namespace UserAuthorizationandAuthentication.Migrations
                 {
                     b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline", "Airline")
                         .WithMany("Flights")
-                        .HasForeignKey("AirlineId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("AirlineId");
 
                     b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "ArrivalAirport")
                         .WithMany()
                         .HasForeignKey("ArrivalAirportCode")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "CreatedByUser")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId");
 
                     b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "DepartureAirport")
                         .WithMany()
                         .HasForeignKey("DepartureAirportCode")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Airline");
 
@@ -1974,7 +1994,19 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "FromAirport")
+                        .WithMany()
+                        .HasForeignKey("FromAirportCode");
+
+                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "ToAirport")
+                        .WithMany()
+                        .HasForeignKey("ToAirportCode");
+
                     b.Navigation("Flight");
+
+                    b.Navigation("FromAirport");
+
+                    b.Navigation("ToAirport");
                 });
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Booking", b =>
@@ -1985,7 +2017,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2004,7 +2036,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "Sender")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "Sender")
                         .WithMany()
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2056,7 +2088,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2069,7 +2101,7 @@ namespace UserAuthorizationandAuthentication.Migrations
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.UserCompanion", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2080,8 +2112,30 @@ namespace UserAuthorizationandAuthentication.Migrations
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.WalletTransaction", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.RefreshToken", b =>
+                {
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.UserPhone", b =>
+                {
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                        .WithMany("UserPhones")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2097,7 +2151,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2128,7 +2182,7 @@ namespace UserAuthorizationandAuthentication.Migrations
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Hotel", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2246,7 +2300,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2268,28 +2322,6 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.RefreshToken", b =>
-                {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.UserPhone", b =>
-                {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
-                        .WithMany("UserPhones")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Review", b =>
                 {
                     b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
@@ -2298,11 +2330,11 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.Tour", "Tour")
-                        .WithMany()
+                        .WithMany("TourReviews")
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2340,7 +2372,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2372,7 +2404,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2385,7 +2417,7 @@ namespace UserAuthorizationandAuthentication.Migrations
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.User", "User")
+                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2525,6 +2557,13 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Phones");
                 });
 
+            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.User", b =>
+                {
+                    b.Navigation("RefreshTokens");
+
+                    b.Navigation("UserPhones");
+                });
+
             modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Amenity", b =>
                 {
                     b.Navigation("HotelAmenities");
@@ -2571,16 +2610,11 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("CancellationRules");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.User", b =>
-                {
-                    b.Navigation("RefreshTokens");
-
-                    b.Navigation("UserPhones");
-                });
-
             modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Tour", b =>
                 {
                     b.Navigation("TourImages");
+
+                    b.Navigation("TourReviews");
                 });
 
             modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBooking", b =>

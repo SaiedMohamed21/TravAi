@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.Models.Hotels.Bookings;
+using UserAuthorizationandAuthentication.Models.Auth;
+
 
 namespace UserAuthorizationandAuthentication.Models.Hotels
 {

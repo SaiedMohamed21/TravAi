@@ -1,12 +1,15 @@
 using UserAuthorizationandAuthentication.TourGuide.Models;
 using Tour = UserAuthorizationandAuthentication.TourGuide.Models.Tour;
 using Microsoft.EntityFrameworkCore;
+using UserAuthorizationandAuthentication.Data;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.Tour;
 using UserAuthorizationandAuthentication.TourGuide.DTOs.Review;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Models.Enums;
 using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
 
@@ -176,10 +179,14 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 .Where(t => t.TourGuideId == tourGuideId)
                 .ToListAsync();
 
+            var tourIds = tours.Select(t => t.Id).ToList();
+            var allReviews = await _context.TourReviews.Where(r => tourIds.Contains(r.TourId ?? 0)).ToListAsync();
+
             var dtos = new List<TourResponseDto>();
             foreach (var tour in tours)
             {
-                dtos.Add(await MapToDto(tour));
+                var tourReviews = allReviews.Where(r => r.TourId == tour.Id).ToList();
+                dtos.Add(await MapToDto(tour, false, tourReviews));
             }
             return dtos;
         }
@@ -199,7 +206,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
             if (filters.MaxPrice.HasValue)
                 query = query.Where(t => t.BasePriceUsd <= filters.MaxPrice.Value);
 
-            // Date filter (based on CreatedAt for now, can be changed to tour dates if needed)
+            // Date filter
             if (filters.StartDate.HasValue)
                 query = query.Where(t => t.CreatedAt >= filters.StartDate.Value);
             if (filters.EndDate.HasValue)
@@ -240,21 +247,24 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 "recent" => query.OrderByDescending(t => t.CreatedAt),
                 "tour_score" => query.OrderByDescending(t => t.TourScore),
                 "duration" => query.OrderByDescending(t => t.DurationHours),
-                _ => query.OrderByDescending(t => t.TourScore) // Default to TourScore
+                _ => query.OrderByDescending(t => t.TourScore)
             };
 
             var totalCount = await query.CountAsync();
 
-            // Pagination
             var tours = await query
                 .Skip((filters.PageNumber - 1) * filters.PageSize)
                 .Take(filters.PageSize)
                 .ToListAsync();
 
+            var tourIds = tours.Select(t => t.Id).ToList();
+            var allReviews = await _context.TourReviews.Where(r => tourIds.Contains(r.TourId ?? 0)).ToListAsync();
+
             var dtos = new List<TourResponseDto>();
             foreach (var tour in tours)
             {
-                dtos.Add(await MapToDto(tour));
+                var tourReviews = allReviews.Where(r => r.TourId == tour.Id).ToList();
+                dtos.Add(await MapToDto(tour, false, tourReviews));
             }
 
             return (dtos, totalCount);
@@ -281,7 +291,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
             }).ToList();
         }
 
-        private async Task<TourResponseDto> MapToDto(Tour tour, bool isDetail = false)
+        private async Task<TourResponseDto> MapToDto(Tour tour, bool isDetail = false, List<Review> providedReviews = null)
         {
             if (tour.TourGuide == null)
             {
@@ -298,6 +308,12 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 await _context.Entry(tour).Collection(t => t.TourImages).LoadAsync();
             }
 
+            List<Review> tourReviews = providedReviews;
+            if (tourReviews == null)
+            {
+                tourReviews = await _context.TourReviews.Where(r => r.TourId == tour.Id).ToListAsync();
+            }
+
             var langs = tour.TourGuide?.TourGuideLanguages?.Select(l => l.Language.ToString()).ToList() ?? new List<string>();
 
             var features = string.IsNullOrWhiteSpace(tour.IncludedServices) 
@@ -308,6 +324,9 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                                ?? tour.TourImages.OrderBy(i => i.SortOrder).FirstOrDefault();
 
             TourGuideResponseInfo? guideInfo = null;
+
+            var rating = tourReviews.Any() ? Math.Round((decimal)tourReviews.Average(r => r.Rating), 1) : (tour.Rating ?? 0);
+            var reviewsCount = tourReviews.Any() ? tourReviews.Count : (tour.NumberOfReviews ?? 0);
 
             if (isDetail && tour.TourGuide != null)
             {
@@ -341,8 +360,8 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 DurationHours = tour.DurationHours,
                 GroupSizeMax = tour.GroupSizeMax,
                 SitesCovered = tour.SitesCovered,
-                Rating = tour.Rating,
-                NumberOfReviews = tour.NumberOfReviews,
+                Rating = rating,
+                NumberOfReviews = reviewsCount,
                 StartingPoint = tour.StartingPoint,
                 AgeRestriction = tour.AgeRestriction,
                 TransportIncluded = tour.TransportIncluded,
@@ -363,7 +382,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 UpdatedAt = tour.UpdatedAt,
                 
                 ImageUrl = primaryImage?.ImageUrl,
-                ReviewsCount = tour.NumberOfReviews ?? 0,
+                ReviewsCount = reviewsCount,
                 GuideName = tour.TourGuide?.Name ?? "Unknown",
                 Languages = langs,
                 StartTime = tour.AvailableDateTime,
@@ -383,6 +402,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 }).ToList()
             };
         }
+
         public async Task<(List<TourCardDto> Cards, int TotalCount)> GetTourCardsAsync(int page = 1, int pageSize = 10)
         {
             var query = _context.Tours
@@ -399,16 +419,16 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 .Take(pageSize)
                 .ToListAsync();
 
+            var tourIds = tours.Select(t => t.Id).ToList();
+            var allReviews = await _context.TourReviews.Where(r => tourIds.Contains(r.TourId ?? 0)).ToListAsync();
+
             var cards = new List<TourCardDto>();
 
             foreach (var tour in tours)
             {
-                var reviews = await _context.TourReviews
-                    .Where(r => r.TourId == tour.Id)
-                    .ToListAsync();
-
-                var rating = reviews.Any() ? (decimal)reviews.Average(r => r.Rating) : 0;
-                var reviewsCount = reviews.Count;
+                var tourReviews = allReviews.Where(r => r.TourId == tour.Id).ToList();
+                var rating = tourReviews.Any() ? (decimal)tourReviews.Average(r => r.Rating) : (tour.Rating ?? 0);
+                var reviewsCount = tourReviews.Any() ? tourReviews.Count : (tour.NumberOfReviews ?? 0);
 
                 var primaryImage = tour.TourImages.FirstOrDefault(i => i.IsPrimary)?.ImageUrl 
                                    ?? tour.TourImages.FirstOrDefault()?.ImageUrl;
@@ -426,7 +446,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 cards.Add(new TourCardDto
                 {
                     Id = tour.Id.ToString(),
-                    Title = tour.TourTitle, // Using TourTitle as it fits the example "Pyramids Tour"
+                    Title = tour.TourTitle, 
                     ImageUrl = primaryImage,
                     Rating = Math.Round(rating, 1),
                     ReviewsCount = reviewsCount,
@@ -448,6 +468,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
 
             return (cards, totalCount);
         }
+
         public async Task<TourDetailsDto> GetTourDetailsAsync(long tourId)
         {
             var tour = await _context.Tours
@@ -460,35 +481,27 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
 
             if (tour == null) return null;
 
-            // --- Images (slider) ---
+            var tourReviews = await _context.TourReviews.Where(r => r.TourId == tourId).ToListAsync();
+
             var imageUrls = tour.TourImages
                 .OrderBy(i => i.SortOrder)
                 .Select(i => i.ImageUrl)
                 .Where(u => !string.IsNullOrEmpty(u))
                 .ToList();
 
-            // --- Guide languages ---
             var languages = tour.TourGuide?.TourGuideLanguages?
                 .Select(l => l.Language.ToString())
                 .ToList() ?? new List<string>();
 
-            // --- Rating & reviews (from actual reviews table) ---
-            var reviews = await _context.TourReviews
-                .Where(r => r.TourId == tourId)
-                .ToListAsync();
+            var rating = tourReviews.Any() ? Math.Round((decimal)tourReviews.Average(r => r.Rating), 1) : (tour.Rating ?? 0);
+            var reviewsCount = tourReviews.Any() ? tourReviews.Count : (tour.NumberOfReviews ?? 0);
 
-            var rating = reviews.Any() ? Math.Round((decimal)reviews.Average(r => r.Rating), 1) : (tour.Rating ?? 0);
-            var reviewsCount = reviews.Any() ? reviews.Count : (tour.NumberOfReviews ?? 0);
-
-            // --- Date / Time ---
             var date      = tour.AvailableDateTime?.ToString("yyyy-MM-dd");
             var startTime = tour.AvailableDateTime?.ToString("HH:mm");
             var endTime   = tour.AvailableDateTime.HasValue && tour.DurationHours.HasValue
                 ? tour.AvailableDateTime.Value.AddHours(tour.DurationHours.Value).ToString("HH:mm")
                 : null;
 
-            // --- Included / NotIncluded ---
-            // IncludedServices -> Included list
             var included = string.IsNullOrWhiteSpace(tour.IncludedServices)
                 ? new List<string>()
                 : tour.IncludedServices
@@ -497,7 +510,6 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                     .Where(s => !string.IsNullOrEmpty(s))
                     .ToList();
 
-            // ExcludedServices -> NotIncluded list
             var notIncluded = string.IsNullOrWhiteSpace(tour.ExcludedServices)
                 ? new List<string>()
                 : tour.ExcludedServices
@@ -506,7 +518,6 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                     .Where(s => !string.IsNullOrEmpty(s))
                     .ToList();
 
-            // --- Available seats (GroupSizeMax - confirmed bookings) ---
             var confirmedBookings = await _context.TourBookings
                 .Where(b => b.TourId == tourId)
                 .SumAsync(b => (int?)b.ParticipantsCount ?? 0);
@@ -524,8 +535,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 Location = new TourLocationDto
                 {
                     City    = tour.City,
-                    Country = "Egypt"   // Country is not stored per-tour; defaulting to Egypt (the primary market).
-                                        // Update this field once a Country column is added to the Tour model.
+                    Country = "Egypt"
                 },
 
                 Rating       = rating,
@@ -534,6 +544,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
 
                 Guide = new TourGuideInfoDto
                 {
+                    Id        = tour.TourGuideId,
                     Name      = tour.TourGuide?.Name ?? "Unknown",
                     Image     = tour.TourGuide?.User?.ProfilePic,
                     Languages = languages
@@ -556,7 +567,3 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
         }
     }
 }
-
-
-
-

@@ -1,4 +1,4 @@
-﻿using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Repositories.GenericRepository;
 
 namespace UserAuthorizationandAuthentication.Repositories.UserRepository
@@ -10,6 +10,6 @@ namespace UserAuthorizationandAuthentication.Repositories.UserRepository
         Task AddRefreshTokenAsync(long userId, RefreshToken token);
         Task<RefreshToken> GetRefreshTokenAsync(string token);
         Task RevokeRefreshTokenAsync(string token);
-
+        Task<User> GetFullUserByIdAsync(long id);
     }
 }

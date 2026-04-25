@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.Airline.DTOs.Flight;
 using UserAuthorizationandAuthentication.Airline.Services.FlightService;
 
@@ -77,22 +78,28 @@ namespace UserAuthorizationandAuthentication.Airline.Controllers
         // Get Flight By Id
         // =========================
         [AllowAnonymous]
-        [HttpGet("{id:long}")]
-        public async Task<IActionResult> GetById(long id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
         {
-            var flight = await _flightService.GetByIdAsync(id);
-
-            if (flight is null)
+            // Parse ID if it comes as "flight_123"
+            long numericId;
+            if (!long.TryParse(id, out numericId))
             {
-                return NotFound(new ApiResponse<string>(
-                    success: false,
-                    message: "Flight not found"
-                ));
+                var idPart = id.Split('_').Last();
+                if (!long.TryParse(idPart, out numericId))
+                {
+                    return BadRequest(new ApiResponse<string>(success: false, message: "Invalid flight ID format"));
+                }
             }
 
-            return Ok(new ApiResponse<object>(
-                flight
-            ));
+            var flight = await _flightService.GetByIdAsync(numericId);
+            
+            if (flight is null)
+            {
+                return NotFound(new ApiResponse<string>(success: false, message: "Flight not found"));
+            }
+
+            return Ok(new ApiResponse<object>(flight));
         }
     }
 }

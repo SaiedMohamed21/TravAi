@@ -1,5 +1,6 @@
 using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 
 namespace UserAuthorizationandAuthentication.DTOs.Hotel
 {

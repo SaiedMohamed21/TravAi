@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Trips - Travai Unified</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0f1d;
+            --card-bg: #161e31;
+            --primary: #6366f1;
+            --accent: #10b981;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* Navbar */
+        nav {
+            background: rgba(22, 30, 49, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+
+        /* Header */
+        .page-header {
+            padding: 60px 5% 40px;
+            text-align: center;
+        }
+
+        h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .subtitle { color: var(--text-muted); font-size: 1.1rem; }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            padding: 0 5%;
+        }
+
+        .tab-btn {
+            padding: 12px 30px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Section Container */
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 5%;
+        }
+
+        .service-section { margin-bottom: 50px; }
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: var(--primary-light);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        /* Grid */
+        .trips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        /* Card Styles */
+        .trip-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: transform 0.3s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .trip-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+
+        .trip-img { width: 100%; height: 180px; object-fit: cover; background: #0f172a; }
+
+        .trip-content { padding: 25px; flex-grow: 1; position: relative; }
+
+        .badge {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .badge-upcoming { background: var(--primary); color: white; }
+        .badge-past { background: #475569; color: white; }
+        .badge-cancelled { background: var(--danger); color: white; }
+
+        .trip-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 15px; color: white; }
+
+        .info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--text-muted); font-size: 0.9rem; }
+        .info-row i { width: 16px; color: var(--primary); }
+
+        .price-tag { margin-top: 20px; font-size: 1.2rem; font-weight: 700; color: var(--accent); }
+
+        .card-actions {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+        }
+
+        .btn-outline { border: 1px solid var(--border); color: var(--text); background: transparent; }
+        .btn-outline:hover { background: var(--border); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: white; }
+
+        /* Loading & Empty */
+        .loader-container { text-align: center; padding: 40px; }
+        .spinner { 
+            width: 40px; height: 40px; border: 4px solid var(--border); 
+            border-top: 4px solid var(--primary); border-radius: 50%; 
+            animation: spin 1s linear infinite; margin: 0 auto 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); grid-column: 1 / -1; }
+        .empty-state i { font-size: 3rem; margin-bottom: 15px; opacity: 0.3; }
+
+        /* Authentication overlay */
+        #authOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); z-index: 2000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .tabs-container { flex-direction: column; }
+            .tab-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="authOverlay">
+        <i class="fas fa-lock" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px;"></i>
+        <h2>Authentication Required</h2>
+        <p style="color: var(--text-muted); margin: 15px 0 30px;">Please login to view your trips.</p>
+        <a href="/auth/login.html" class="btn-primary" style="padding: 12px 40px; border-radius: 50px; text-decoration: none;">Login Now</a>
+    </div>
+
+    <nav>
+        <a href="index.html" class="logo">
+            <i class="fas fa-route"></i> Travai Unified
+        </a>
+        <div id="userProfile">
+            <span id="userName" style="font-weight: 500; margin-right: 15px;"></span>
+            <button onclick="logout()" class="btn-outline" style="padding: 8px 15px; border-radius: 8px;">Logout</button>
+        </div>
+    </nav>
+
+    <div class="page-header">
+        <h1>My Journeys</h1>
+        <p class="subtitle">Manage your bookings and explore your travel history</p>
+    </div>
+
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchTab('upcoming')">Upcoming Trips</button>
+        <button class="tab-btn" onclick="switchTab('past')">Past Journeys</button>
+        <button class="tab-btn" onclick="switchTab('cancelled')">Cancelled</button>
+    </div>
+
+    <div class="section-container">
+        <!-- Hotels -->
+        <div class="service-section">
+            <h2 class="section-title"><i class="fas fa-hotel"></i> Hotels</h2>
+            <div id="hotelsGrid" class="trips-grid">
+                <!-- Data injected here -->
+                <div class="loader-container"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- Flights -->
+        <div class="service-section">
+            <h2 class="section-title"><i class="fas fa-plane"></i> Flights</h2>
+            <div id="flightsGrid" class="trips-grid">
+                <!-- Data injected here -->
+                <div class="loader-container"><div class="spinner"></div></div>
+            </div>
+        </div>
+
+        <!-- Tours -->
+        <div class="service-section">
+            <h2 class="section-title"><i class="fas fa-map-marked-alt"></i> Tours</h2>
+            <div id="toursGrid" class="trips-grid">
+                <!-- Data injected here -->
+                <div class="loader-container"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'upcoming';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
+
+        async function fetchTrips() {
+            setLoaders();
+            
+            // Fetch Hotels
+            loadService('hotels', `/api/user/trips/hotels?tab=${currentTab}`, renderHotelCard);
+            
+            // Fetch Flights
+            loadService('flights', `/api/airline/bookings/my-trips?tab=${currentTab}`, renderFlightCard);
+            
+            // Fetch Tours
+            loadService('tours', `/api/tourguide/bookings/my-trips?tab=${currentTab}`, renderTourCard);
+        }
+
+        async function loadService(service, url, renderFn) {
+            const grid = document.getElementById(`${service}Grid`);
+            try {
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    grid.innerHTML = result.data.map(renderFn).join('');
+                } else {
+                    grid.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-times"></i><p>No ${currentTab} ${service} found.</p></div>`;
+                }
+            } catch (error) {
+                grid.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Error loading ${service}.</p></div>`;
+            }
+        }
+
+        function renderHotelCard(trip) {
+            return `
+                <div class="trip-card">
+                    <img src="${trip.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500'}" class="trip-img" alt="Hotel">
+                    <div class="trip-content">
+                        <span class="badge badge-${currentTab}">${trip.status}</span>
+                        <h3 class="trip-title">${trip.hotelName}</h3>
+                        <div class="info-row"><i class="fas fa-bed"></i> ${trip.roomName}</div>
+                        <div class="info-row"><i class="fas fa-calendar-alt"></i> ${formatDate(trip.checkInDate)} - ${formatDate(trip.checkOutDate)}</div>
+                        <div class="price-tag">$${trip.totalPrice}</div>
+                    </div>
+                    <div class="card-actions">
+                        <a href="hotel/details.html?id=${trip.hotelId}" class="btn btn-outline">View Details</a>
+                        ${trip.canCancel ? `<button class="btn btn-danger" onclick="cancelHotel(${trip.id})">Cancel</button>` : ''}
+                        ${trip.canReview ? `<a href="#" class="btn btn-primary">Write Review</a>` : ''}
+                        ${trip.canRebook ? `<a href="hotel/details.html?id=${trip.hotelId}" class="btn btn-primary">Rebook</a>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderFlightCard(trip) {
+            return `
+                <div class="trip-card">
+                    <div style="background: linear-gradient(135deg, #1e293b, #0f172a); height: 100px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">✈️</div>
+                    <div class="trip-content">
+                        <span class="badge badge-${currentTab}">${trip.uiBadge}</span>
+                        <h3 class="trip-title">${trip.airlineName} - ${trip.flightNumber}</h3>
+                        <div class="info-row"><i class="fas fa-map-marker-alt"></i> ${trip.routeTitle}</div>
+                        <div class="info-row"><i class="fas fa-clock"></i> Departure: ${formatDateTime(trip.departureTime)}</div>
+                        <div class="info-row"><i class="fas fa-ticket-alt"></i> Boarding: ${trip.boardingTime}</div>
+                        <div class="price-tag">$${trip.totalPrice}</div>
+                    </div>
+                    <div class="card-actions">
+                        <a href="/api/airline/bookings/${trip.id}/eticket" target="_blank" class="btn btn-outline">E-Ticket</a>
+                        ${trip.canCancel ? `<button class="btn btn-danger" onclick="cancelFlight(${trip.id})">Cancel</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderTourCard(trip) {
+            return `
+                <div class="trip-card">
+                    <img src="${trip.primaryImageUrl || 'https://images.unsplash.com/photo-1503174971373-b1f69850bbd6?auto=format&fit=crop&w=500'}" class="trip-img" alt="Tour">
+                    <div class="trip-content">
+                        <span class="badge badge-${currentTab}">${trip.uiBadge}</span>
+                        <h3 class="trip-title">${trip.tourTitle}</h3>
+                        <div class="info-row"><i class="fas fa-calendar-day"></i> ${formatDate(trip.tourDate)} at ${trip.tourTime}</div>
+                        <div class="info-row"><i class="fas fa-users"></i> ${trip.participantsCount} Participants</div>
+                        <div class="price-tag">$${trip.totalPrice}</div>
+                    </div>
+                    <div class="card-actions">
+                        <a href="tour/details.html?id=${trip.tourId}" class="btn btn-outline">Details</a>
+                        ${trip.canCancel ? `<button class="btn btn-danger" onclick="cancelTour(${trip.id})">Cancel</button>` : ''}
+                        ${trip.canReview ? `<button class="btn btn-primary">Review</button>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.innerText.toLowerCase().includes(tab)) btn.classList.add('active');
+            });
+            fetchTrips();
+        }
+
+        function setLoaders() {
+            const loader = '<div class="loader-container"><div class="spinner"></div></div>';
+            document.getElementById('hotelsGrid').innerHTML = loader;
+            document.getElementById('flightsGrid').innerHTML = loader;
+            document.getElementById('toursGrid').innerHTML = loader;
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'TBD';
+            return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return 'TBD';
+            return new Date(dateStr).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.reload();
+        }
+
+        // Initialize
+        if (token) fetchTrips();
+
+    </script>
+</body>
+</html>

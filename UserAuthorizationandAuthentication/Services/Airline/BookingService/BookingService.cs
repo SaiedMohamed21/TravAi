@@ -1,9 +1,10 @@
-using UserAuthorizationandAuthentication;
+using UserAuthorizationandAuthentication.Data;
 using Microsoft.EntityFrameworkCore;
-
 using UserAuthorizationandAuthentication.Airline.DTOs.Booking;
 using UserAuthorizationandAuthentication.Models;
+using UserAuthorizationandAuthentication.Models.Auth;
 using UserAuthorizationandAuthentication.Airline.Models;
+using UserAuthorizationandAuthentication.Airline.Models.Airlines;
 
 namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
 {
@@ -23,7 +24,7 @@ namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
                 .FirstOrDefaultAsync(f => f.Id == dto.FlightId);
 
             if (flight == null) throw new Exception("Flight not found.");
-            if (flight.AvailableSeats < dto.NumberOfSeats)
+            if ((flight.AvailableSeats ?? 0) < dto.NumberOfSeats)
                 throw new Exception("Not enough seats available.");
 
             var companions = await _context.UserCompanions
@@ -33,11 +34,9 @@ namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
             var user = await _context.Users.FindAsync(userId);
             if (user == null) throw new Exception("User not found.");
 
-            decimal totalCost = flight.Price * dto.NumberOfSeats;
+            decimal totalCost = (flight.Price ?? 0) * dto.NumberOfSeats;
             if (user.WalletBalance < totalCost)
-            {
-                throw new Exception("Insufficient funds in your wallet to complete this booking.");
-            }
+                throw new Exception("Insufficient funds.");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -53,67 +52,46 @@ namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
                     PaymentStatus = "Paid"
                 };
 
-            // 3. Add Passengers from Companions
-            foreach (var companion in companions)
-            {
-                booking.Passengers.Add(new Passenger
+                foreach (var companion in companions)
                 {
-                    FirstName = companion.FirstName,
-                    LastName = companion.LastName,
-                    AgeType = companion.AgeType,
-                    PassportNumber = companion.PassportNumber,
-                    Nationality = companion.Nationality,
-                    ProfilePic = companion.ProfilePic,
-                    PassportImage = companion.PassportImage,
-                    Price = flight.Price,
-                    Status = "Confirmed"
-                });
-            }
+                    booking.Passengers.Add(new Passenger
+                    {
+                        FirstName = companion.FirstName,
+                        LastName = companion.LastName,
+                        AgeType = companion.AgeType,
+                        PassportNumber = companion.PassportNumber,
+                        Nationality = companion.Nationality,
+                        Price = flight.Price ?? 0,
+                        Status = "Confirmed"
+                    });
+                }
 
-            // 4. Handle Case: User booking for themselves (No companions or fewer than seats)
-            if (booking.Passengers.Count < dto.NumberOfSeats)
-            {
-                if (user != null)
+                if (booking.Passengers.Count < dto.NumberOfSeats)
                 {
-                    var mainPhone = await _context.UserPhones.FirstOrDefaultAsync(p => p.UserId == userId);
-                    var mainPassenger = new Passenger
+                    booking.Passengers.Add(new Passenger
                     {
                         FirstName = user.Name,
                         LastName = "(Account Holder)",
                         AgeType = "Adult",
                         PassportNumber = user.PassportNumber,
                         Nationality = user.Nationality,
-                        ProfilePic = user.ProfilePic,
-                        PassportImage = user.PassportImage,
-                        Price = flight.Price,
+                        Price = flight.Price ?? 0,
                         Status = "Confirmed"
-                    };
-
-                    if (mainPhone != null)
-                    {
-                        mainPassenger.Phones.Add(new PassengerPhone { PhoneNumber = mainPhone.PhoneNumber });
-                    }
-
-                    booking.Passengers.Add(mainPassenger);
+                    });
                 }
-            }
 
-                // Deduct seats
-                flight.AvailableSeats -= dto.NumberOfSeats;
-
-                // Deduct from wallet
+                flight.AvailableSeats = (flight.AvailableSeats ?? 0) - dto.NumberOfSeats;
                 user.WalletBalance -= totalCost;
 
                 _context.Bookings.Add(booking);
                 await _context.SaveChangesAsync();
 
-                // Add wallet transaction
                 _context.WalletTransactions.Add(new WalletTransaction
                 {
                     UserId = user.Id,
                     Amount = -totalCost,
                     Type = "Booking Deduction",
-                    Description = $"Payment for Booking Flight {flight.DepartureAirportCode} to {flight.ArrivalAirportCode}",
+                    Description = $"Flight {flight.DepartureAirportCode} to {flight.ArrivalAirportCode}",
                     ReferenceId = booking.Id.ToString(),
                     CreatedAt = DateTime.UtcNow
                 });
@@ -121,39 +99,140 @@ namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                return MapToResponse(booking);
+            }
+            catch (Exception) { await transaction.RollbackAsync(); throw; }
+        }
+
+        public async Task<List<BookingResponseDto>> GetUserBookingsAsync(long userId)
+        {
+            var bookings = await _context.Bookings
+                .Include(b => b.Flight).ThenInclude(f => f.Airline)
+                .Include(b => b.Passengers)
+                .Where(b => b.UserId == userId)
+                .ToListAsync();
+
+            return bookings.Select(MapToResponse).ToList();
+        }
+
+        public async Task<List<BookingResponseDto>> GetUserTripsAsync(long userId, string tab)
+        {
+            var query = _context.Bookings
+                .Include(b => b.Flight).ThenInclude(f => f.Airline)
+                .Include(b => b.Passengers)
+                .Where(b => b.UserId == userId)
+                .AsQueryable();
+
+            if (tab == "upcoming")
+                query = query.Where(b => b.Status != "Cancelled" && b.Flight != null && b.Flight.DepartureTime > DateTime.UtcNow);
+            else if (tab == "past")
+                query = query.Where(b => b.Status != "Cancelled" && b.Flight != null && b.Flight.DepartureTime <= DateTime.UtcNow);
+            else if (tab == "cancelled")
+                query = query.Where(b => b.Status == "Cancelled");
+
+            var bookings = await query.ToListAsync();
+            return bookings.Select(MapToResponse).ToList();
+        }
+
+        private BookingResponseDto MapToResponse(Booking b)
+        {
+            var departureTime = b.Flight?.DepartureTime ?? DateTime.Now;
             return new BookingResponseDto
             {
-                Id = booking.Id,
-                UserName = user?.Name,
-                FlightId = flight.Id,
-                AirlineName = flight.Airline.Name,
-                FromCode = flight.DepartureAirportCode,
-                ToCode = flight.ArrivalAirportCode,
-                DepartureTime = flight.DepartureTime,
-                ArrivalTime = flight.ArrivalTime,
-                NumberOfSeats = booking.NumberOfSeats,
-                TotalPrice = booking.TotalPrice,
-                Status = booking.Status,
-                PaymentStatus = booking.PaymentStatus,
-                BookingDate = booking.BookingDate,
-                Passengers = booking.Passengers.Select(p => new UserAuthorizationandAuthentication.Airline.DTOs.Passenger.PassengerResponseDto
-                {
-                    Id = p.Id,
-                    BookingId = p.BookingId,
-                    FirstName = p.FirstName,
-                    LastName = p.LastName,
-                    PassengerType = p.PassengerType,
-                    AgeType = p.AgeType,
-                    PassportNumber = p.PassportNumber,
-                    Nationality = p.Nationality,
-                    Price = p.Price,
-                    Status = p.Status,
-                    RejectionReason = p.RejectionReason,
-                    ProfilePic = p.ProfilePic,
-                    PassportImage = p.PassportImage,
-                    PhoneNumbers = p.Phones.Select(ph => ph.PhoneNumber).ToList()
-                }).ToList()
+                Id = b.Id,
+                UserName = b.User?.Name ?? "User",
+                FlightId = b.FlightId,
+                AirlineName = b.Flight?.Airline?.Name ?? "Unknown",
+                FromCode = b.Flight?.DepartureAirportCode ?? "TBD",
+                ToCode = b.Flight?.ArrivalAirportCode ?? "TBD",
+                DepartureTime = departureTime,
+                ArrivalTime = b.Flight?.ArrivalTime ?? DateTime.Now,
+                NumberOfSeats = b.NumberOfSeats,
+                TotalPrice = b.TotalPrice,
+                Status = b.Status,
+                BookingDate = b.BookingDate,
+                FlightNumber = b.Flight?.FlightNumber ?? $"FL-{b.FlightId}",
+                RouteTitle = $"{b.Flight?.DepartureAirportCode} to {b.Flight?.ArrivalAirportCode}",
+                UiBadge = b.Status == "Cancelled" ? "Cancelled" : (departureTime > DateTime.UtcNow ? "Upcoming" : "Completed"),
+                CanCancel = b.Status != "Cancelled" && departureTime > DateTime.UtcNow.AddHours(24),
+                CanReview = b.Status == "Completed" || (b.Status == "Confirmed" && departureTime <= DateTime.UtcNow),
+                BoardingTime = departureTime.AddMinutes(-45).ToString("HH:mm")
             };
+        }
+
+        public async Task<List<BookingResponseDto>> GetAllBookingsAsync()
+        {
+            var bookings = await _context.Bookings
+                .Include(b => b.Flight).ThenInclude(f => f.Airline)
+                .Include(b => b.Passengers)
+                .Include(b => b.User)
+                .ToListAsync();
+
+            return bookings.Select(MapToResponse).ToList();
+        }
+
+        public async Task<List<BookingResponseDto>> GetFlightBookingsAsync(long flightId)
+        {
+            var bookings = await _context.Bookings
+                .Include(b => b.Flight).ThenInclude(f => f.Airline)
+                .Include(b => b.Passengers)
+                .Include(b => b.User)
+                .Where(b => b.FlightId == flightId)
+                .ToListAsync();
+
+            return bookings.Select(MapToResponse).ToList();
+        }
+
+        public async Task<BookingResponseDto?> GetByIdAsync(long bookingId)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight).ThenInclude(f => f.Airline)
+                .Include(b => b.Passengers)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            return booking != null ? MapToResponse(booking) : null;
+        }
+
+        public async Task CancelAsync(long bookingId)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null) throw new Exception("Booking not found.");
+            if (booking.Status == "Cancelled") return;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                booking.Status = "Cancelled";
+                
+                // Refund seats
+                if (booking.Flight != null)
+                {
+                    booking.Flight.AvailableSeats = (booking.Flight.AvailableSeats ?? 0) + booking.NumberOfSeats;
+                }
+
+                // Refund money to wallet
+                if (booking.User != null)
+                {
+                    booking.User.WalletBalance += booking.TotalPrice;
+                    
+                    _context.WalletTransactions.Add(new WalletTransaction
+                    {
+                        UserId = booking.User.Id,
+                        Amount = booking.TotalPrice,
+                        Type = "Booking Refund",
+                        Description = $"Refund for flight booking #{booking.Id}",
+                        ReferenceId = booking.Id.ToString(),
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
             }
             catch (Exception)
             {
@@ -162,223 +241,13 @@ namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
             }
         }
 
-        public async Task<List<BookingResponseDto>> GetUserBookingsAsync(long userId)
-        {
-            return await _context.Bookings
-                .Include(b => b.Flight)
-                    .ThenInclude(f => f.Airline)
-                .Include(b => b.Passengers)
-                    .ThenInclude(p => p.Phones)
-                .Where(b => b.UserId == userId)
-                .Select(b => new BookingResponseDto
-                {
-                    Id = b.Id,
-                    UserName = b.User.Name,
-                    FlightId = b.Flight.Id,
-                    AirlineName = b.Flight.Airline.Name,
-                    FromCode = b.Flight.DepartureAirportCode,
-                    ToCode = b.Flight.ArrivalAirportCode,
-                    DepartureTime = b.Flight.DepartureTime,
-                    ArrivalTime = b.Flight.ArrivalTime,
-                    NumberOfSeats = b.NumberOfSeats,
-                    TotalPrice = b.TotalPrice,
-                    Status = b.Status,
-                    RejectionReason = b.RejectionReason,
-                    PaymentStatus = b.PaymentStatus,
-                    BookingDate = b.BookingDate,
-                    Passengers = b.Passengers.Select(p => new UserAuthorizationandAuthentication.Airline.DTOs.Passenger.PassengerResponseDto
-                    {
-                        Id = p.Id,
-                        BookingId = p.BookingId,
-                        FirstName = p.FirstName,
-                        LastName = p.LastName,
-                        PassengerType = p.PassengerType,
-                        AgeType = p.AgeType,
-                        PassportNumber = p.PassportNumber,
-                        Nationality = p.Nationality,
-                        Price = p.Price,
-                        Status = p.Status,
-                        RejectionReason = p.RejectionReason,
-                        ProfilePic = p.ProfilePic,
-                        PassportImage = p.PassportImage,
-                        PhoneNumbers = p.Phones.Select(ph => ph.PhoneNumber).ToList()
-                    }).ToList()
-                })
-                .ToListAsync();
-        }
-
-        public async Task<List<BookingResponseDto>> GetAllBookingsAsync()
-        {
-            return await _context.Bookings
-                .Include(b => b.User)
-                .Include(b => b.Flight)
-                    .ThenInclude(f => f.Airline)
-                .Include(b => b.Passengers)
-                    .ThenInclude(p => p.Phones)
-                .Select(b => new BookingResponseDto
-                {
-                    Id = b.Id,
-                    UserName = b.User.Name,
-                    FlightId = b.Flight.Id,
-                    AirlineName = b.Flight.Airline.Name,
-                    FromCode = b.Flight.DepartureAirportCode,
-                    ToCode = b.Flight.ArrivalAirportCode,
-                    DepartureTime = b.Flight.DepartureTime,
-                    ArrivalTime = b.Flight.ArrivalTime,
-                    NumberOfSeats = b.NumberOfSeats,
-                    TotalPrice = b.TotalPrice,
-                    Status = b.Status,
-                    RejectionReason = b.RejectionReason,
-                    PaymentStatus = b.PaymentStatus,
-                    BookingDate = b.BookingDate,
-                    Passengers = b.Passengers.Select(p => new UserAuthorizationandAuthentication.Airline.DTOs.Passenger.PassengerResponseDto
-                    {
-                        Id = p.Id,
-                        BookingId = p.BookingId,
-                        FirstName = p.FirstName,
-                        LastName = p.LastName,
-                        PassengerType = p.PassengerType,
-                        AgeType = p.AgeType,
-                        PassportNumber = p.PassportNumber,
-                        Nationality = p.Nationality,
-                        Price = p.Price,
-                        Status = p.Status,
-                        RejectionReason = p.RejectionReason,
-                        PhoneNumbers = p.Phones.Select(ph => ph.PhoneNumber).ToList()
-                    }).ToList()
-                })
-                .ToListAsync();
-        }
-
-        public async Task<List<BookingResponseDto>> GetFlightBookingsAsync(long flightId)
-        {
-             return await _context.Bookings
-                .Include(b => b.User)
-                .Include(b => b.Flight)
-                    .ThenInclude(f => f.Airline)
-                .Include(b => b.Passengers)
-                    .ThenInclude(p => p.Phones)
-                .Where(b => b.FlightId == flightId)
-                .Select(b => new BookingResponseDto
-                {
-                    Id = b.Id,
-                    UserName = b.User.Name,
-                    FlightId = b.Flight.Id,
-                    AirlineName = b.Flight.Airline.Name,
-                    FromCode = b.Flight.DepartureAirportCode,
-                    ToCode = b.Flight.ArrivalAirportCode,
-                    DepartureTime = b.Flight.DepartureTime,
-                    ArrivalTime = b.Flight.ArrivalTime,
-                    NumberOfSeats = b.NumberOfSeats,
-                    TotalPrice = b.TotalPrice,
-                    Status = b.Status,
-                    RejectionReason = b.RejectionReason,
-                    PaymentStatus = b.PaymentStatus,
-                    BookingDate = b.BookingDate,
-                    Passengers = b.Passengers.Select(p => new UserAuthorizationandAuthentication.Airline.DTOs.Passenger.PassengerResponseDto
-                    {
-                        Id = p.Id,
-                        BookingId = p.BookingId,
-                        FirstName = p.FirstName,
-                        LastName = p.LastName,
-                        PassengerType = p.PassengerType,
-                        AgeType = p.AgeType,
-                        PassportNumber = p.PassportNumber,
-                        Nationality = p.Nationality,
-                        Price = p.Price,
-                        Status = p.Status,
-                        RejectionReason = p.RejectionReason,
-                        PhoneNumbers = p.Phones.Select(ph => ph.PhoneNumber).ToList()
-                    }).ToList()
-                })
-                .ToListAsync();
-        }
-
-        public async Task<BookingResponseDto?> GetByIdAsync(long bookingId)
-        {
-            var b = await _context.Bookings
-                .Include(b => b.User)
-                .Include(b => b.Flight)
-                    .ThenInclude(f => f.Airline)
-                .Include(b => b.Passengers)
-                    .ThenInclude(p => p.Phones)
-                .FirstOrDefaultAsync(b => b.Id == bookingId);
-
-            if (b == null) return null;
-
-            return new BookingResponseDto
-            {
-                Id = b.Id,
-                UserName = b.User?.Name,
-                FlightId = b.Flight.Id,
-                AirlineName = b.Flight.Airline.Name,
-                FromCode = b.Flight.DepartureAirportCode,
-                ToCode = b.Flight.ArrivalAirportCode,
-                DepartureTime = b.Flight.DepartureTime,
-                ArrivalTime = b.Flight.ArrivalTime,
-                NumberOfSeats = b.NumberOfSeats,
-                TotalPrice = b.TotalPrice,
-                Status = b.Status,
-                RejectionReason = b.RejectionReason,
-                PaymentStatus = b.PaymentStatus,
-                BookingDate = b.BookingDate,
-                Passengers = b.Passengers.Select(p => new UserAuthorizationandAuthentication.Airline.DTOs.Passenger.PassengerResponseDto
-                {
-                    Id = p.Id,
-                    BookingId = p.BookingId,
-                    FirstName = p.FirstName,
-                    LastName = p.LastName,
-                    PassengerType = p.PassengerType,
-                    AgeType = p.AgeType,
-                    PassportNumber = p.PassportNumber,
-                    Nationality = p.Nationality,
-                    Price = p.Price,
-                    Status = p.Status,
-                    RejectionReason = p.RejectionReason,
-                    PhoneNumbers = p.Phones.Select(ph => ph.PhoneNumber).ToList()
-                }).ToList()
-            };
-        }
-
-        public async Task CancelAsync(long bookingId)
-        {
-            var booking = await _context.Bookings
-                .Include(b => b.Flight)
-                .FirstOrDefaultAsync(b => b.Id == bookingId);
-
-            if (booking == null)
-                throw new Exception("Booking not found.");
-
-            if (booking.Status == "Cancelled")
-                throw new Exception("Booking is already cancelled.");
-
-            booking.Status = "Cancelled";
-            
-            // Return seats to flight
-            booking.Flight.AvailableSeats += booking.NumberOfSeats;
-
-            await _context.SaveChangesAsync();
-        }
-
         public async Task UpdateBookingStatusAsync(long bookingId, string status, string? reason = null)
         {
-            var booking = await _context.Bookings
-                .Include(b => b.Passengers)
-                    .ThenInclude(p => p.Phones)
-                .FirstOrDefaultAsync(b => b.Id == bookingId);
-
+            var booking = await _context.Bookings.FindAsync(bookingId);
             if (booking == null) throw new Exception("Booking not found.");
 
-            booking.Status = status; // Approved, Rejected, Cancelled
+            booking.Status = status;
             booking.RejectionReason = reason;
-
-            // Cascade approval to all passengers
-            foreach (var passenger in booking.Passengers)
-            {
-                passenger.Status = status;
-                passenger.RejectionReason = reason;
-            }
-
             await _context.SaveChangesAsync();
         }
 
@@ -387,60 +256,38 @@ namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
             var passenger = await _context.Passengers.FindAsync(passengerId);
             if (passenger == null) throw new Exception("Passenger not found.");
 
-            passenger.Status = status; // Approved, Rejected
-            passenger.RejectionReason = reason;
-
+            passenger.Status = status;
             await _context.SaveChangesAsync();
         }
 
         public async Task<ETicketDto> GetETicketAsync(long bookingId)
         {
             var booking = await _context.Bookings
-                .Include(b => b.Flight)
-                    .ThenInclude(f => f.Airline)
+                .Include(b => b.Flight).ThenInclude(f => f.Airline)
                 .Include(b => b.Passengers)
-                .FirstOrDefaultAsync(b => b.Id == bookingId && b.Status == "Confirmed");
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
 
-            if (booking == null) throw new Exception("Confirmed booking not found.");
+            if (booking == null) throw new Exception("Booking not found.");
 
-            var eticket = new ETicketDto
+            return new ETicketDto
             {
                 BookingId = booking.Id,
-                Pnr = $"PNR-{booking.Id.ToString().PadLeft(6, '0')}",
-                AirlineName = booking.Flight.Airline.Name,
-                DepartureAirport = booking.Flight.DepartureAirportCode,
-                ArrivalAirport = booking.Flight.ArrivalAirportCode,
-                DepartureTime = booking.Flight.DepartureTime,
-                ArrivalTime = booking.Flight.ArrivalTime,
-                BookingDate = booking.BookingDate
-            };
-
-            // using var qrGenerator = new QRCoder.QRCodeGenerator();
-
-            foreach (var passenger in booking.Passengers)
-            {
-                /* 
-                string payload = $"PNR: {eticket.Pnr}\nName: {passenger.FirstName} {passenger.LastName}\nFlight: {eticket.DepartureAirport} -> {eticket.ArrivalAirport}\nDeparts: {eticket.DepartureTime}";
-                using var qrCodeData = qrGenerator.CreateQrCode(payload, QRCoder.QRCodeGenerator.ECCLevel.Q);
-                using var qrCode = new QRCoder.PngByteQRCode(qrCodeData);
-                byte[] qrCodeImage = qrCode.GetGraphic(5);
-                string base64Qr = $"data:image/png;base64,{Convert.ToBase64String(qrCodeImage)}";
-                */
-
-                eticket.Passengers.Add(new PassengerTicketDto
+                Pnr = $"AIR-{booking.Id:D6}", // Simulated PNR
+                AirlineName = booking.Flight?.Airline?.Name ?? "N/A",
+                DepartureAirport = booking.Flight?.DepartureAirportCode ?? "Unknown",
+                ArrivalAirport = booking.Flight?.ArrivalAirportCode ?? "Unknown",
+                DepartureTime = booking.Flight?.DepartureTime ?? DateTime.Now,
+                ArrivalTime = booking.Flight?.ArrivalTime ?? DateTime.Now,
+                BookingDate = booking.BookingDate,
+                Passengers = booking.Passengers.Select(p => new PassengerTicketDto
                 {
-                    Name = $"{passenger.FirstName} {passenger.LastName}",
-                    Type = passenger.AgeType,
-                    QrCodeBase64 = "disabled-qrcoder-temporarily",
-                    Status = passenger.Status
-                });
-            }
-
-            return eticket;
+                    Name = $"{p.FirstName} {p.LastName}",
+                    Type = p.AgeType ?? "Adult",
+                    Status = p.Status ?? "Confirmed",
+                    QrCodeBase64 = "" // Placeholder for UI
+                }).ToList()
+            };
         }
     }
 }
-
-
-
-

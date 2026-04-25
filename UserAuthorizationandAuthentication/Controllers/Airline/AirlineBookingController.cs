@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserAuthorizationandAuthentication.DTOs;
+using UserAuthorizationandAuthentication.DTOs.Common;
+using UserAuthorizationandAuthentication.DTOs.Auth;
 using UserAuthorizationandAuthentication.Airline.DTOs.Booking;
 using UserAuthorizationandAuthentication.Airline.Services.BookingService;
 
@@ -61,6 +62,17 @@ namespace UserAuthorizationandAuthentication.Airline.Controllers
                 bookings,
                 "Retrieved user bookings successfully."
             ));
+        }
+
+        [HttpGet("my-trips")]
+        public async Task<IActionResult> GetMyTrips([FromQuery] string tab)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!long.TryParse(userIdStr, out long userId))
+                return Unauthorized(new ApiResponse<string>(false, "Invalid User."));
+
+            var trips = await _bookingService.GetUserTripsAsync(userId, tab);
+            return Ok(new ApiResponse<List<BookingResponseDto>>(trips, $"Retrieved {tab} trips."));
         }
 
         // =============================
