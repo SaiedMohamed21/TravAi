@@ -1,17 +1,17 @@
-using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TravAi.Data;
 
-using UserAuthorizationandAuthentication.DTOs.Hotel;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.Models.Hotels;
-using UserAuthorizationandAuthentication.Models.Hotels.Bookings;
-using UserAuthorizationandAuthentication.Services.FileStorage;
+using TravAi.DTOs.Hotel;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Models.Enums;
+using TravAi.Models.Hotels;
+using TravAi.Models.Hotels.Bookings;
+using TravAi.Services.FileStorage;
 
-namespace UserAuthorizationandAuthentication.Services.HotelService
+namespace TravAi.Services.HotelService
 {
     public class HotelService : IHotelService
     {

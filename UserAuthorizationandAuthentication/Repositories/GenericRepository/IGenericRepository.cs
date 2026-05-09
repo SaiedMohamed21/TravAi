@@ -1,6 +1,6 @@
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 
-namespace UserAuthorizationandAuthentication.Repositories.GenericRepository
+namespace TravAi.Repositories.GenericRepository
 {
     public interface IGenericRepository<T> where T : class
     {

@@ -1,8 +1,8 @@
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
+﻿using TravAi.Models.Enums;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
 
-namespace UserAuthorizationandAuthentication.DTOs.Hotel
+namespace TravAi.DTOs.Hotel
 {
     // --- Search & Filter DTOs ---
     

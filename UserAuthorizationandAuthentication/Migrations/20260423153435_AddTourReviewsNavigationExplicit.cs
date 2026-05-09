@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace UserAuthorizationandAuthentication.Migrations
+namespace TravAi.Migrations
 {
     /// <inheritdoc />
     public partial class AddTourReviewsNavigationExplicit : Migration

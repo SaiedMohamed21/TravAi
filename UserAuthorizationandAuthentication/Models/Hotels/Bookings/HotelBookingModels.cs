@@ -1,11 +1,11 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.Models.Hotels;
-using UserAuthorizationandAuthentication.Models.Auth;
+using TravAi.Models.Enums;
+using TravAi.Models.Hotels;
+using TravAi.Models.Auth;
 
 
-namespace UserAuthorizationandAuthentication.Models.Hotels.Bookings
+namespace TravAi.Models.Hotels.Bookings
 {
     public class HotelBooking
     {

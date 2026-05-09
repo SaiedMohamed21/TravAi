@@ -1,9 +1,9 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35506.116 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserAuthorizationandAuthentication", "UserAuthorizationandAuthentication\UserAuthorizationandAuthentication.csproj", "{659F7B02-76AE-483E-BABA-7E0E2779B899}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TravAi", "UserAuthorizationandAuthentication\TravAi.csproj", "{659F7B02-76AE-483E-BABA-7E0E2779B899}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

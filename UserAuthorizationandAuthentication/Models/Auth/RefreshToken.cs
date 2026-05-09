@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.Models.Auth
+﻿namespace TravAi.Models.Auth
 {
     public class RefreshToken
     {

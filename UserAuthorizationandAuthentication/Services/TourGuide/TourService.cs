@@ -1,19 +1,19 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
-using Tour = UserAuthorizationandAuthentication.TourGuide.Models.Tour;
+﻿using TravAi.TourGuide.Models;
+using Tour = TravAi.TourGuide.Models.Tour;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Tour;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Review;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
+using TravAi.TourGuide.DTOs.Tour;
+using TravAi.TourGuide.DTOs.Review;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Services
+namespace TravAi.TourGuide.Services
 {
     public class TourService : ITourService
     {

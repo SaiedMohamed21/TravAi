@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Flight
+namespace TravAi.Airline.DTOs.Flight
 {
     public class FlightSegmentDto
     {

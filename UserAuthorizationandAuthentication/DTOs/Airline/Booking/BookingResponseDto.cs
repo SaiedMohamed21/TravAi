@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Booking
+﻿namespace TravAi.Airline.DTOs.Booking
 {
     public class BookingResponseDto
     {
@@ -22,6 +22,6 @@ namespace UserAuthorizationandAuthentication.Airline.DTOs.Booking
         public bool CanCancel { get; set; }
         public bool CanReview { get; set; }
         public string? BoardingTime { get; set; }
-        public List<UserAuthorizationandAuthentication.Airline.DTOs.Passenger.PassengerResponseDto> Passengers { get; set; } = new();
+        public List<TravAi.Airline.DTOs.Passenger.PassengerResponseDto> Passengers { get; set; } = new();
     }
 }

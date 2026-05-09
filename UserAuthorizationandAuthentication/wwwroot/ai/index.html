@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>AI Trip Planner – TravAi</title>
+  <meta name="description" content="Plan your perfect trip with AI-powered budget estimation and smart itinerary generation.">
+  <script>if(!localStorage.getItem('token'))window.location.href='../auth/login.html';</script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-back">← Back to Home</a>
+  <div class="logo">🤖 AI Trip Planner</div>
+  <div style="font-size:.85rem;color:var(--muted)" id="userLabel"></div>
+</nav>
+
+<!-- STEPS INDICATOR -->
+<div class="steps">
+  <div class="step active" id="s1"><div class="step-num">1</div><div class="step-label">Trip Details</div></div>
+  <div class="step-line"></div>
+  <div class="step" id="s2"><div class="step-num">2</div><div class="step-label">Budget</div></div>
+  <div class="step-line"></div>
+  <div class="step" id="s3"><div class="step-num">3</div><div class="step-label">Your Plan</div></div>
+</div>
+
+<div class="container">
+
+  <!-- ═══════════════ PAGE 1: TRIP DETAILS ═══════════════ -->
+  <div class="page active" id="page1">
+
+    <div class="card">
+      <div class="card-title">✈️ Trip Details</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>From City</label>
+          <div class="autocomplete-wrap" id="wrap-fromCity">
+            <input id="fromCity" type="text" placeholder="e.g. Cairo" autocomplete="off" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>To City (Main Destination)</label>
+          <div class="autocomplete-wrap" id="wrap-toCity">
+            <input id="toCity" type="text" placeholder="e.g. Paris" autocomplete="off" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Departure Date</label>
+          <input id="depDate" type="date" required>
+        </div>
+        <div class="form-group">
+          <label>Return Date</label>
+          <input id="retDate" type="date" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">👥 Travelers & Rooms</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Adults</label>
+          <input id="adults" type="number" min="1" value="2">
+        </div>
+        <div class="form-group">
+          <label>Children</label>
+          <input id="children" type="number" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Single Rooms</label>
+          <input id="singleRooms" type="number" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label>Double Rooms</label>
+          <input id="doubleRooms" type="number" min="0" value="1">
+        </div>
+        <div class="form-group full">
+          <label>Your Language (for Tour Guide matching)</label>
+          <select id="language">
+            <option value="English">🇬🇧 English</option>
+            <option value="Arabic">🇸🇦 Arabic</option>
+            <option value="French">🇫🇷 French</option>
+            <option value="Spanish">🇪🇸 Spanish</option>
+            <option value="German">🇩🇪 German</option>
+            <option value="Italian">🇮🇹 Italian</option>
+            <option value="Chinese">🇨🇳 Chinese</option>
+            <option value="Japanese">🇯🇵 Japanese</option>
+            <option value="Russian">🇷🇺 Russian</option>
+            <option value="Turkish">🇹🇷 Turkish</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙️ Preferences</div>
+      <div class="toggle-row">
+        <span class="toggle-label">✈️ Include Flights</span>
+        <label class="toggle"><input type="checkbox" id="inclFlights" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">🏨 Include Hotels</span>
+        <label class="toggle"><input type="checkbox" id="inclHotels" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">🗺️ Include Tour Guide</span>
+        <label class="toggle"><input type="checkbox" id="inclTours" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span class="toggle-label">🏙️ Multi-City Itinerary Mode</span>
+        <label class="toggle"><input type="checkbox" id="multiCity" onchange="toggleItinerary()"><span class="slider"></span></label>
+      </div>
+
+      <div class="itinerary-section" id="itinerarySection" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+          <span style="font-weight:600;font-size:.95rem;">🗺️ City Itinerary</span>
+          <button class="btn btn-outline" style="padding:8px 14px;font-size:.8rem;" onclick="addCity()">+ Add City</button>
+        </div>
+        <div id="cityRows"></div>
+        <div class="days-hint" id="daysHint" style="display:none"></div>
+      </div>
+    </div>
+
+    <div id="alert1" class="alert alert-err"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="estimateBtn" onclick="goEstimate()">
+        🔍 Estimate Trip Price
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 2: BUDGET SELECTION ═══════════════ -->
+  <div class="page" id="page2">
+    <div class="loader active" id="loader2"><div class="spinner"></div><span>Analyzing available data…</span></div>
+
+    <div id="budgetContent" style="display:none">
+      <div class="card">
+        <div class="card-title">💰 Choose Your Budget Type</div>
+        <div class="budget-grid" id="budgetGrid"></div>
+
+        <div class="slider-section" id="sliderSection" style="display:none">
+          <div class="slider-header">
+            <span style="font-weight:600">Set Maximum Budget</span>
+            <span class="budget-val" id="budgetValDisplay">$0</span>
+          </div>
+          <input type="range" id="budgetSlider" min="0" max="10000" step="50" value="0"
+            oninput="updateSlider(this.value)">
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);margin-top:6px;">
+            <span id="sliderMin">$0</span><span id="sliderMax">$10,000</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="alert2" class="alert alert-err"></div>
+      <div class="btn-group">
+        <button class="btn btn-outline" onclick="goPage(1)">← Back</button>
+        <button class="btn btn-primary" id="generateBtn" onclick="goGenerate()" disabled>
+          🤖 Generate My Plan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PAGE 3: TRIP PLAN ═══════════════ -->
+  <div class="page" id="page3">
+    <div class="loader active" id="loader3"><div class="spinner"></div><span>Building your perfect trip…</span></div>
+
+    <div id="planContent" style="display:none">
+      <div class="plan-header" id="planHeader"></div>
+
+      <!-- Flights -->
+      <div class="card" id="flightsSection">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>✈️ Flights</span>
+          <div id="flightBudgetInfo" style="display:flex;align-items:center;gap:6px"></div>
+        </div>
+        <div id="flightsBody"></div>
+      </div>
+
+
+      <!-- City Plans -->
+      <div id="cityPlansBody"></div>
+
+      <div class="btn-group" style="margin-top:24px">
+        <button class="btn btn-outline" onclick="goPage(2)">← Back</button>
+        <button class="btn btn-primary" onclick="goPage(1)">🔄 Plan Again</button>
+      </div>
+    </div>
+
+    <div id="alert3" class="alert alert-err"></div>
+  </div>
+
+</div><!-- /container -->
+
+<script src="app.js"></script>
+</body>
+</html>

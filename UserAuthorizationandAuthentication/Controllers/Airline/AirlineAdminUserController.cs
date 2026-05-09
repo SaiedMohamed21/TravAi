@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.Data;
-using UserAuthorizationandAuthentication.DTOs.AdminManagement;
-using UserAuthorizationandAuthentication.Models.Auth;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Models.Enums;
+using TravAi.Data;
+using TravAi.DTOs.AdminManagement;
+using TravAi.Models.Auth;
 
 
-namespace UserAuthorizationandAuthentication.Airline.Controllers
+namespace TravAi.Airline.Controllers
 {
     [ApiController]
     [Route("api/airline/admin/users")]

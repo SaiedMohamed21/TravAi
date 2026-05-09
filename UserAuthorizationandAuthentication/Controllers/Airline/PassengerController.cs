@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Airline.DTOs.Passenger;
-using UserAuthorizationandAuthentication.Airline.Services.PassengerService;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Airline.DTOs.Passenger;
+using TravAi.Airline.Services.PassengerService;
 
-namespace UserAuthorizationandAuthentication.Airline.Controllers
+namespace TravAi.Airline.Controllers
 {
     [Authorize]
     [ApiController]

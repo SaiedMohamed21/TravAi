@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide;
-using UserAuthorizationandAuthentication.TourGuide.Services;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.WithdrawRequest;
+using TravAi.TourGuide.DTOs.TourGuide;
+using TravAi.TourGuide.Services;
+using TravAi.TourGuide.DTOs.WithdrawRequest;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Controllers
+namespace TravAi.TourGuide.Controllers
 {
     /// <summary>
     /// Admin-only endpoints for managing Tour Guide applications

@@ -1,14 +1,14 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.DTOs.AdminManagement;
-using UserAuthorizationandAuthentication.Models.Hotels;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.DTOs.AdminManagement;
+using TravAi.Models.Hotels;
 
-namespace UserAuthorizationandAuthentication.Controllers.Admin
+namespace TravAi.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]

@@ -1,9 +1,9 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.WithdrawRequest;
+using TravAi.TourGuide.DTOs.WithdrawRequest;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Services
+namespace TravAi.TourGuide.Services
 {
     public interface IWithdrawRequestService
     {

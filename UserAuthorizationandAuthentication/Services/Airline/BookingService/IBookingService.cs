@@ -1,8 +1,8 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
-using UserAuthorizationandAuthentication.Airline.DTOs.Booking;
+﻿using TravAi;
+using TravAi.Data;
+using TravAi.Airline.DTOs.Booking;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
+namespace TravAi.Airline.Services.BookingService
 {
     public interface IBookingService
     {

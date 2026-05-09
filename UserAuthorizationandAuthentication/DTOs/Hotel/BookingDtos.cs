@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using UserAuthorizationandAuthentication.Models.Enums;
+using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.DTOs.Hotel
+namespace TravAi.DTOs.Hotel
 {
     public class CreateBookingRequest
     {

@@ -1,20 +1,20 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.UrgentRequest;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
-using PaymentStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.PaymentStatus;
-using BookingStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.BookingStatus;
+using TravAi.TourGuide.DTOs.UrgentRequest;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
+using PaymentStatus = TravAi.TourGuide.Models.Enums.PaymentStatus;
+using BookingStatus = TravAi.TourGuide.Models.Enums.BookingStatus;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Services
+namespace TravAi.TourGuide.Services
 {
     public class UrgentRequestService : IUrgentRequestService
     {

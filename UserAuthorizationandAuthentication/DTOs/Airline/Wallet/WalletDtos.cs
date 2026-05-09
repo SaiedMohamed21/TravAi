@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Wallet
+namespace TravAi.Airline.DTOs.Wallet
 {
     public class AddFundsDto
     {

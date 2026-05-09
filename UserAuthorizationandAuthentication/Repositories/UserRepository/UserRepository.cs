@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Repositories.GenericRepository;
-using UserAuthorizationandAuthentication.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TravAi.Models.Auth;
+using TravAi.Repositories.GenericRepository;
+using TravAi.Data;
 
-namespace UserAuthorizationandAuthentication.Repositories.UserRepository
+namespace TravAi.Repositories.UserRepository
 {
     public class UserRepository : GenericRepository<User>, IUserRepository
     {

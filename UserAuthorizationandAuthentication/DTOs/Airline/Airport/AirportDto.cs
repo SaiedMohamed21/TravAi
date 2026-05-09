@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Airport
+namespace TravAi.Airline.DTOs.Airport
 {
     public class AirportDto
     {

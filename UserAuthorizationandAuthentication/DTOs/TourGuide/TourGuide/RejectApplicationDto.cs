@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide
+namespace TravAi.TourGuide.DTOs.TourGuide
 {
     public class RejectApplicationDto
     {

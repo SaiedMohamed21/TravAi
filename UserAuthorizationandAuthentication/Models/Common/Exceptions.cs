@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Net;
 
-namespace UserAuthorizationandAuthentication.Models.Common
+namespace TravAi.Models.Common
 {
     public class AppException : Exception
     {

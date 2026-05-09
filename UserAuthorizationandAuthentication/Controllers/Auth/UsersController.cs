@@ -1,13 +1,13 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Services;
-using UserAuthorizationandAuthentication.Services.Auth;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Services;
+using TravAi.Services.Auth;
+using TravAi.Data;
 using System.Security.Claims;
 
-namespace UserAuthorizationandAuthentication.Controllers.Auth
+namespace TravAi.Controllers.Auth
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -15,9 +15,9 @@ namespace UserAuthorizationandAuthentication.Controllers.Auth
     public class UsersController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly UserAuthorizationandAuthentication.Services.FileStorage.IFileService _fileService;
+        private readonly TravAi.Services.FileStorage.IFileService _fileService;
 
-        public UsersController(IAuthService authService, UserAuthorizationandAuthentication.Services.FileStorage.IFileService fileService)
+        public UsersController(IAuthService authService, TravAi.Services.FileStorage.IFileService fileService)
         {
             _authService = authService;
             _fileService = fileService;

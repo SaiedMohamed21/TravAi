@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
-using UserAuthorizationandAuthentication.Models.Enums;
+using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.DTOs.AdminManagement
+namespace TravAi.DTOs.AdminManagement
 {
     public class AmenityManageDto
     {

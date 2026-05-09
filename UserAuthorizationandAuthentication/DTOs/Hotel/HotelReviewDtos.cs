@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.DTOs.Hotel
+namespace TravAi.DTOs.Hotel
 {
     public class CreateReviewRequest
     {

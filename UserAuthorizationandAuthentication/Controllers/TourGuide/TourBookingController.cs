@@ -1,16 +1,16 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Booking;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Services;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.TourGuide.DTOs.Booking;
+using TravAi.TourGuide.Models.Enums;
+using TravAi.TourGuide.Services;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Controllers
+namespace TravAi.TourGuide.Controllers
 {
     /// <summary>
     /// Booking endpoints for users to manage tour bookings

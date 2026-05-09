@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.DTOs.Auth
+namespace TravAi.DTOs.Auth
 {
     public class AuthResponse
     {

@@ -1,12 +1,12 @@
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Airline.DTOs.Review;
-using UserAuthorizationandAuthentication.Airline.Services.ReviewService;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Airline.DTOs.Review;
+using TravAi.Airline.Services.ReviewService;
 
-namespace UserAuthorizationandAuthentication.Airline.Controllers
+namespace TravAi.Airline.Controllers
 {
     [ApiController]
     [Route("api/airline/reviews")]

@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace UserAuthorizationandAuthentication.Migrations
+namespace TravAi.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

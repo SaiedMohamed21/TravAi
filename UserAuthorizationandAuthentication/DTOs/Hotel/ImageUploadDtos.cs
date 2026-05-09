@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.DTOs.Hotel
+namespace TravAi.DTOs.Hotel
 {
     // --- Image Upload DTOs ---
     

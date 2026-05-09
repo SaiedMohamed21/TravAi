@@ -1,12 +1,12 @@
-using UserAuthorizationandAuthentication.Data;
+﻿using TravAi.Data;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Airline.DTOs.Booking;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Airline.Models;
-using UserAuthorizationandAuthentication.Airline.Models.Airlines;
+using TravAi.Airline.DTOs.Booking;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Airline.Models;
+using TravAi.Airline.Models.Airlines;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.BookingService
+namespace TravAi.Airline.Services.BookingService
 {
     public class BookingService : IBookingService
     {

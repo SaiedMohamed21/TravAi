@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Tour
+namespace TravAi.TourGuide.DTOs.Tour
 {
     public class TourFilterDto
     {

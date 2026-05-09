@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Tour
+namespace TravAi.TourGuide.DTOs.Tour
 {
     public class TourCardDto
     {

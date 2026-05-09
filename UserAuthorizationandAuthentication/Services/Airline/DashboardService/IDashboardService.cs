@@ -1,8 +1,8 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
-using UserAuthorizationandAuthentication.Airline.DTOs.Dashboard;
+﻿using TravAi;
+using TravAi.Data;
+using TravAi.Airline.DTOs.Dashboard;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.DashboardService
+namespace TravAi.Airline.Services.DashboardService
 {
     public interface IDashboardService
     {

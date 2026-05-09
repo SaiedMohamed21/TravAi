@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.DTOs.Hotel;
-using UserAuthorizationandAuthentication.Models.Hotels;
+﻿using TravAi.DTOs.Hotel;
+using TravAi.Models.Hotels;
 
-namespace UserAuthorizationandAuthentication.Services.HotelService
+namespace TravAi.Services.HotelService
 {
     public interface IHotelService
     {

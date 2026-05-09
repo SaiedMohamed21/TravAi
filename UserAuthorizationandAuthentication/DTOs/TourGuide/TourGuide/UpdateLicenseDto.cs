@@ -1,5 +1,5 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide
+﻿using TravAi.TourGuide.Models;
+namespace TravAi.TourGuide.DTOs.TourGuide
 {
     public class UpdateLicenseDto
     {

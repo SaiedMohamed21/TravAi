@@ -1,15 +1,15 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Airline.Models.Airlines;
-using UserAuthorizationandAuthentication.Airline.DTOs.Airline;
-using UserAuthorizationandAuthentication.Models.Enums;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Airline.Models.Airlines;
+using TravAi.Airline.DTOs.Airline;
+using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.Airline.Controllers
+namespace TravAi.Airline.Controllers
 {
     [ApiController]
     [Route("api/airline/airlines")]
@@ -33,7 +33,7 @@ namespace UserAuthorizationandAuthentication.Airline.Controllers
             if (await _context.Airlines.AnyAsync(a => a.Name == dto.Name))
                 return BadRequest(new ApiResponse<string>(false, "Airline already exists"));
 
-            var airline = new UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline
+            var airline = new TravAi.Airline.Models.Airlines.Airline
             {
                 Name = dto.Name,
                 UserId = dto.UserId, // Admin assigns the user owner

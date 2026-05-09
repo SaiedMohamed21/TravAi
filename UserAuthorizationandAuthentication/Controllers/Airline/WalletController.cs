@@ -1,15 +1,15 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
 using System.Security.Claims;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Airline.DTOs.Wallet;
-using UserAuthorizationandAuthentication.Airline.Models;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Airline.DTOs.Wallet;
+using TravAi.Airline.Models;
 
-namespace UserAuthorizationandAuthentication.Airline.Controllers
+namespace TravAi.Airline.Controllers
 {
     [ApiController]
     [Route("api/airline/wallet")]
@@ -86,7 +86,7 @@ namespace UserAuthorizationandAuthentication.Airline.Controllers
             {
                 user.WalletBalance += dto.Amount;
 
-                var walletTx = new UserAuthorizationandAuthentication.Airline.Models.WalletTransaction
+                var walletTx = new TravAi.Airline.Models.WalletTransaction
                 {
                     UserId = userId,
                     Amount = dto.Amount,

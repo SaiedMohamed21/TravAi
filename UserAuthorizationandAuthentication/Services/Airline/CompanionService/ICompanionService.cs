@@ -1,8 +1,8 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
-using UserAuthorizationandAuthentication.Airline.DTOs.Companion;
+﻿using TravAi;
+using TravAi.Data;
+using TravAi.Airline.DTOs.Companion;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.CompanionService
+namespace TravAi.Airline.Services.CompanionService
 {
     public interface ICompanionService
     {

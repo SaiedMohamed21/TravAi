@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Booking
+namespace TravAi.TourGuide.DTOs.Booking
 {
     public class ProcessPaymentDto
     {

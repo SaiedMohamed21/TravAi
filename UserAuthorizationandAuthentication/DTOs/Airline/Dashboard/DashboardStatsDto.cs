@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Dashboard
+﻿namespace TravAi.Airline.DTOs.Dashboard
 {
     public class DashboardStatsDto
     {

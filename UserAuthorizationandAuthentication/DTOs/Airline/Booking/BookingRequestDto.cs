@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Booking
+namespace TravAi.Airline.DTOs.Booking
 {
     public class BookingRequestDto
     {

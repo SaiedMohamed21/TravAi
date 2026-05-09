@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.Models.Enums
+﻿namespace TravAi.Models.Enums
 {
     public enum PaymentStatus
     {

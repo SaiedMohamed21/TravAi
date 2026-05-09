@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace UserAuthorizationandAuthentication.Services.Auth
+namespace TravAi.Services.Auth
 {
     public interface ISecurityService
     {

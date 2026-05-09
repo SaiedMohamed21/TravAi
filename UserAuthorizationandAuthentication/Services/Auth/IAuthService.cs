@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
+﻿using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
 
-namespace UserAuthorizationandAuthentication.Services.Auth
+namespace TravAi.Services.Auth
 {
     public interface IAuthService
     {

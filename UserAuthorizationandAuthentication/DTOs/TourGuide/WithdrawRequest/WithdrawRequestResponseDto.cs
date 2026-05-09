@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.WithdrawRequest
+namespace TravAi.TourGuide.DTOs.WithdrawRequest
 {
     public class WithdrawRequestResponseDto
     {

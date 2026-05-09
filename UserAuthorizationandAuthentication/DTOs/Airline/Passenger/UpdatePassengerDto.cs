@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Passenger
+namespace TravAi.Airline.DTOs.Passenger
 {
     public class UpdatePassengerDto
     {

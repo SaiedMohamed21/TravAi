@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Companion
+namespace TravAi.Airline.DTOs.Companion
 {
     public class UserCompanionDto
     {

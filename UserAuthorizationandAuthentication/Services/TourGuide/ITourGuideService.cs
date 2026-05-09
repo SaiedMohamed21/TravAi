@@ -1,10 +1,10 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
-using TourGuide = UserAuthorizationandAuthentication.TourGuide.Models.TourGuide;
+﻿using TravAi.TourGuide.Models;
+using TourGuide = TravAi.TourGuide.Models.TourGuide;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Review;
-namespace UserAuthorizationandAuthentication.TourGuide.Services
+using TravAi.TourGuide.DTOs.TourGuide;
+using TravAi.TourGuide.DTOs.Review;
+namespace TravAi.TourGuide.Services
 {
     public interface ITourGuideService
     {

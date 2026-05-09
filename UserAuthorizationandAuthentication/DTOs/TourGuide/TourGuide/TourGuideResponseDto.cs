@@ -1,9 +1,9 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System.Collections.Generic;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
+using TravAi.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide
+namespace TravAi.TourGuide.DTOs.TourGuide
 {
     public class TourGuideResponseDto
     {

@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations;
-using UserAuthorizationandAuthentication.Models.Enums;
+﻿using System.ComponentModel.DataAnnotations;
+using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.DTOs.Hotel
+namespace TravAi.DTOs.Hotel
 {
     // --- Room DTOs ---
     

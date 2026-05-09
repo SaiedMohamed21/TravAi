@@ -1,10 +1,10 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
+﻿using TravAi;
+using TravAi.Data;
 using Microsoft.EntityFrameworkCore;
 
-using UserAuthorizationandAuthentication.Airline.DTOs.Dashboard;
+using TravAi.Airline.DTOs.Dashboard;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.DashboardService
+namespace TravAi.Airline.Services.DashboardService
 {
     public class DashboardService : IDashboardService
     {

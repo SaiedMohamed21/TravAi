@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
-using UserAuthorizationandAuthentication.Models.Enums;
+using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.DTOs.Hotel
+namespace TravAi.DTOs.Hotel
 {
     // --- Application DTOs ---
     public class HotelApplicationRequest

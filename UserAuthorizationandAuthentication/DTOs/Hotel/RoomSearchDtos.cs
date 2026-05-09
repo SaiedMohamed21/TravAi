@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.DTOs.Hotel
+﻿namespace TravAi.DTOs.Hotel
 {
     // Search Request
     public class RoomSearchRequest

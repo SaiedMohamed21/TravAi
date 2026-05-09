@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace UserAuthorizationandAuthentication.Models.Auth
+namespace TravAi.Models.Auth
 {
     public class UserPhone
     {

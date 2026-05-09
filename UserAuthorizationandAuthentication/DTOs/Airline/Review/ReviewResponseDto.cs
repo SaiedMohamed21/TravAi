@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Review
+﻿namespace TravAi.Airline.DTOs.Review
 {
     public class ReviewResponseDto
     {

@@ -1,9 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
 
-namespace UserAuthorizationandAuthentication.Repositories.GenericRepository
+namespace TravAi.Repositories.GenericRepository
 {
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {

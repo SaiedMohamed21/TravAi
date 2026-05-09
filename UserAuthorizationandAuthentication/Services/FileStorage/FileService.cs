@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace UserAuthorizationandAuthentication.Services.FileStorage
+namespace TravAi.Services.FileStorage
 {
     public interface IFileService
     {

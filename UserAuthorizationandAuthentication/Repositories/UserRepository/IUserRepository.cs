@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Repositories.GenericRepository;
+﻿using TravAi.Models.Auth;
+using TravAi.Repositories.GenericRepository;
 
-namespace UserAuthorizationandAuthentication.Repositories.UserRepository
+namespace TravAi.Repositories.UserRepository
 {
     public interface IUserRepository : IGenericRepository<User>
     {

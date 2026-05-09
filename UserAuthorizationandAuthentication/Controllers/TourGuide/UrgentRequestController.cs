@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.UrgentRequest;
-using UserAuthorizationandAuthentication.TourGuide.Services;
+using TravAi.TourGuide.DTOs.UrgentRequest;
+using TravAi.TourGuide.Services;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Controllers
+namespace TravAi.TourGuide.Controllers
 {
     [Route("api/tourguide/urgent-requests")]
     [ApiController]

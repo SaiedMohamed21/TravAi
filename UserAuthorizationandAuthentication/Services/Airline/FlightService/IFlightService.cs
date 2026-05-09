@@ -1,6 +1,6 @@
-using UserAuthorizationandAuthentication.Airline.DTOs.Flight;
+﻿using TravAi.Airline.DTOs.Flight;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.FlightService
+namespace TravAi.Airline.Services.FlightService
 {
     public interface IFlightService
     {

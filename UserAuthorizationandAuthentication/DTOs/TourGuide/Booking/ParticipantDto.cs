@@ -1,11 +1,11 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
+using TravAi.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Booking
+namespace TravAi.TourGuide.DTOs.Booking
 {
     public class ParticipantDto
     {

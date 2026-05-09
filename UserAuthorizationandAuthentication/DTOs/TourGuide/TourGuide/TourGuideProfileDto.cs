@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide
+namespace TravAi.TourGuide.DTOs.TourGuide
 {
     public class TourGuideProfileDto
     {

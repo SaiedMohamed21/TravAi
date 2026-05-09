@@ -1,12 +1,12 @@
-using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using TravAi.Data;
 
-using UserAuthorizationandAuthentication.Airline.DTOs.Flight;
-using UserAuthorizationandAuthentication.Airline.Models.Airlines;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
+using TravAi.Airline.DTOs.Flight;
+using TravAi.Airline.Models.Airlines;
+using TravAi.Models;
+using TravAi.Models.Auth;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.FlightService
+namespace TravAi.Airline.Services.FlightService
 {
     public class FlightService : IFlightService
     {

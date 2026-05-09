@@ -1,17 +1,17 @@
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Repositories.UserRepository;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.Models.Common;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Models.Auth;
+using TravAi.Repositories.UserRepository;
+using TravAi.Models.Enums;
+using TravAi.Models.Common;
 
 
-namespace UserAuthorizationandAuthentication.Services.Auth
+namespace TravAi.Services.Auth
 {
     public class AuthService : IAuthService
     {

@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.DTOs.AdminManagement
+﻿namespace TravAi.DTOs.AdminManagement
 {
     public class UpdateUserStatusDto
     {

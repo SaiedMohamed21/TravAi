@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace UserAuthorizationandAuthentication.DTOs.Common
+namespace TravAi.DTOs.Common
 {
     public class ApiResponse<T>
     {

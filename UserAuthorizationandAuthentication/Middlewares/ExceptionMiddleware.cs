@@ -1,10 +1,10 @@
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
-using UserAuthorizationandAuthentication.Models.Common;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
+using TravAi.Models.Common;
 
-namespace UserAuthorizationandAuthentication.Middlewares
+namespace TravAi.Middlewares
 {
     public class ExceptionMiddleware
     {

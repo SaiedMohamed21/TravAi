@@ -1,19 +1,19 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
-using TourGuide = UserAuthorizationandAuthentication.TourGuide.Models.TourGuide;
+﻿using TravAi.TourGuide.Models;
+using TourGuide = TravAi.TourGuide.Models.TourGuide;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.TourGuide;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Review;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
+using TravAi.TourGuide.DTOs.TourGuide;
+using TravAi.TourGuide.DTOs.Review;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Services
+namespace TravAi.TourGuide.Services
 {
     public class TourGuideService : ITourGuideService
     {
@@ -32,7 +32,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
                 throw new InvalidOperationException("User already has a pending or active tour guide profile.");
             }
 
-            var tourGuide = new UserAuthorizationandAuthentication.TourGuide.Models.TourGuide
+            var tourGuide = new TravAi.TourGuide.Models.TourGuide
             {
                 UserId = userId,
                 Name = model.Name,
@@ -328,7 +328,7 @@ namespace UserAuthorizationandAuthentication.TourGuide.Services
             };
         }
 
-        private async Task<TourGuideResponseDto> MapToDto(UserAuthorizationandAuthentication.TourGuide.Models.TourGuide tg)
+        private async Task<TourGuideResponseDto> MapToDto(TravAi.TourGuide.Models.TourGuide tg)
         {
             // Ensure user is loaded if not already
             if (tg.User == null)

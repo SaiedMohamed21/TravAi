@@ -1,13 +1,13 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
+﻿using TravAi;
+using TravAi.Data;
 using Microsoft.EntityFrameworkCore;
 
-using UserAuthorizationandAuthentication.Airline.DTOs.Companion;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Airline.Models;
+using TravAi.Airline.DTOs.Companion;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Airline.Models;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.CompanionService
+namespace TravAi.Airline.Services.CompanionService
 {
     public class CompanionService : ICompanionService
     {
@@ -42,8 +42,8 @@ namespace UserAuthorizationandAuthentication.Airline.Services.CompanionService
         public async Task<UserCompanionDto> AddCompanionAsync(long userId, CreateCompanionDto dto)
         {
             // Parse Gender enum safely
-            if (!Enum.TryParse<UserAuthorizationandAuthentication.Models.Enums.Gender>(dto.Gender, true, out var genderEnum))
-                genderEnum = UserAuthorizationandAuthentication.Models.Enums.Gender.Male;
+            if (!Enum.TryParse<TravAi.Models.Enums.Gender>(dto.Gender, true, out var genderEnum))
+                genderEnum = TravAi.Models.Enums.Gender.Male;
 
             var companion = new UserCompanion
             {

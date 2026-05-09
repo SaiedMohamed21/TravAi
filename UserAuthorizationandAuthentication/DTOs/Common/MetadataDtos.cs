@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.DTOs.Common
+﻿namespace TravAi.DTOs.Common
 {
     public class AmenityDto
     {

@@ -1,12 +1,12 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System;
 using System.Collections.Generic;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
-using BookingStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.BookingStatus;
-using PaymentStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.PaymentStatus;
+using TravAi.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
+using BookingStatus = TravAi.TourGuide.Models.Enums.BookingStatus;
+using PaymentStatus = TravAi.TourGuide.Models.Enums.PaymentStatus;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Booking
+namespace TravAi.TourGuide.DTOs.Booking
 {
     public class BookingResponseDto
     {

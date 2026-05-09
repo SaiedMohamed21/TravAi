@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using UserAuthorizationandAuthentication.Data;
+using TravAi.Data;
 
 #nullable disable
 
-namespace UserAuthorizationandAuthentication.Migrations
+namespace TravAi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace UserAuthorizationandAuthentication.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.Airline", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -64,7 +64,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_Airlines", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.Flight", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.Flight", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -135,7 +135,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_Flights", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.FlightLayover", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.FlightLayover", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -163,7 +163,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_FlightLayovers", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.FlightSegment", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.FlightSegment", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -206,7 +206,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_FlightSegments", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airport", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airport", b =>
                 {
                     b.Property<string>("Code")
                         .HasMaxLength(3)
@@ -232,7 +232,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_Airports", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Booking", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Booking", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -275,7 +275,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_Bookings", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.ChatMessage", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.ChatMessage", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -309,7 +309,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_ChatMessages", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Passenger", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Passenger", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -370,7 +370,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_Passengers", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.PassengerEmergencyContact", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.PassengerEmergencyContact", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -398,7 +398,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_PassengerEmergencyContacts", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.PassengerPhone", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.PassengerPhone", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -421,7 +421,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_PassengerPhones", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Review", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Review", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -453,7 +453,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_Reviews", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.UserCompanion", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.UserCompanion", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -509,7 +509,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_UserCompanions", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.WalletTransaction", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.WalletTransaction", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -547,7 +547,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("airline_WalletTransactions", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.RefreshToken", b =>
+            modelBuilder.Entity("TravAi.Models.Auth.RefreshToken", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -576,7 +576,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("RefreshTokens", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.User", b =>
+            modelBuilder.Entity("TravAi.Models.Auth.User", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -653,7 +653,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.UserPhone", b =>
+            modelBuilder.Entity("TravAi.Models.Auth.UserPhone", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -681,7 +681,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("UserPhones", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Amenity", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Amenity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -710,7 +710,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_Amenities", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Bookings.HotelBooking", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelBooking", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -761,7 +761,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelBookings", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Bookings.HotelBookingRoom", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelBookingRoom", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -802,7 +802,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelBookingRooms", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.DocumentTypeDefinition", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.DocumentTypeDefinition", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -838,7 +838,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_DocumentTypes", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Hotel", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Hotel", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -923,7 +923,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_Hotels", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelAmenity", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelAmenity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -949,7 +949,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelAmenities", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelCancellationRule", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelCancellationRule", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -983,7 +983,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelCancellationRules", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelContact", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelContact", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1015,7 +1015,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelContacts", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelDocument", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelDocument", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1054,7 +1054,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelDocuments", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelFieldDefinition", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelFieldDefinition", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1094,7 +1094,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelFieldDefinitions", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelFieldValue", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelFieldValue", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1126,7 +1126,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelFieldValues", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelImage", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelImage", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1157,7 +1157,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelImages", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelPolicy", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPolicy", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1199,7 +1199,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelPolicies", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelReview", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelReview", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1234,7 +1234,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelReviews", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelRoom", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelRoom", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1295,7 +1295,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("hotel_HotelRooms", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Review", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.Review", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1333,7 +1333,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_Reviews", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Tour", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.Tour", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1461,7 +1461,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_Tours", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBooking", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBooking", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1525,7 +1525,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourBookings", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBookingParticipant", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBookingParticipant", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1580,7 +1580,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourBookingParticipants", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBookingPayment", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBookingPayment", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1636,7 +1636,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourBookingPayments", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuide", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1688,7 +1688,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourGuides", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuideCity", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuideCity", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1710,7 +1710,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourGuideCities", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuideEmail", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuideEmail", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1735,7 +1735,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourGuideEmails", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuideLanguage", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuideLanguage", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1756,7 +1756,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourGuideLanguages", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuidePhone", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuidePhone", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1781,7 +1781,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourGuidePhones", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourImage", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourImage", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1812,7 +1812,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourImages", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourParticipantEmergencyNumber", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourParticipantEmergencyNumber", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1838,7 +1838,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourParticipantEmergencyNumbers", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourParticipantPhone", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourParticipantPhone", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1860,7 +1860,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_TourParticipantPhones", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.UrgentRequest", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.UrgentRequest", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1902,7 +1902,7 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_UrgentRequests", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.WithdrawRequest", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.WithdrawRequest", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -1935,9 +1935,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.ToTable("tourguide_WithdrawRequests", (string)null);
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.Airline", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1946,22 +1946,22 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.Flight", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.Flight", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline", "Airline")
+                    b.HasOne("TravAi.Airline.Models.Airlines.Airline", "Airline")
                         .WithMany("Flights")
                         .HasForeignKey("AirlineId");
 
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "ArrivalAirport")
+                    b.HasOne("TravAi.Airline.Models.Airport", "ArrivalAirport")
                         .WithMany()
                         .HasForeignKey("ArrivalAirportCode")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "CreatedByUser")
+                    b.HasOne("TravAi.Models.Auth.User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId");
 
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "DepartureAirport")
+                    b.HasOne("TravAi.Airline.Models.Airport", "DepartureAirport")
                         .WithMany()
                         .HasForeignKey("DepartureAirportCode")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1975,9 +1975,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("DepartureAirport");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.FlightLayover", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.FlightLayover", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airlines.Flight", "Flight")
+                    b.HasOne("TravAi.Airline.Models.Airlines.Flight", "Flight")
                         .WithMany("Layovers")
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1986,19 +1986,19 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Flight");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.FlightSegment", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.FlightSegment", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airlines.Flight", "Flight")
+                    b.HasOne("TravAi.Airline.Models.Airlines.Flight", "Flight")
                         .WithMany("Segments")
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "FromAirport")
+                    b.HasOne("TravAi.Airline.Models.Airport", "FromAirport")
                         .WithMany()
                         .HasForeignKey("FromAirportCode");
 
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airport", "ToAirport")
+                    b.HasOne("TravAi.Airline.Models.Airport", "ToAirport")
                         .WithMany()
                         .HasForeignKey("ToAirportCode");
 
@@ -2009,15 +2009,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("ToAirport");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Booking", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Booking", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airlines.Flight", "Flight")
+                    b.HasOne("TravAi.Airline.Models.Airlines.Flight", "Flight")
                         .WithMany()
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2028,15 +2028,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.ChatMessage", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.ChatMessage", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Booking", "Booking")
+                    b.HasOne("TravAi.Airline.Models.Booking", "Booking")
                         .WithMany()
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "Sender")
+                    b.HasOne("TravAi.Models.Auth.User", "Sender")
                         .WithMany()
                         .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2047,9 +2047,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Sender");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Passenger", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Passenger", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Booking", "Booking")
+                    b.HasOne("TravAi.Airline.Models.Booking", "Booking")
                         .WithMany("Passengers")
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2058,9 +2058,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Booking");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.PassengerEmergencyContact", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.PassengerEmergencyContact", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Passenger", "Passenger")
+                    b.HasOne("TravAi.Airline.Models.Passenger", "Passenger")
                         .WithMany("EmergencyContacts")
                         .HasForeignKey("PassengerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2069,9 +2069,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Passenger");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.PassengerPhone", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.PassengerPhone", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Passenger", "Passenger")
+                    b.HasOne("TravAi.Airline.Models.Passenger", "Passenger")
                         .WithMany("Phones")
                         .HasForeignKey("PassengerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2080,15 +2080,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Passenger");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Review", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Review", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Airline.Models.Airlines.Flight", "Flight")
+                    b.HasOne("TravAi.Airline.Models.Airlines.Flight", "Flight")
                         .WithMany()
                         .HasForeignKey("FlightId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2099,9 +2099,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.UserCompanion", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.UserCompanion", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2110,9 +2110,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.WalletTransaction", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.WalletTransaction", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2121,9 +2121,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.RefreshToken", b =>
+            modelBuilder.Entity("TravAi.Models.Auth.RefreshToken", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2132,9 +2132,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.UserPhone", b =>
+            modelBuilder.Entity("TravAi.Models.Auth.UserPhone", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany("UserPhones")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2143,15 +2143,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Bookings.HotelBooking", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelBooking", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("Bookings")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2162,15 +2162,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Bookings.HotelBookingRoom", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelBookingRoom", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Bookings.HotelBooking", "Booking")
+                    b.HasOne("TravAi.Models.Hotels.Bookings.HotelBooking", "Booking")
                         .WithMany("BookingRooms")
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.HotelRoom", "Room")
+                    b.HasOne("TravAi.Models.Hotels.HotelRoom", "Room")
                         .WithMany()
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -2180,9 +2180,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Room");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Hotel", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Hotel", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2191,15 +2191,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelAmenity", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelAmenity", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Amenity", "Amenity")
+                    b.HasOne("TravAi.Models.Hotels.Amenity", "Amenity")
                         .WithMany("HotelAmenities")
                         .HasForeignKey("AmenityId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("HotelAmenities")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2210,9 +2210,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelCancellationRule", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelCancellationRule", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.HotelPolicy", "HotelPolicy")
+                    b.HasOne("TravAi.Models.Hotels.HotelPolicy", "HotelPolicy")
                         .WithMany("CancellationRules")
                         .HasForeignKey("HotelPolicyId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2221,9 +2221,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("HotelPolicy");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelContact", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelContact", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("Contacts")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2232,15 +2232,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelDocument", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelDocument", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.DocumentTypeDefinition", "DocumentType")
+                    b.HasOne("TravAi.Models.Hotels.DocumentTypeDefinition", "DocumentType")
                         .WithMany("HotelDocuments")
                         .HasForeignKey("DocumentTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("Documents")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2251,15 +2251,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelFieldValue", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelFieldValue", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.HotelFieldDefinition", "FieldDefinition")
+                    b.HasOne("TravAi.Models.Hotels.HotelFieldDefinition", "FieldDefinition")
                         .WithMany("Values")
                         .HasForeignKey("FieldDefinitionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("FieldValues")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2270,9 +2270,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelImage", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelImage", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("Images")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2281,26 +2281,26 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelPolicy", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPolicy", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithOne("Policy")
-                        .HasForeignKey("UserAuthorizationandAuthentication.Models.Hotels.HotelPolicy", "HotelId")
+                        .HasForeignKey("TravAi.Models.Hotels.HotelPolicy", "HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelReview", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelReview", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("Reviews")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2311,9 +2311,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelRoom", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelRoom", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Hotels.Hotel", "Hotel")
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
                         .WithMany("Rooms")
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2322,19 +2322,19 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Hotel");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Review", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.Review", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany()
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.Tour", "Tour")
+                    b.HasOne("TravAi.TourGuide.Models.Tour", "Tour")
                         .WithMany("TourReviews")
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2347,9 +2347,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Tour", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.Tour", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany()
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2358,21 +2358,21 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("TourGuide");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBooking", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBooking", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany()
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.Tour", "Tour")
+                    b.HasOne("TravAi.TourGuide.Models.Tour", "Tour")
                         .WithMany()
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2385,9 +2385,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBookingParticipant", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBookingParticipant", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourBooking", "Booking")
+                    b.HasOne("TravAi.TourGuide.Models.TourBooking", "Booking")
                         .WithMany("Participants")
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2396,15 +2396,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Booking");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBookingPayment", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBookingPayment", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourBooking", "Booking")
+                    b.HasOne("TravAi.TourGuide.Models.TourBooking", "Booking")
                         .WithMany("Payments")
                         .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2415,9 +2415,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuide", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.Models.Auth.User", "User")
+                    b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2426,9 +2426,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuideCity", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuideCity", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany("TourGuideCities")
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2437,9 +2437,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("TourGuide");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuideEmail", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuideEmail", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany("TourGuideEmails")
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2448,9 +2448,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("TourGuide");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuideLanguage", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuideLanguage", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany("TourGuideLanguages")
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2459,9 +2459,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("TourGuide");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuidePhone", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuidePhone", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany("TourGuidePhones")
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2470,9 +2470,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("TourGuide");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourImage", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourImage", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.Tour", "Tour")
+                    b.HasOne("TravAi.TourGuide.Models.Tour", "Tour")
                         .WithMany("TourImages")
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2481,9 +2481,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Tour");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourParticipantEmergencyNumber", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourParticipantEmergencyNumber", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourBookingParticipant", "Participant")
+                    b.HasOne("TravAi.TourGuide.Models.TourBookingParticipant", "Participant")
                         .WithMany("EmergencyNumbers")
                         .HasForeignKey("ParticipantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2492,9 +2492,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Participant");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourParticipantPhone", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourParticipantPhone", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourBookingParticipant", "Participant")
+                    b.HasOne("TravAi.TourGuide.Models.TourBookingParticipant", "Participant")
                         .WithMany("Phones")
                         .HasForeignKey("ParticipantId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2503,15 +2503,15 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Participant");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.UrgentRequest", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.UrgentRequest", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany()
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.Tour", "Tour")
+                    b.HasOne("TravAi.TourGuide.Models.Tour", "Tour")
                         .WithMany()
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2522,9 +2522,9 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("TourGuide");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.WithdrawRequest", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.WithdrawRequest", b =>
                 {
-                    b.HasOne("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", "TourGuide")
+                    b.HasOne("TravAi.TourGuide.Models.TourGuide", "TourGuide")
                         .WithMany()
                         .HasForeignKey("TourGuideId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -2533,53 +2533,53 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("TourGuide");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.Airline", b =>
                 {
                     b.Navigation("Flights");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Airlines.Flight", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Airlines.Flight", b =>
                 {
                     b.Navigation("Layovers");
 
                     b.Navigation("Segments");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Booking", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Booking", b =>
                 {
                     b.Navigation("Passengers");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Airline.Models.Passenger", b =>
+            modelBuilder.Entity("TravAi.Airline.Models.Passenger", b =>
                 {
                     b.Navigation("EmergencyContacts");
 
                     b.Navigation("Phones");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Auth.User", b =>
+            modelBuilder.Entity("TravAi.Models.Auth.User", b =>
                 {
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("UserPhones");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Amenity", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Amenity", b =>
                 {
                     b.Navigation("HotelAmenities");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Bookings.HotelBooking", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelBooking", b =>
                 {
                     b.Navigation("BookingRooms");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.DocumentTypeDefinition", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.DocumentTypeDefinition", b =>
                 {
                     b.Navigation("HotelDocuments");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.Hotel", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.Hotel", b =>
                 {
                     b.Navigation("Bookings");
 
@@ -2600,38 +2600,38 @@ namespace UserAuthorizationandAuthentication.Migrations
                     b.Navigation("Rooms");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelFieldDefinition", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelFieldDefinition", b =>
                 {
                     b.Navigation("Values");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.Models.Hotels.HotelPolicy", b =>
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPolicy", b =>
                 {
                     b.Navigation("CancellationRules");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.Tour", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.Tour", b =>
                 {
                     b.Navigation("TourImages");
 
                     b.Navigation("TourReviews");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBooking", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBooking", b =>
                 {
                     b.Navigation("Participants");
 
                     b.Navigation("Payments");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourBookingParticipant", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBookingParticipant", b =>
                 {
                     b.Navigation("EmergencyNumbers");
 
                     b.Navigation("Phones");
                 });
 
-            modelBuilder.Entity("UserAuthorizationandAuthentication.TourGuide.Models.TourGuide", b =>
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourGuide", b =>
                 {
                     b.Navigation("TourGuideCities");
 

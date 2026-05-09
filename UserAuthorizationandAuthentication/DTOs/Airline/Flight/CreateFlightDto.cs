@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Flight
+namespace TravAi.Airline.DTOs.Flight
 {
     public class CreateFlightDto
     {

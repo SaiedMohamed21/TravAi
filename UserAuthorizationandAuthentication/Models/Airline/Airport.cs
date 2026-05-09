@@ -1,9 +1,9 @@
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
+﻿using TravAi.Models.Enums;
+using TravAi.Models;
+using TravAi.Models.Auth;
 using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.Airline.Models
+namespace TravAi.Airline.Models
 {
     public class Airport
     {

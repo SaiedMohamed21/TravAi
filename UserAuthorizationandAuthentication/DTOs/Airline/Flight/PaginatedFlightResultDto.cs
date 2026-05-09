@@ -1,4 +1,4 @@
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Flight
+﻿namespace TravAi.Airline.DTOs.Flight
 {
     public class PaginatedFlightResultDto
     {

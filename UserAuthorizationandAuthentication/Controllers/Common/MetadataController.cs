@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Data;
-using UserAuthorizationandAuthentication.DTOs.Common;
-using UserAuthorizationandAuthentication.DTOs.Auth;
+using TravAi.Data;
+using TravAi.DTOs.Common;
+using TravAi.DTOs.Auth;
 
-namespace UserAuthorizationandAuthentication.Controllers.Common
+namespace TravAi.Controllers.Common
 {
     [Route("api/[controller]")]
     [ApiController]

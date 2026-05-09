@@ -1,7 +1,7 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace UserAuthorizationandAuthentication.Airline.Models.Airlines
+namespace TravAi.Airline.Models.Airlines
 {
     public class FlightLayover
     {

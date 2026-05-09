@@ -1,6 +1,6 @@
-using UserAuthorizationandAuthentication.Models.Enums;
+﻿using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.User
+namespace TravAi.Airline.DTOs.User
 {
     public class UserDto
     {

@@ -1,13 +1,13 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
+﻿using TravAi;
+using TravAi.Data;
 using Microsoft.EntityFrameworkCore;
 
-using UserAuthorizationandAuthentication.Airline.DTOs.Airport;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Airline.Models;
+using TravAi.Airline.DTOs.Airport;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Airline.Models;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.AirportService
+namespace TravAi.Airline.Services.AirportService
 {
     public class AirportService : IAirportService
     {

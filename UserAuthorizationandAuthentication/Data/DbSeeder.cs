@@ -1,25 +1,25 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.Models.Hotels;
-using UserAuthorizationandAuthentication.Models.Hotels.Bookings;
-using UserAuthorizationandAuthentication.Airline.Models;
-using UserAuthorizationandAuthentication.Airline.Models.Airlines;
-using UserAuthorizationandAuthentication.TourGuide.Models;
-using TourGuideBookingStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.BookingStatus;
-using HotelBookingStatus = UserAuthorizationandAuthentication.Models.Enums.BookingStatus;
-using TourGuideStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.TourGuideStatus;
-using Language = UserAuthorizationandAuthentication.TourGuide.Models.Enums.Language;
-using AirlineReview = UserAuthorizationandAuthentication.Airline.Models.Review;
-using TourReview = UserAuthorizationandAuthentication.TourGuide.Models.Review;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Models.Enums;
+using TravAi.Models.Hotels;
+using TravAi.Models.Hotels.Bookings;
+using TravAi.Airline.Models;
+using TravAi.Airline.Models.Airlines;
+using TravAi.TourGuide.Models;
+using TourGuideBookingStatus = TravAi.TourGuide.Models.Enums.BookingStatus;
+using HotelBookingStatus = TravAi.Models.Enums.BookingStatus;
+using TourGuideStatus = TravAi.TourGuide.Models.Enums.TourGuideStatus;
+using Language = TravAi.TourGuide.Models.Enums.Language;
+using AirlineReview = TravAi.Airline.Models.Review;
+using TourReview = TravAi.TourGuide.Models.Review;
 
-namespace UserAuthorizationandAuthentication.Data
+namespace TravAi.Data
 {
     public static class DbSeeder
     {

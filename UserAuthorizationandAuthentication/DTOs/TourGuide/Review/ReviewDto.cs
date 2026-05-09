@@ -1,7 +1,7 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Review
+namespace TravAi.TourGuide.DTOs.Review
 {
     public class ReviewDto
     {

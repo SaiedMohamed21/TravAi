@@ -1,8 +1,8 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
-using UserAuthorizationandAuthentication.Airline.DTOs.Airport;
+﻿using TravAi;
+using TravAi.Data;
+using TravAi.Airline.DTOs.Airport;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.AirportService
+namespace TravAi.Airline.Services.AirportService
 {
     public interface IAirportService
     {

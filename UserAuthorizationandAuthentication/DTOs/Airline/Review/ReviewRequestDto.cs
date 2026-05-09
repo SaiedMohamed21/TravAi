@@ -1,6 +1,6 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Review
+namespace TravAi.Airline.DTOs.Review
 {
     public class ReviewRequestDto
     {

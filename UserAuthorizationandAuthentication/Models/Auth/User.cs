@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using UserAuthorizationandAuthentication.Models.Enums;
+using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.Models.Auth
+namespace TravAi.Models.Auth
 {
     public class User
     {

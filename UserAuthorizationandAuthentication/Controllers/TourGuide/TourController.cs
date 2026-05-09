@@ -1,12 +1,12 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Tour;
-using UserAuthorizationandAuthentication.TourGuide.Services;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Review;
+using TravAi.TourGuide.DTOs.Tour;
+using TravAi.TourGuide.Services;
+using TravAi.TourGuide.DTOs.Review;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Controllers
+namespace TravAi.TourGuide.Controllers
 {
     /// <summary>
     /// Tour Guide endpoints for managing their tours (CRUD operations)

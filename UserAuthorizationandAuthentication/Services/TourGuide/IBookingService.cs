@@ -1,12 +1,12 @@
-using UserAuthorizationandAuthentication.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UserAuthorizationandAuthentication.TourGuide.DTOs.Booking;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
-using BookingStatus = UserAuthorizationandAuthentication.TourGuide.Models.Enums.BookingStatus;
+using TravAi.TourGuide.DTOs.Booking;
+using TravAi.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
+using BookingStatus = TravAi.TourGuide.Models.Enums.BookingStatus;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Services
+namespace TravAi.TourGuide.Services
 {
     public interface IBookingService
     {

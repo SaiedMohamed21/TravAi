@@ -1,13 +1,13 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
+﻿using TravAi;
+using TravAi.Data;
 using Microsoft.EntityFrameworkCore;
 
-using UserAuthorizationandAuthentication.Airline.DTOs.Review;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Airline.Models;
+using TravAi.Airline.DTOs.Review;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Airline.Models;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.ReviewService
+namespace TravAi.Airline.Services.ReviewService
 {
     public class ReviewService : IReviewService
     {

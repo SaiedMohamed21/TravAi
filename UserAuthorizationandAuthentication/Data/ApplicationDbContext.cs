@@ -1,15 +1,15 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
-using UserAuthorizationandAuthentication.Models.Enums;
-using UserAuthorizationandAuthentication.Models.Hotels;
-using UserAuthorizationandAuthentication.Models.Hotels.Bookings;
-using UserAuthorizationandAuthentication.Airline.Models;
-using UserAuthorizationandAuthentication.Airline.Models.Airlines;
-using UserAuthorizationandAuthentication.TourGuide.Models;
+using TravAi.Models;
+using TravAi.Models.Auth;
+using TravAi.Models.Enums;
+using TravAi.Models.Hotels;
+using TravAi.Models.Hotels.Bookings;
+using TravAi.Airline.Models;
+using TravAi.Airline.Models.Airlines;
+using TravAi.TourGuide.Models;
 
-namespace UserAuthorizationandAuthentication.Data
+namespace TravAi.Data
 {
     public class ApplicationDbContext : DbContext
     {
@@ -39,27 +39,26 @@ namespace UserAuthorizationandAuthentication.Data
 
         // Airline DbSets
         public DbSet<Airport> Airports { get; set; }
-        public DbSet<UserAuthorizationandAuthentication.Airline.Models.Booking> Bookings { get; set; }
+        public DbSet<TravAi.Airline.Models.Booking> Bookings { get; set; }
 
         public DbSet<Passenger> Passengers { get; set; }
         public DbSet<PassengerEmergencyContact> PassengerEmergencyContacts { get; set; }
         public DbSet<PassengerPhone> PassengerPhones { get; set; }
-        public DbSet<UserAuthorizationandAuthentication.Airline.Models.Review> AirlineReviews { get; set; }
+        public DbSet<TravAi.Airline.Models.Review> AirlineReviews { get; set; }
         public DbSet<UserCompanion> UserCompanions { get; set; }
         public DbSet<WalletTransaction> WalletTransactions { get; set; }
-        public DbSet<UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline> Airlines { get; set; }
+        public DbSet<TravAi.Airline.Models.Airlines.Airline> Airlines { get; set; }
         public DbSet<Flight> Flights { get; set; }
         public DbSet<FlightSegment> FlightSegments { get; set; }
         public DbSet<FlightLayover> FlightLayovers { get; set; }
-        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         // TourGuide DbSets
-        public DbSet<UserAuthorizationandAuthentication.TourGuide.Models.Review> TourReviews { get; set; }
+        public DbSet<TravAi.TourGuide.Models.Review> TourReviews { get; set; }
         public DbSet<Tour> Tours { get; set; }
         public DbSet<TourBooking> TourBookings { get; set; }
         public DbSet<TourBookingParticipant> TourBookingParticipants { get; set; }
         public DbSet<TourBookingPayment> TourBookingPayments { get; set; }
-        public DbSet<UserAuthorizationandAuthentication.TourGuide.Models.TourGuide> TourGuides { get; set; }
+        public DbSet<TravAi.TourGuide.Models.TourGuide> TourGuides { get; set; }
         public DbSet<TourGuideCity> TourGuideCities { get; set; }
         public DbSet<TourGuideEmail> TourGuideEmails { get; set; }
         public DbSet<TourGuideLanguage> TourGuideLanguages { get; set; }
@@ -97,27 +96,26 @@ namespace UserAuthorizationandAuthentication.Data
 
             // Airline Prefixes
             modelBuilder.Entity<Airport>().ToTable("airline_Airports");
-            modelBuilder.Entity<UserAuthorizationandAuthentication.Airline.Models.Booking>().ToTable("airline_Bookings");
+            modelBuilder.Entity<TravAi.Airline.Models.Booking>().ToTable("airline_Bookings");
 
             modelBuilder.Entity<Passenger>().ToTable("airline_Passengers");
             modelBuilder.Entity<PassengerEmergencyContact>().ToTable("airline_PassengerEmergencyContacts");
             modelBuilder.Entity<PassengerPhone>().ToTable("airline_PassengerPhones");
-            modelBuilder.Entity<UserAuthorizationandAuthentication.Airline.Models.Review>().ToTable("airline_Reviews");
+            modelBuilder.Entity<TravAi.Airline.Models.Review>().ToTable("airline_Reviews");
             modelBuilder.Entity<UserCompanion>().ToTable("airline_UserCompanions");
             modelBuilder.Entity<WalletTransaction>().ToTable("airline_WalletTransactions");
-            modelBuilder.Entity<UserAuthorizationandAuthentication.Airline.Models.Airlines.Airline>().ToTable("airline_Airlines");
+            modelBuilder.Entity<TravAi.Airline.Models.Airlines.Airline>().ToTable("airline_Airlines");
             modelBuilder.Entity<Flight>().ToTable("airline_Flights");
             modelBuilder.Entity<FlightSegment>().ToTable("airline_FlightSegments");
             modelBuilder.Entity<FlightLayover>().ToTable("airline_FlightLayovers");
-            modelBuilder.Entity<ChatMessage>().ToTable("airline_ChatMessages");
 
             // TourGuide Prefixes
-            modelBuilder.Entity<UserAuthorizationandAuthentication.TourGuide.Models.Review>().ToTable("tourguide_Reviews");
+            modelBuilder.Entity<TravAi.TourGuide.Models.Review>().ToTable("tourguide_Reviews");
             modelBuilder.Entity<Tour>().ToTable("tourguide_Tours");
             modelBuilder.Entity<TourBooking>().ToTable("tourguide_TourBookings");
             modelBuilder.Entity<TourBookingParticipant>().ToTable("tourguide_TourBookingParticipants");
             modelBuilder.Entity<TourBookingPayment>().ToTable("tourguide_TourBookingPayments");
-            modelBuilder.Entity<UserAuthorizationandAuthentication.TourGuide.Models.TourGuide>().ToTable("tourguide_TourGuides");
+            modelBuilder.Entity<TravAi.TourGuide.Models.TourGuide>().ToTable("tourguide_TourGuides");
             modelBuilder.Entity<TourGuideCity>().ToTable("tourguide_TourGuideCities");
             modelBuilder.Entity<TourGuideEmail>().ToTable("tourguide_TourGuideEmails");
             modelBuilder.Entity<TourGuideLanguage>().ToTable("tourguide_TourGuideLanguages");
@@ -231,13 +229,13 @@ namespace UserAuthorizationandAuthentication.Data
             .OnDelete(DeleteBehavior.Restrict);
 
         // Airline - User relationship
-        modelBuilder.Entity<UserAuthorizationandAuthentication.Airline.Models.Booking>()
+        modelBuilder.Entity<TravAi.Airline.Models.Booking>()
             .HasOne(b => b.User)
             .WithMany()
             .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<UserAuthorizationandAuthentication.Airline.Models.Review>()
+        modelBuilder.Entity<TravAi.Airline.Models.Review>()
             .HasOne(r => r.User)
             .WithMany()
             .HasForeignKey(r => r.UserId)
@@ -250,7 +248,7 @@ namespace UserAuthorizationandAuthentication.Data
             .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<UserAuthorizationandAuthentication.TourGuide.Models.Review>()
+        modelBuilder.Entity<TravAi.TourGuide.Models.Review>()
             .HasOne(r => r.User)
             .WithMany()
             .HasForeignKey(r => r.UserId)
@@ -376,7 +374,7 @@ namespace UserAuthorizationandAuthentication.Data
                 .HasForeignKey(f => f.ArrivalAirportCode)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<UserAuthorizationandAuthentication.Airline.Models.Booking>()
+            modelBuilder.Entity<TravAi.Airline.Models.Booking>()
                 .HasOne(b => b.Flight)
                 .WithMany()
                 .HasForeignKey(b => b.FlightId)
@@ -401,13 +399,13 @@ namespace UserAuthorizationandAuthentication.Data
                 .HasForeignKey(b => b.TourGuideId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<UserAuthorizationandAuthentication.TourGuide.Models.Review>()
+            modelBuilder.Entity<TravAi.TourGuide.Models.Review>()
                 .HasOne(r => r.Tour)
                 .WithMany()
                 .HasForeignKey(r => r.TourId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<UserAuthorizationandAuthentication.TourGuide.Models.Review>()
+            modelBuilder.Entity<TravAi.TourGuide.Models.Review>()
                 .HasOne(r => r.TourGuide)
                 .WithMany()
                 .HasForeignKey(r => r.TourGuideId)

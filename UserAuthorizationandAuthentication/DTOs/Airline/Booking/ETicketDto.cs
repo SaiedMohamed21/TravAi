@@ -1,7 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace UserAuthorizationandAuthentication.Airline.DTOs.Booking
+namespace TravAi.Airline.DTOs.Booking
 {
     public class ETicketDto
     {

@@ -1,6 +1,6 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace UserAuthorizationandAuthentication.TourGuide.DTOs.Tour
+namespace TravAi.TourGuide.DTOs.Tour
 {
     /// <summary>
     /// Full tour details response for the mobile app Tour Details screen.

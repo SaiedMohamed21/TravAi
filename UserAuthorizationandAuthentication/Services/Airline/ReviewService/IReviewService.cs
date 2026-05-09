@@ -1,8 +1,8 @@
-using UserAuthorizationandAuthentication;
-using UserAuthorizationandAuthentication.Data;
-using UserAuthorizationandAuthentication.Airline.DTOs.Review;
+﻿using TravAi;
+using TravAi.Data;
+using TravAi.Airline.DTOs.Review;
 
-namespace UserAuthorizationandAuthentication.Airline.Services.ReviewService
+namespace TravAi.Airline.Services.ReviewService
 {
     public interface IReviewService
     {

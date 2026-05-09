@@ -1,12 +1,12 @@
-using UserAuthorizationandAuthentication.TourGuide.Models.Enums;
-using UserAuthorizationandAuthentication.Models;
-using UserAuthorizationandAuthentication.Models.Auth;
+﻿using TravAi.TourGuide.Models.Enums;
+using TravAi.Models;
+using TravAi.Models.Auth;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using UserAuthorizationandAuthentication.Models.Enums;
+using TravAi.Models.Enums;
 
-namespace UserAuthorizationandAuthentication.TourGuide.Models
+namespace TravAi.TourGuide.Models
 {
     public class UrgentRequest
     {
