@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Models;
 using TravAi.Models.Auth;
@@ -8,6 +8,7 @@ using TravAi.Models.Hotels.Bookings;
 using TravAi.Airline.Models;
 using TravAi.Airline.Models.Airlines;
 using TravAi.TourGuide.Models;
+using TravAi.Models.Common;
 
 namespace TravAi.Data
 {
@@ -18,6 +19,7 @@ namespace TravAi.Data
         public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<UserPhone> UserPhones { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         public DbSet<Hotel> Hotels { get; set; }
         public DbSet<HotelRoom> HotelRooms { get; set; }

@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using Tour = TravAi.TourGuide.Models.Tour;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ namespace TravAi.TourGuide.Services
         Task<List<TourResponseDto>> GetToursByTourGuideAsync(long tourGuideId);
         Task<(List<TourResponseDto> Tours, int TotalCount)> GetToursWithFiltersAsync(TourFilterDto filters);
         Task<List<ReviewDto>> GetTourReviewsAsync(long tourId);
-        Task<(List<TourCardDto> Cards, int TotalCount)> GetTourCardsAsync(int page = 1, int pageSize = 10);
+        Task<(List<TourCardDto> Cards, int TotalCount)> GetTourCardsAsync(TourFilterDto filters);
         Task<TourDetailsDto> GetTourDetailsAsync(long tourId);
     }
 }

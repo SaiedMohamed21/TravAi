@@ -51,6 +51,15 @@ builder.Services.AddScoped<TravAi.TourGuide.Services.IWithdrawRequestService, Tr
 // --- AI Trip Planner Service ---
 builder.Services.AddScoped<IAiTripPlannerService, AiTripPlannerService>();
 
+// --- AI Chatbot Service (Python microservice proxy) ---
+builder.Services.AddHttpClient<IAiChatbotService, AiChatbotService>(client =>
+{
+    var baseUrl = builder.Configuration["PythonAiService:BaseUrl"] ?? "http://localhost:8000";
+    var timeout = int.Parse(builder.Configuration["PythonAiService:TimeoutSeconds"] ?? "60");
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(timeout);
+});
+
 // Add CORS
 builder.Services.AddCors(options =>
 {

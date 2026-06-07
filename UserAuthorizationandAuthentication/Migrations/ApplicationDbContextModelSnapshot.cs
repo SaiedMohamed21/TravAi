@@ -275,40 +275,6 @@ namespace TravAi.Migrations
                     b.ToTable("airline_Bookings", (string)null);
                 });
 
-            modelBuilder.Entity("TravAi.Airline.Models.ChatMessage", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("BookingId")
-                        .HasColumnType("bigint");
-
-                    b.Property<bool>("IsFromAdmin")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<long>("SenderId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BookingId");
-
-                    b.HasIndex("SenderId");
-
-                    b.ToTable("airline_ChatMessages", (string)null);
-                });
-
             modelBuilder.Entity("TravAi.Airline.Models.Passenger", b =>
                 {
                     b.Property<long>("Id")
@@ -681,6 +647,44 @@ namespace TravAi.Migrations
                     b.ToTable("UserPhones", (string)null);
                 });
 
+            modelBuilder.Entity("TravAi.Models.Common.Notification", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("TravAi.Models.Hotels.Amenity", b =>
                 {
                     b.Property<long>("Id")
@@ -863,6 +867,9 @@ namespace TravAi.Migrations
                         .HasColumnType("decimal(4,2)");
 
                     b.Property<string>("CityArea")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClusterSegment")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Country")
@@ -2028,25 +2035,6 @@ namespace TravAi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("TravAi.Airline.Models.ChatMessage", b =>
-                {
-                    b.HasOne("TravAi.Airline.Models.Booking", "Booking")
-                        .WithMany()
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TravAi.Models.Auth.User", "Sender")
-                        .WithMany()
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Booking");
-
-                    b.Navigation("Sender");
-                });
-
             modelBuilder.Entity("TravAi.Airline.Models.Passenger", b =>
                 {
                     b.HasOne("TravAi.Airline.Models.Booking", "Booking")
@@ -2136,6 +2124,17 @@ namespace TravAi.Migrations
                 {
                     b.HasOne("TravAi.Models.Auth.User", "User")
                         .WithMany("UserPhones")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Common.Notification", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "User")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -2330,7 +2329,7 @@ namespace TravAi.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("TravAi.TourGuide.Models.Tour", "Tour")
-                        .WithMany("TourReviews")
+                        .WithMany()
                         .HasForeignKey("TourId")
                         .OnDelete(DeleteBehavior.Restrict);
 
@@ -2613,8 +2612,6 @@ namespace TravAi.Migrations
             modelBuilder.Entity("TravAi.TourGuide.Models.Tour", b =>
                 {
                     b.Navigation("TourImages");
-
-                    b.Navigation("TourReviews");
                 });
 
             modelBuilder.Entity("TravAi.TourGuide.Models.TourBooking", b =>

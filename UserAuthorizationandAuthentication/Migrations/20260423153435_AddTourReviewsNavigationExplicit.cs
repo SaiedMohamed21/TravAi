@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -15,29 +15,30 @@ namespace TravAi.Migrations
                 name: "FK_airline_Flights_airline_Airlines_AirlineId",
                 table: "airline_Flights");
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "ArrivalTime",
-                table: "airline_FlightSegments",
-                type: "datetime2",
-                nullable: true);
+            // Columns already exist in the database manually
+            // migrationBuilder.AddColumn<DateTime>(
+            //     name: "ArrivalTime",
+            //     table: "airline_FlightSegments",
+            //     type: "datetime2",
+            //     nullable: true);
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "DepartureTime",
-                table: "airline_FlightSegments",
-                type: "datetime2",
-                nullable: true);
+            // migrationBuilder.AddColumn<DateTime>(
+            //     name: "DepartureTime",
+            //     table: "airline_FlightSegments",
+            //     type: "datetime2",
+            //     nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "FromAirportCode",
-                table: "airline_FlightSegments",
-                type: "nvarchar(3)",
-                nullable: true);
+            // migrationBuilder.AddColumn<string>(
+            //     name: "FromAirportCode",
+            //     table: "airline_FlightSegments",
+            //     type: "nvarchar(3)",
+            //     nullable: true);
 
-            migrationBuilder.AddColumn<string>(
-                name: "ToAirportCode",
-                table: "airline_FlightSegments",
-                type: "nvarchar(3)",
-                nullable: true);
+            // migrationBuilder.AddColumn<string>(
+            //     name: "ToAirportCode",
+            //     table: "airline_FlightSegments",
+            //     type: "nvarchar(3)",
+            //     nullable: true);
 
             migrationBuilder.AlterColumn<decimal>(
                 name: "Price",
@@ -103,34 +104,34 @@ namespace TravAi.Migrations
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
-            migrationBuilder.AddColumn<string>(
-                name: "Currency",
-                table: "airline_Flights",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+            // migrationBuilder.AddColumn<string>(
+            //     name: "Currency",
+            //     table: "airline_Flights",
+            //     type: "nvarchar(max)",
+            //     nullable: false,
+            //     defaultValue: "");
 
-            migrationBuilder.AddColumn<string>(
-                name: "Duration",
-                table: "airline_Flights",
-                type: "nvarchar(max)",
-                nullable: true);
+            // migrationBuilder.AddColumn<string>(
+            //     name: "Duration",
+            //     table: "airline_Flights",
+            //     type: "nvarchar(max)",
+            //     nullable: true);
 
-            migrationBuilder.AddColumn<int>(
-                name: "DurationMinutes",
-                table: "airline_Flights",
-                type: "int",
-                nullable: true);
+            // migrationBuilder.AddColumn<int>(
+            //     name: "DurationMinutes",
+            //     table: "airline_Flights",
+            //     type: "int",
+            //     nullable: true);
 
-            migrationBuilder.CreateIndex(
-                name: "IX_airline_FlightSegments_FromAirportCode",
-                table: "airline_FlightSegments",
-                column: "FromAirportCode");
+            // migrationBuilder.CreateIndex(
+            //     name: "IX_airline_FlightSegments_FromAirportCode",
+            //     table: "airline_FlightSegments",
+            //     column: "FromAirportCode");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_airline_FlightSegments_ToAirportCode",
-                table: "airline_FlightSegments",
-                column: "ToAirportCode");
+            // migrationBuilder.CreateIndex(
+            //     name: "IX_airline_FlightSegments_ToAirportCode",
+            //     table: "airline_FlightSegments",
+            //     column: "ToAirportCode");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_airline_Flights_airline_Airlines_AirlineId",
@@ -139,19 +140,19 @@ namespace TravAi.Migrations
                 principalTable: "airline_Airlines",
                 principalColumn: "Id");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_airline_FlightSegments_airline_Airports_FromAirportCode",
-                table: "airline_FlightSegments",
-                column: "FromAirportCode",
-                principalTable: "airline_Airports",
-                principalColumn: "Code");
+            // migrationBuilder.AddForeignKey(
+            //     name: "FK_airline_FlightSegments_airline_Airports_FromAirportCode",
+            //     table: "airline_FlightSegments",
+            //     column: "FromAirportCode",
+            //     principalTable: "airline_Airports",
+            //     principalColumn: "Code");
 
-            migrationBuilder.AddForeignKey(
-                name: "FK_airline_FlightSegments_airline_Airports_ToAirportCode",
-                table: "airline_FlightSegments",
-                column: "ToAirportCode",
-                principalTable: "airline_Airports",
-                principalColumn: "Code");
+            // migrationBuilder.AddForeignKey(
+            //     name: "FK_airline_FlightSegments_airline_Airports_ToAirportCode",
+            //     table: "airline_FlightSegments",
+            //     column: "ToAirportCode",
+            //     principalTable: "airline_Airports",
+            //     principalColumn: "Code");
         }
 
         /// <inheritdoc />

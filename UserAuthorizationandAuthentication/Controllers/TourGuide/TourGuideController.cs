@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -158,6 +158,41 @@ namespace TravAi.TourGuide.Controllers
             var profile = await _service.GetProfileAsync(id);
             if (profile == null) return NotFound("Tour Guide profile not found.");
             return Ok(profile);
+        }
+        /// <summary>
+        /// Get Dashboard Summary for the logged-in tour guide
+        /// </summary>
+        [Authorize(Roles = "Tourguide")]
+        [HttpGet("/api/tourguide/dashboard")]
+        public async Task<IActionResult> GetDashboardSummary()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null) return NotFound("Tour Guide profile not found.");
+
+            var result = await _service.GetDashboardSummaryAsync(tourGuide.Id);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get Earnings Chart Data for the logged-in tour guide
+        /// </summary>
+        [Authorize(Roles = "Tourguide")]
+        [HttpGet("/api/tourguide/earnings/chart")]
+        public async Task<IActionResult> GetEarningsChart()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null) return NotFound("Tour Guide profile not found.");
+
+            var result = await _service.GetEarningsChartAsync(tourGuide.Id);
+            return Ok(result);
         }
     }
 }

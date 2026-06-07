@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using TourGuide = TravAi.TourGuide.Models.TourGuide;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -20,6 +20,8 @@ namespace TravAi.TourGuide.Services
         Task<bool> UpdateProfileAsync(long tourGuideId, UpdateProfileDto model);
         Task<List<ReviewDto>> GetTourGuideReviewsAsync(long tourGuideId);
         Task<TourGuideProfileDto> GetProfileAsync(long id);
+        Task<DashboardSummaryDto> GetDashboardSummaryAsync(long tourGuideId);
+        Task<List<EarningsChartDto>> GetEarningsChartAsync(long tourGuideId);
     }
 }
 

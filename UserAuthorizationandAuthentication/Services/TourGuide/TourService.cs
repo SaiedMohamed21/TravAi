@@ -217,16 +217,22 @@ namespace TravAi.TourGuide.Services
                 query = query.Where(t => t.BasePriceUsd <= filters.MaxPrice.Value);
 
             // Date filter
+            if (filters.Date.HasValue)
+            {
+                var targetDate = filters.Date.Value.Date;
+                query = query.Where(t => t.AvailableDateTime.HasValue && t.AvailableDateTime.Value.Date == targetDate);
+            }
             if (filters.StartDate.HasValue)
                 query = query.Where(t => t.AvailableDateTime >= filters.StartDate.Value);
             if (filters.EndDate.HasValue)
                 query = query.Where(t => t.AvailableDateTime <= filters.EndDate.Value);
 
             // Language filter
-            if (!string.IsNullOrEmpty(filters.Languages))
+            var langFilter = filters.Language ?? filters.Languages;
+            if (!string.IsNullOrEmpty(langFilter))
             {
                 var enumLanguages = new List<Language>();
-                foreach (var l in filters.Languages.Split(','))
+                foreach (var l in langFilter.Split(','))
                 {
                     if (Enum.TryParse<Language>(l.Trim(), true, out var parsedEnum))
                     {
@@ -413,20 +419,74 @@ namespace TravAi.TourGuide.Services
             };
         }
 
-        public async Task<(List<TourCardDto> Cards, int TotalCount)> GetTourCardsAsync(int page = 1, int pageSize = 10)
+        public async Task<(List<TourCardDto> Cards, int TotalCount)> GetTourCardsAsync(TourFilterDto filters)
         {
             var query = _context.Tours
                 .Include(t => t.TourImages)
                 .Include(t => t.TourGuide)
                     .ThenInclude(tg => tg.TourGuideLanguages)
                 .Where(t => t.Active)
-                .OrderByDescending(t => t.TourScore);
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                var searchTerm = filters.Search.ToLower();
+                query = query.Where(t => 
+                    t.TourTitle.ToLower().Contains(searchTerm) || 
+                    t.City.ToLower().Contains(searchTerm) || 
+                    (t.TourGuide != null && t.TourGuide.Name.ToLower().Contains(searchTerm)));
+            }
+            if (filters.MinPrice.HasValue)
+                query = query.Where(t => t.BasePriceUsd >= filters.MinPrice.Value);
+            if (filters.MaxPrice.HasValue)
+                query = query.Where(t => t.BasePriceUsd <= filters.MaxPrice.Value);
+            if (filters.Date.HasValue)
+            {
+                var targetDate = filters.Date.Value.Date;
+                query = query.Where(t => t.AvailableDateTime.HasValue && t.AvailableDateTime.Value.Date == targetDate);
+            }
+            if (filters.StartDate.HasValue)
+                query = query.Where(t => t.AvailableDateTime >= filters.StartDate.Value);
+            if (filters.EndDate.HasValue)
+                query = query.Where(t => t.AvailableDateTime <= filters.EndDate.Value);
+
+            var langFilter = filters.Language ?? filters.Languages;
+            if (!string.IsNullOrEmpty(langFilter))
+            {
+                var enumLanguages = new List<Language>();
+                foreach (var l in langFilter.Split(','))
+                {
+                    if (Enum.TryParse<Language>(l.Trim(), true, out var parsedEnum))
+                    {
+                        enumLanguages.Add(parsedEnum);
+                    }
+                }
+                if (enumLanguages.Any())
+                {
+                    query = query.Where(t => t.TourGuide.TourGuideLanguages.Any(tgl => enumLanguages.Contains(tgl.Language)));
+                }
+            }
+
+            if (!string.IsNullOrEmpty(filters.City))
+                query = query.Where(t => t.City.ToLower().Contains(filters.City.ToLower()));
+
+            query = filters.SortBy?.ToLower() switch
+            {
+                "price_asc" => query.OrderBy(t => t.BasePriceUsd),
+                "price_desc" => query.OrderByDescending(t => t.BasePriceUsd),
+                "rating" => query.OrderByDescending(t => t.Rating),
+                "popular" => query.OrderByDescending(t => t.NumberOfReviews),
+                "recent" => query.OrderByDescending(t => t.CreatedAt),
+                "tour_score" => query.OrderByDescending(t => t.TourScore),
+                "duration" => query.OrderByDescending(t => t.DurationHours),
+                _ => query.OrderByDescending(t => t.TourScore)
+            };
 
             var totalCount = await query.CountAsync();
 
             var tours = await query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
+                .Skip((filters.PageNumber - 1) * filters.PageSize)
+                .Take(filters.PageSize)
                 .ToListAsync();
 
             var tourIds = tours.Select(t => t.Id).ToList();

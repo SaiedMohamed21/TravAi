@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using TourGuide = TravAi.TourGuide.Models.TourGuide;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
@@ -357,10 +357,62 @@ namespace TravAi.TourGuide.Services
                 Cities = tg.TourGuideCities?.Select(c => new TourGuideCityDto { City = c.City }).ToList() ?? new List<TourGuideCityDto>()
             };
         }
+
+        public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(long tourGuideId)
+        {
+            var tours = await _context.Tours.Where(t => t.TourGuideId == tourGuideId).ToListAsync();
+            var bookings = await _context.TourBookings.Where(b => b.TourGuideId == tourGuideId).ToListAsync();
+
+            var totalTours = tours.Count;
+            var upcomingTours = tours.Count(t => t.AvailableDateTime > DateTime.UtcNow);
+            var totalBookings = bookings.Count(b => b.Status != TravAi.TourGuide.Models.Enums.BookingStatus.Cancelled);
+            var earnings = bookings
+                .Where(b => b.Status == TravAi.TourGuide.Models.Enums.BookingStatus.Completed || b.Status == TravAi.TourGuide.Models.Enums.BookingStatus.Confirmed)
+                .Sum(b => b.TotalPrice);
+
+            return new DashboardSummaryDto
+            {
+                TotalTours = totalTours,
+                UpcomingTours = upcomingTours,
+                TotalBookings = totalBookings,
+                Earnings = earnings
+            };
+        }
+
+        public async Task<List<EarningsChartDto>> GetEarningsChartAsync(long tourGuideId)
+        {
+            var bookings = await _context.TourBookings
+                .Where(b => b.TourGuideId == tourGuideId && 
+                           (b.Status == TravAi.TourGuide.Models.Enums.BookingStatus.Completed || b.Status == TravAi.TourGuide.Models.Enums.BookingStatus.Confirmed) &&
+                           b.CreatedAt >= DateTime.UtcNow.AddMonths(-5))
+                .ToListAsync();
+
+            var chart = bookings
+                .GroupBy(b => new { b.CreatedAt.Year, b.CreatedAt.Month })
+                .Select(g => new EarningsChartDto
+                {
+                    Month = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM"),
+                    Amount = g.Sum(b => b.TotalPrice)
+                })
+                .ToList();
+
+            var result = new List<EarningsChartDto>();
+            for (int i = 5; i >= 0; i--)
+            {
+                var targetMonth = DateTime.UtcNow.AddMonths(-i);
+                var monthStr = targetMonth.ToString("MMM");
+                var existing = chart.FirstOrDefault(c => c.Month == monthStr);
+                if (existing != null)
+                {
+                    result.Add(existing);
+                }
+                else
+                {
+                    result.Add(new EarningsChartDto { Month = monthStr, Amount = 0 });
+                }
+            }
+
+            return result;
+        }
     }
 }
-
-
-
-
-

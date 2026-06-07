@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -182,15 +182,15 @@ namespace TravAi.TourGuide.Controllers
 
         [AllowAnonymous]
         [HttpGet("/api/tours/cards")]
-        public async Task<IActionResult> GetTourCards([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetTourCards([FromQuery] TourFilterDto filters)
         {
-            var (cards, totalCount) = await _tourService.GetTourCardsAsync(page, pageSize);
+            var (cards, totalCount) = await _tourService.GetTourCardsAsync(filters);
             return Ok(new
             {
                 data = cards,
                 totalCount = totalCount,
-                totalPages = (int)System.Math.Ceiling(totalCount / (double)pageSize),
-                hasMore = (page * pageSize) < totalCount
+                totalPages = (int)System.Math.Ceiling(totalCount / (double)filters.PageSize),
+                hasMore = (filters.PageNumber * filters.PageSize) < totalCount
             });
         }
 

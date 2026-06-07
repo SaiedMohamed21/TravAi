@@ -138,17 +138,18 @@ namespace TravAi.Services.AI
                 int totalPeople = req.Adults + req.Children;
                 foreach (var city in itinerary)
                 {
-                    var checkIn  = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
-                    var checkOut = checkIn.AddDays(city.Days);
+                    var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
+                    var co = ci.AddDays(city.Days);
+                    var cityLower = city.City.ToLower();
 
                     var prices = await _db.Tours
                         .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
                         .Where(t => t.Active && t.BasePriceUsd.HasValue
-                            && t.City!.ToLower() == city.City.ToLower()
+                            && t.City!.ToLower() == cityLower
                             && t.BasePriceUsd >= tourMin
                             && (tourMax < 0 || t.BasePriceUsd <= tourMax)
                             && t.AvailableDateTime.HasValue
-                            && t.AvailableDateTime >= checkIn && t.AvailableDateTime < checkOut
+                            && t.AvailableDateTime >= ci && t.AvailableDateTime < co
                             && (lang == null || t.TourGuide.TourGuideLanguages
                                 .Any(l => l.Language == lang.Value)))
                         .Select(t => t.BasePriceUsd!.Value).ToListAsync();
@@ -307,10 +308,11 @@ namespace TravAi.Services.AI
                 {
                     var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
                     var co = ci.AddDays(city.Days);
+                    var cityLower = city.City.ToLower();
                     var tp = await _db.Tours
                         .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
                         .Where(t => t.Active && t.BasePriceUsd.HasValue
-                            && t.City!.ToLower() == city.City.ToLower()
+                            && t.City!.ToLower() == cityLower
                             && t.BasePriceUsd >= tourPMin
                             && (tourPMax < 0 || t.BasePriceUsd <= tourPMax)
                             && t.AvailableDateTime >= ci && t.AvailableDateTime < co
@@ -384,6 +386,7 @@ namespace TravAi.Services.AI
                 var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
                 var co = ci.AddDays(city.Days);
 
+                var cityLowerP = city.City.ToLower();
                 cityPlans.Add(new CityPlanDto
                 {
                     City            = city.City,
@@ -392,10 +395,13 @@ namespace TravAi.Services.AI
                     CheckOut        = co,
                     CityHotelBudget = Math.Round(cityHotelBudget, 2),
                     CityToursBudget = Math.Round(cityToursBudget, 2),
-                    Hotel           = null, // No specific flight/hotel/tour matching per user request
-                    Tour            = null
+                    Hotel           = req.ExcludeHotels ? null : await SelectBestHotel(city.City, starMin, starMax, cityHotelBudget, city.Days, req.SingleRooms, req.DoubleRooms),
+                    Tour            = req.ExcludeTours ? null : await SelectBestTour(city.City, tourPMin, tourPMax, lang, ci, co, cityToursBudget, totalPeople)
                 });
             }
+
+            var goFlight = req.ExcludeFlights ? null : await SelectBestFlight(fromCodesP, toCodesP, req.DepartureDate, flightClass, goBudget, req.Adults, req.Children, "Outbound");
+            var retFlight = req.ExcludeFlights ? null : await SelectBestFlight(lastCodesP, fromCodesP, req.ReturnDate, flightClass, retBudget, req.Adults, req.Children, "Return");
 
             return new TripPlanResponseDto
             {
@@ -408,8 +414,8 @@ namespace TravAi.Services.AI
                 FlightBudget       = Math.Round(flightBudget, 2),
                 HotelBudget        = Math.Round(hotelBudget,  2),
                 ToursBudget        = Math.Round(toursBudget,  2),
-                GoFlight           = null,
-                ReturnFlight       = null,
+                GoFlight           = goFlight,
+                ReturnFlight       = retFlight,
                 CityPlans          = cityPlans,
                 Itinerary          = itinerary
             };
