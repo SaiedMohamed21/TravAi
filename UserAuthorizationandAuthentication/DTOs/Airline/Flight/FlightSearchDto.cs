@@ -1,4 +1,4 @@
-﻿namespace TravAi.Airline.DTOs.Flight
+namespace TravAi.Airline.DTOs.Flight
 {
     public class FlightSearchDto
     {
@@ -8,6 +8,8 @@
         public DateTime? Date { get; set; }
         public int? Passengers { get; set; }  // Min available seats
         public string? Class { get; set; }    // Economy, Business, PremiumEconomy
+        public string? TripType { get; set; } // OneWay or RoundTrip
+        public DateTime? ReturnDate { get; set; }
 
         // Price Filters
         public decimal? MinPrice { get; set; }

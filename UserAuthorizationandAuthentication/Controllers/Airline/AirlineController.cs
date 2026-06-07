@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
@@ -57,6 +57,7 @@ namespace TravAi.Airline.Controllers
         // Get All Airlines
         // =============================
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             var airlines = await _context.Airlines

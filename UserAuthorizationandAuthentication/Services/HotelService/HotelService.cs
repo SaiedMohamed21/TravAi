@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
 
 using TravAi.DTOs.Hotel;
@@ -395,8 +395,9 @@ namespace TravAi.Services.HotelService
                 query = query.Where(h => h.StarRating >= request.MinStarRating.Value);
 
             // 2.1 User Review Rating Filter
-            if (request.MinReviewRating.HasValue && request.MinReviewRating.Value > 0)
-                query = query.Where(h => h.NumReviews > 0 && h.AvgReviewScore >= request.MinReviewRating.Value);
+            var reviewFilter = request.AvgRating ?? request.MinReviewRating;
+            if (reviewFilter.HasValue && reviewFilter.Value > 0)
+                query = query.Where(h => h.NumReviews > 0 && h.AvgReviewScore >= reviewFilter.Value);
 
             // 3. Price Filter using room prices
             if (request.MinPrice.HasValue || request.MaxPrice.HasValue)

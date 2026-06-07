@@ -1,4 +1,4 @@
-﻿using TravAi.Models.Enums;
+using TravAi.Models.Enums;
 using TravAi.DTOs.Common;
 using TravAi.DTOs.Auth;
 
@@ -24,6 +24,7 @@ namespace TravAi.DTOs.Hotel
         public int? MinStarRating { get; set; }
         public int? MaxStarRating { get; set; }
         public decimal? MinReviewRating { get; set; } // For User Reviews (0-5)
+        public decimal? AvgRating { get; set; } // For User Reviews (0-5)
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         

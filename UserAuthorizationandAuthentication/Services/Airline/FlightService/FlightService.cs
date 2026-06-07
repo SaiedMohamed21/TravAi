@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
 
 using TravAi.Airline.DTOs.Flight;
@@ -59,6 +59,9 @@ namespace TravAi.Airline.Services.FlightService
             if (dto.MaxPrice.HasValue)
                 query = query.Where(f => f.Price <= dto.MaxPrice.Value);
 
+            if (!string.IsNullOrEmpty(dto.Class))
+                query = query.Where(f => f.FlightClass != null && f.FlightClass.ToLower() == dto.Class.ToLower());
+
             var totalCount = await query.CountAsync();
             
             var flights = await query
@@ -68,14 +71,50 @@ namespace TravAi.Airline.Services.FlightService
 
             var flightDtos = flights.Select(MapToFlightResultDto).ToList();
 
-            return new PaginatedFlightResultDto
+            var result = new PaginatedFlightResultDto
             {
                 Flights = flightDtos,
                 TotalCount = totalCount,
                 Page = dto.Page,
                 PageSize = dto.PageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)dto.PageSize)
+                TotalPages = (int)Math.Ceiling(totalCount / (double)dto.PageSize),
+                InboundFlights = new List<FlightResultDto>()
             };
+
+            if (!string.IsNullOrEmpty(dto.TripType) && dto.TripType.Equals("RoundTrip", StringComparison.OrdinalIgnoreCase) && dto.ReturnDate.HasValue)
+            {
+                var inboundQuery = _context.Flights
+                    .Include(f => f.Airline)
+                    .Include(f => f.DepartureAirport)
+                    .Include(f => f.ArrivalAirport)
+                    .AsNoTracking()
+                    .AsQueryable();
+
+                if (!string.IsNullOrEmpty(dto.To))
+                    inboundQuery = inboundQuery.Where(f => f.DepartureAirportCode == dto.To || f.DepartureAirport.City == dto.To);
+
+                if (!string.IsNullOrEmpty(dto.From))
+                    inboundQuery = inboundQuery.Where(f => f.ArrivalAirportCode == dto.From || f.ArrivalAirport.City == dto.From);
+
+                inboundQuery = inboundQuery.Where(f => f.DepartureTime.HasValue && f.DepartureTime.Value.Date == dto.ReturnDate.Value.Date);
+
+                if (dto.AirlineIds != null && dto.AirlineIds.Any())
+                    inboundQuery = inboundQuery.Where(f => f.AirlineId.HasValue && dto.AirlineIds.Contains(f.AirlineId.Value));
+
+                if (dto.MinPrice.HasValue)
+                    inboundQuery = inboundQuery.Where(f => f.Price >= dto.MinPrice.Value);
+
+                if (dto.MaxPrice.HasValue)
+                    inboundQuery = inboundQuery.Where(f => f.Price <= dto.MaxPrice.Value);
+
+                if (!string.IsNullOrEmpty(dto.Class))
+                    inboundQuery = inboundQuery.Where(f => f.FlightClass != null && f.FlightClass.ToLower() == dto.Class.ToLower());
+
+                var inboundFlightsList = await inboundQuery.Take(20).ToListAsync();
+                result.InboundFlights = inboundFlightsList.Select(MapToFlightResultDto).ToList();
+            }
+
+            return result;
         }
 
         private FlightResultDto MapToFlightResultDto(Flight f)

@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using Tour = TravAi.TourGuide.Models.Tour;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
@@ -200,6 +200,16 @@ namespace TravAi.TourGuide.Services
                 .Where(t => t.Active)
                 .AsQueryable();
 
+            // Search filter
+            if (!string.IsNullOrEmpty(filters.Search))
+            {
+                var searchTerm = filters.Search.ToLower();
+                query = query.Where(t => 
+                    t.TourTitle.ToLower().Contains(searchTerm) || 
+                    t.City.ToLower().Contains(searchTerm) || 
+                    (t.TourGuide != null && t.TourGuide.Name.ToLower().Contains(searchTerm)));
+            }
+
             // Price filter
             if (filters.MinPrice.HasValue)
                 query = query.Where(t => t.BasePriceUsd >= filters.MinPrice.Value);
@@ -208,9 +218,9 @@ namespace TravAi.TourGuide.Services
 
             // Date filter
             if (filters.StartDate.HasValue)
-                query = query.Where(t => t.CreatedAt >= filters.StartDate.Value);
+                query = query.Where(t => t.AvailableDateTime >= filters.StartDate.Value);
             if (filters.EndDate.HasValue)
-                query = query.Where(t => t.CreatedAt <= filters.EndDate.Value);
+                query = query.Where(t => t.AvailableDateTime <= filters.EndDate.Value);
 
             // Language filter
             if (!string.IsNullOrEmpty(filters.Languages))

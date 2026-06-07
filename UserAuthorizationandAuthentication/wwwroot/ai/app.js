@@ -345,7 +345,7 @@ function renderPlan() {
   if (p.goFlight) fb.appendChild(flightCard(p.goFlight));
   if (p.returnFlight) fb.appendChild(flightCard(p.returnFlight));
   if (!p.goFlight && !p.returnFlight)
-    fb.innerHTML = '<div class="none-badge">✈️ Flights excluded or not found in budget</div>';
+    fb.innerHTML = `<div class="none-badge" style="background:rgba(138,92,246,0.1);border:1px dashed var(--border);color:var(--text);font-size:1rem;text-align:center;padding:14px;border-radius:12px">✈️ Allocated Flight Budget: <strong style="color:var(--accent);font-size:1.1rem">$${fmt(p.flightBudget)}</strong></div>`;
 
   // Flight budget summary
   const goPrice  = p.goFlight     ? (p.goFlight.totalPrice     || 0) : 0;
@@ -353,10 +353,11 @@ function renderPlan() {
   const totalFlightCost = goPrice + retPrice;
   const flightBudgetEl = document.getElementById('flightBudgetInfo');
   if (flightBudgetEl) {
-    if (totalFlightCost > 0) {
+    const showBudget = totalFlightCost > 0 ? totalFlightCost : p.flightBudget;
+    if (showBudget > 0) {
       flightBudgetEl.innerHTML =
         `<span style="font-size:.85rem;color:var(--muted)">Flight budget:</span>
-         <strong style="color:var(--accent);font-size:.95rem"> $${fmt(totalFlightCost)}</strong>
+         <strong style="color:var(--accent);font-size:.95rem"> $${fmt(showBudget)}</strong>
          ${goPrice  > 0 ? `<span style="font-size:.75rem;color:var(--muted);margin-left:8px">GO $${fmt(goPrice)}</span>` : ''}
          ${retPrice > 0 ? `<span style="font-size:.75rem;color:var(--muted);margin-left:4px">· RETURN $${fmt(retPrice)}</span>` : ''}`;
     } else {

@@ -37,16 +37,24 @@ namespace TravAi.Controllers.AI
                 .Distinct()
                 .ToListAsync();
 
-            var hotelCities = await _db.Hotels
+            var hotelCitiesList = await _db.Hotels
                 .Where(h => h.Active && h.Verified)
+                .Select(h => new
+                {
+                    Governorate = h.Governorate ?? "",
+                    CityArea    = h.CityArea    ?? ""
+                })
+                .ToListAsync();
+
+            var hotelCities = hotelCitiesList
                 .SelectMany(h => new[]
                 {
-                    h.Governorate ?? "",
-                    h.CityArea    ?? ""
+                    h.Governorate,
+                    h.CityArea
                 })
                 .Where(c => c != "")
                 .Distinct()
-                .ToListAsync();
+                .ToList();
 
             var tourCities = await _db.Tours
                 .Where(t => t.Active && t.City != null && t.City != "")

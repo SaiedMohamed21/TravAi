@@ -42,6 +42,13 @@ namespace TravAi.Services.AI
             var (starMin, starMax) = GetStarRange(budgetType);
             var (tourMin, tourMax) = GetTourPriceRange(budgetType);
             var lang = ParseLanguage(req.TouristLanguage);
+            string targetCluster = budgetType.ToLower() switch
+            {
+                "economy" => "economic",
+                "premium" => "premium",
+                "luxury"  => "business",
+                _         => "economic"
+            };
 
             decimal flightMin = 0, flightMax = 0;
             decimal hotelMin  = 0, hotelMax  = 0;
@@ -57,10 +64,11 @@ namespace TravAi.Services.AI
 
                 // Search within ±7 days of departure date for best price estimate
                 var goDateFrom = req.DepartureDate.Date.AddDays(-7);
+                if (goDateFrom < DateTime.Today) goDateFrom = DateTime.Today;
                 var goDateTo   = req.DepartureDate.Date.AddDays(7);
                 var goPrices = await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
-                        && f.FlightClass == flightClass
+                        && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
                         && f.DepartureTime!.Value.Date >= goDateFrom
                         && f.DepartureTime!.Value.Date <= goDateTo
                         && fromCodes.Contains(f.DepartureAirportCode!)
@@ -69,10 +77,11 @@ namespace TravAi.Services.AI
 
                 // Search within ±7 days of return date for best price estimate
                 var retDateFrom = req.ReturnDate.Date.AddDays(-7);
+                if (retDateFrom < DateTime.Today) retDateFrom = DateTime.Today;
                 var retDateTo   = req.ReturnDate.Date.AddDays(7);
                 var retPrices = await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
-                        && f.FlightClass == flightClass
+                        && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
                         && f.DepartureTime!.Value.Date >= retDateFrom
                         && f.DepartureTime!.Value.Date <= retDateTo
                         && lastCodes.Contains(f.DepartureAirportCode!)
@@ -100,7 +109,6 @@ namespace TravAi.Services.AI
                     var rooms = await _db.HotelRooms
                         .Include(r => r.Hotel)
                         .Where(r => r.Hotel.Verified && r.Hotel.Active
-                            && r.Hotel.StarRating >= starMin && r.Hotel.StarRating <= starMax
                             && r.State == RoomState.Active && r.FBPrice.HasValue
                             && (r.Hotel.Governorate != null && r.Hotel.Governorate.ToLower() == cityLower
                              || r.Hotel.CityArea    != null && r.Hotel.CityArea.ToLower()    == cityLower))
@@ -184,6 +192,13 @@ namespace TravAi.Services.AI
             var (starMin, starMax)   = GetStarRange(req.BudgetType);
             var (tourPMin, tourPMax) = GetTourPriceRange(req.BudgetType);
             var lang        = ParseLanguage(req.TouristLanguage);
+            string targetCluster = req.BudgetType.ToLower() switch
+            {
+                "economy" => "economic",
+                "premium" => "premium",
+                "luxury"  => "business",
+                _         => "economic"
+            };
             int totalPeople = req.Adults + req.Children;
 
             // ── Fetch filtered flight prices for budget_divider ───────────────
@@ -194,11 +209,12 @@ namespace TravAi.Services.AI
 
             // ±7 days window — same as EstimateBudget so market averages are consistent
             var goDateFrom = req.DepartureDate.Date.AddDays(-7);
+                if (goDateFrom < DateTime.Today) goDateFrom = DateTime.Today;
             var goDateTo   = req.DepartureDate.Date.AddDays(7);
             var goPriceList = req.ExcludeFlights ? new List<decimal>() :
                 await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
-                        && f.FlightClass == flightClass
+                        && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
                         && f.DepartureTime!.Value.Date >= goDateFrom
                         && f.DepartureTime!.Value.Date <= goDateTo
                         && fromCodesP.Contains(f.DepartureAirportCode!)
@@ -206,11 +222,12 @@ namespace TravAi.Services.AI
                     .Select(f => f.Price!.Value).ToListAsync();
 
             var retDateFrom = req.ReturnDate.Date.AddDays(-7);
+                if (retDateFrom < DateTime.Today) retDateFrom = DateTime.Today;
             var retDateTo   = req.ReturnDate.Date.AddDays(7);
             var retPriceList = req.ExcludeFlights ? new List<decimal>() :
                 await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
-                        && f.FlightClass == flightClass
+                        && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
                         && f.DepartureTime!.Value.Date >= retDateFrom
                         && f.DepartureTime!.Value.Date <= retDateTo
                         && lastCodesP.Contains(f.DepartureAirportCode!)
@@ -218,8 +235,28 @@ namespace TravAi.Services.AI
                     .Select(f => f.Price!.Value).ToListAsync();
 
             // ── budget_divider ─────────────────────────────────────────────
-            decimal avgGoFlight  = FlightTotalPrice(Median(goPriceList),  req.Adults, req.Children);
-            decimal avgRetFlight = FlightTotalPrice(Median(retPriceList), req.Adults, req.Children);
+            LogDebug("\n" + new string('=', 60));
+            LogDebug(" [DEBUG: BUDGET DIVIDER START]");
+            LogDebug($"   - Target Budget Type : {req.BudgetType}");
+            LogDebug($"   - Input Total Budget  : {req.MaxBudget}");
+            LogDebug($"   - Route               : {req.FromCity} -> {firstCity} (Last: {lastCity})");
+            LogDebug($"   - Travelers           : Adults={req.Adults}, Children={req.Children}");
+            LogDebug($"   - Requested Rooms     : Single={req.SingleRooms}, Double={req.DoubleRooms}");
+            LogDebug(new string('-', 60));
+
+            decimal goMedian = Median(goPriceList);
+            decimal retMedian = Median(retPriceList);
+            decimal avgGoFlight  = FlightTotalPrice(goMedian,  req.Adults, req.Children);
+            decimal avgRetFlight = FlightTotalPrice(retMedian, req.Adults, req.Children);
+
+            LogDebug($" [FLIGHT CALCULATIONS]");
+            LogDebug($"   - Go Flights Found   : {goPriceList.Count}");
+            LogDebug($"   - Go Price Median    : {goMedian}");
+            LogDebug($"   - avgGoFlight Eq     : ({goMedian} * {req.Adults}) + ({goMedian} * 0.75 * {req.Children}) = {avgGoFlight}");
+            LogDebug($"   - Return Flights Fnd : {retPriceList.Count}");
+            LogDebug($"   - Return Price Median: {retMedian}");
+            LogDebug($"   - avgRetFlight Eq    : ({retMedian} * {req.Adults}) + ({retMedian} * 0.75 * {req.Children}) = {avgRetFlight}");
+            LogDebug(new string('-', 60));
 
             // Per-city hotel & tour market averages
             var hotelSingleMedians = new List<decimal>();
@@ -228,13 +265,13 @@ namespace TravAi.Services.AI
 
             foreach (var city in itinerary)
             {
+                LogDebug($" [CITY SCAN: {city.City.ToUpper()} for {city.Days} Days]");
                 if (!req.ExcludeHotels)
                 {
                     var cityLowerP = city.City.ToLower();
                     var rooms = await _db.HotelRooms
                         .Include(r => r.Hotel)
                         .Where(r => r.Hotel.Verified && r.Hotel.Active
-                            && r.Hotel.StarRating >= starMin && r.Hotel.StarRating <= starMax
                             && r.State == RoomState.Active && r.FBPrice.HasValue
                             && (r.Hotel.Governorate != null && r.Hotel.Governorate.ToLower() == cityLowerP
                              || r.Hotel.CityArea    != null && r.Hotel.CityArea.ToLower()    == cityLowerP))
@@ -245,8 +282,25 @@ namespace TravAi.Services.AI
                     var dm = rooms.Where(r => r.BedType == BedType.Double)
                                   .Select(r => r.FBPrice!.Value).ToList();
 
-                    if (sm.Any()) hotelSingleMedians.Add(Median(sm) * city.Days * req.SingleRooms);
-                    if (dm.Any()) hotelDoubleMedians.Add(Median(dm) * city.Days * req.DoubleRooms);
+                    decimal sMed = Median(sm);
+                    decimal dMed = Median(dm);
+
+                    LogDebug($"   - Hotels Selected    : Total Rooms={rooms.Count}");
+                    LogDebug($"   - Single Rooms Count : {sm.Count} (Median={sMed})");
+                    LogDebug($"   - Double Rooms Count : {dm.Count} (Median={dMed})");
+
+                    if (sm.Any())
+                    {
+                        decimal sPart = sMed * city.Days * req.SingleRooms;
+                        hotelSingleMedians.Add(sPart);
+                        LogDebug($"   - Single Room Part   : {sMed} * {city.Days} days * {req.SingleRooms} rooms = {sPart}");
+                    }
+                    if (dm.Any())
+                    {
+                        decimal dPart = dMed * city.Days * req.DoubleRooms;
+                        hotelDoubleMedians.Add(dPart);
+                        LogDebug($"   - Double Room Part   : {dMed} * {city.Days} days * {req.DoubleRooms} rooms = {dPart}");
+                    }
                 }
 
                 if (!req.ExcludeTours)
@@ -263,13 +317,25 @@ namespace TravAi.Services.AI
                             && (lang == null || t.TourGuide.TourGuideLanguages.Any(l => l.Language == lang.Value)))
                         .Select(t => t.BasePriceUsd!.Value).ToListAsync();
 
-                    if (tp.Any()) tourMeans.Add((city.City, tp.Average(), city.Days));
+                    if (tp.Any())
+                    {
+                        decimal mean = tp.Average();
+                        tourMeans.Add((city.City, mean, city.Days));
+                        LogDebug($"   - Tours Found in City: {tp.Count} (Mean/Average Price={mean})");
+                    }
                 }
+                LogDebug(new string('-', 60));
             }
 
             decimal avgHotel = hotelSingleMedians.Sum() + hotelDoubleMedians.Sum();
             decimal avgTours = tourMeans.Sum(t => t.mean * t.days * totalPeople);
             decimal marketSum = avgGoFlight + avgRetFlight + avgHotel + avgTours;
+
+            LogDebug($" [GLOBAL MARKET SUMMARY]");
+            LogDebug($"   - avgHotel (Sum)     : {avgHotel}");
+            LogDebug($"   - avgTours (Sum)     : {avgTours}");
+            LogDebug($"   - marketSum Eq       : {avgGoFlight} + {avgRetFlight} + {avgHotel} + {avgTours} = {marketSum}");
+            LogDebug(new string('-', 60));
 
             // Allocate budgets proportionally (budget_divider logic)
             decimal budget = req.MaxBudget;
@@ -285,21 +351,25 @@ namespace TravAi.Services.AI
                 flightBudget = req.ExcludeFlights ? 0 : part;
                 hotelBudget  = req.ExcludeHotels  ? 0 : part;
                 toursBudget  = req.ExcludeTours   ? 0 : part;
+                LogDebug(" [PROPORTIONAL ALLOCATION - FALLBACK RUN]");
             }
             else
             {
                 flightBudget = ((avgGoFlight + avgRetFlight) / marketSum) * budget;
                 hotelBudget  = (avgHotel / marketSum) * budget;
                 toursBudget  = (avgTours  / marketSum) * budget;
+
+                LogDebug($" [PROPORTIONAL ALLOCATION (budget_divider)]");
+                LogDebug($"   - flightBudget Eq    : (({avgGoFlight} + {avgRetFlight}) / {marketSum}) * {budget} = {flightBudget}");
+                LogDebug($"   - hotelBudget Eq     : ({avgHotel} / {marketSum}) * {budget} = {hotelBudget}");
+                LogDebug($"   - toursBudget Eq     : ({avgTours} / {marketSum}) * {budget} = {toursBudget}");
             }
+            LogDebug(" [DEBUG: BUDGET DIVIDER END]");
+            LogDebug(new string('=', 60) + "\n");
 
             decimal goBudget  = (avgGoFlight  + avgRetFlight) > 0
                 ? flightBudget * (avgGoFlight  / (avgGoFlight + avgRetFlight)) : flightBudget / 2;
             decimal retBudget = flightBudget - goBudget;
-
-            // ── Select best options ────────────────────────────────────────
-            var goFlight     = req.ExcludeFlights ? null : await SelectBestFlight(fromCodesP, toCodesP,    req.DepartureDate, flightClass, goBudget,  req.Adults, req.Children, "Go");
-            var returnFlight = req.ExcludeFlights ? null : await SelectBestFlight(lastCodesP,  fromCodesP, req.ReturnDate,    flightClass, retBudget, req.Adults, req.Children, "Return");
 
             // Per-city budgets for hotels/tours (proportional to days)
             int totalDays = itinerary.Sum(c => c.Days);
@@ -314,15 +384,6 @@ namespace TravAi.Services.AI
                 var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
                 var co = ci.AddDays(city.Days);
 
-                PlannedHotelDto? hotel = null;
-                PlannedTourDto?  tour  = null;
-
-                if (!req.ExcludeHotels && (req.SingleRooms > 0 || req.DoubleRooms > 0))
-                    hotel = await SelectBestHotel(city.City, starMin, starMax, cityHotelBudget, city.Days, req.SingleRooms, req.DoubleRooms);
-
-                if (!req.ExcludeTours)
-                    tour = await SelectBestTour(city.City, tourPMin, tourPMax, lang, ci, co, cityToursBudget, totalPeople);
-
                 cityPlans.Add(new CityPlanDto
                 {
                     City            = city.City,
@@ -331,27 +392,24 @@ namespace TravAi.Services.AI
                     CheckOut        = co,
                     CityHotelBudget = Math.Round(cityHotelBudget, 2),
                     CityToursBudget = Math.Round(cityToursBudget, 2),
-                    Hotel           = hotel,
-                    Tour            = tour
+                    Hotel           = null, // No specific flight/hotel/tour matching per user request
+                    Tour            = null
                 });
             }
-
-            decimal actualCost = (goFlight?.TotalPrice ?? 0) + (returnFlight?.TotalPrice ?? 0)
-                               + cityPlans.Sum(c => (c.Hotel?.TotalPrice ?? 0) + (c.Tour?.TotalPrice ?? 0));
 
             return new TripPlanResponseDto
             {
                 BudgetType         = req.BudgetType,
                 MaxBudget          = req.MaxBudget,
-                EstimatedTotalCost = Math.Round(actualCost, 2),
+                EstimatedTotalCost = Math.Round(req.MaxBudget, 2),
                 TotalDays          = totalDays,
                 Adults             = req.Adults,
                 Children           = req.Children,
                 FlightBudget       = Math.Round(flightBudget, 2),
                 HotelBudget        = Math.Round(hotelBudget,  2),
                 ToursBudget        = Math.Round(toursBudget,  2),
-                GoFlight           = goFlight,
-                ReturnFlight       = returnFlight,
+                GoFlight           = null,
+                ReturnFlight       = null,
                 CityPlans          = cityPlans,
                 Itinerary          = itinerary
             };
@@ -366,13 +424,14 @@ namespace TravAi.Services.AI
         {
             // Search ±7 days; pick closest to requested date within budget
             var dateFrom = date.Date.AddDays(-7);
+            if (dateFrom < DateTime.Today) dateFrom = DateTime.Today;
             var dateTo   = date.Date.AddDays(7);
 
             var flights = await _db.Flights
                 .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport)
                 .Include(f => f.Airline)
                 .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
-                    && f.FlightClass == flightClass
+                    && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
                     && f.DepartureTime!.Value.Date >= dateFrom
                     && f.DepartureTime!.Value.Date <= dateTo
                     && fromCodes.Contains(f.DepartureAirportCode!)
@@ -443,13 +502,14 @@ namespace TravAi.Services.AI
 
             foreach (var hotel in hotels)
             {
-                var singlePrice = hotel.Rooms
-                    .Where(r => r.BedType == BedType.Single && r.FBPrice.HasValue && r.State == RoomState.Active)
-                    .Select(r => r.FBPrice!.Value).DefaultIfEmpty(0).Min();
+                var singleRoomsList = hotel.Rooms.Where(r => r.BedType == BedType.Single && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+                var doubleRoomsList = hotel.Rooms.Where(r => r.BedType == BedType.Double && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
 
-                var doublePrice = hotel.Rooms
-                    .Where(r => r.BedType == BedType.Double && r.FBPrice.HasValue && r.State == RoomState.Active)
-                    .Select(r => r.FBPrice!.Value).DefaultIfEmpty(0).Min();
+                if (singleRooms > 0 && !singleRoomsList.Any()) continue;
+                if (doubleRooms > 0 && !doubleRoomsList.Any()) continue;
+
+                var singlePrice = singleRoomsList.Any() ? singleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                var doublePrice = doubleRoomsList.Any() ? doubleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
 
                 decimal total = (singlePrice * singleRooms + doublePrice * doubleRooms) * nights;
                 if (total <= 0 || total > budget) continue;

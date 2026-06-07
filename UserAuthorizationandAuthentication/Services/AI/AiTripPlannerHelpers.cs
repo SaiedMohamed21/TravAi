@@ -1,3 +1,4 @@
+using System.IO;
 using TravAi.DTOs.AI;
 using TravAi.Models.Enums;
 using TravAi.TourGuide.Models.Enums;
@@ -78,5 +79,17 @@ namespace TravAi.Services.AI
         // Compute total flight price for all travelers
         public static decimal FlightTotalPrice(decimal pricePerAdult, int adults, int children)
             => pricePerAdult * adults + pricePerAdult * 0.75m * children;
+
+        // Dual-Logging: Console.WriteLine + local workspace file
+        public static void LogDebug(string msg)
+        {
+            try
+            {
+                Console.WriteLine(msg);
+                string logFilePath = @"C:\Users\saied mohamed\Desktop\hotel\TravAi\budget_divider_debug.log";
+                File.AppendAllText(logFilePath, msg + Environment.NewLine);
+            }
+            catch {}
+        }
     }
 }

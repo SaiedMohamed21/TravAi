@@ -1,10 +1,12 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using System;
 
 namespace TravAi.TourGuide.DTOs.Tour
 {
     public class TourFilterDto
     {
+        public string? Search { get; set; }
+
         // Price filters
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }

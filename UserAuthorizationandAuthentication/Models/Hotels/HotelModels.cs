@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -40,6 +40,7 @@ namespace TravAi.Models.Hotels
         public string? AddressProofUrl { get; set; }
         public decimal PriceUsd { get; set; }
         public string? TypeNorm { get; set; }
+        public string? ClusterSegment { get; set; }
 
         // Review cache
         public int NumReviews { get; set; } = 0;
