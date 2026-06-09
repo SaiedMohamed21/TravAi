@@ -128,6 +128,66 @@ namespace TravAi.TourGuide.Services
             return await MapToDto(tour, true);
         }
 
+        public async Task<TourResponseDto> RepeatTourAsync(long tourId, long tourGuideId, RepeatTourRequestDto model)
+        {
+            var existingTour = await _context.Tours
+                .Include(t => t.TourImages)
+                .FirstOrDefaultAsync(t => t.Id == tourId && t.TourGuideId == tourGuideId);
+
+            if (existingTour == null)
+            {
+                throw new InvalidOperationException("Tour not found or you don't have permission to repeat it.");
+            }
+
+            var newTour = new Tour
+            {
+                TourGuideId = existingTour.TourGuideId,
+                City = existingTour.City,
+                TourTitle = existingTour.TourTitle,
+                TourType = existingTour.TourType,
+                TourDescription = existingTour.TourDescription,
+                BasePriceUsd = existingTour.BasePriceUsd,
+                Currency = existingTour.Currency,
+                DurationHours = existingTour.DurationHours,
+                GroupSizeMax = existingTour.GroupSizeMax,
+                SitesCovered = existingTour.SitesCovered,
+                StartingPoint = existingTour.StartingPoint,
+                AgeRestriction = existingTour.AgeRestriction,
+                TransportIncluded = existingTour.TransportIncluded,
+                MealsIncluded = existingTour.MealsIncluded,
+                IsAccessible = existingTour.IsAccessible,
+                Accessibility = existingTour.Accessibility,
+                Customizable = existingTour.Customizable,
+                Season = existingTour.Season,
+                IncludedServices = existingTour.IncludedServices,
+                ExcludedServices = existingTour.ExcludedServices,
+                SafetyMeasures = existingTour.SafetyMeasures,
+                BestTimeToVisit = existingTour.BestTimeToVisit,
+                PickupDetails = existingTour.PickupDetails,
+                CancellationPolicy = existingTour.CancellationPolicy,
+                Active = existingTour.Active,
+                AvailableDateTime = model.NewDate, // Set the new date
+                CreatedAt = DateTime.UtcNow,
+                TourImages = new List<TourImage>()
+            };
+
+            foreach (var img in existingTour.TourImages)
+            {
+                newTour.TourImages.Add(new TourImage
+                {
+                    ImageUrl = img.ImageUrl,
+                    Caption = img.Caption,
+                    IsPrimary = img.IsPrimary,
+                    SortOrder = img.SortOrder
+                });
+            }
+
+            _context.Tours.Add(newTour);
+            await _context.SaveChangesAsync();
+
+            return await MapToDto(newTour, true);
+        }
+
         public async Task<bool> DeleteTourAsync(long tourId, long tourGuideId)
         {
             var tour = await _context.Tours.FirstOrDefaultAsync(t => t.Id == tourId && t.TourGuideId == tourGuideId);
@@ -363,11 +423,14 @@ namespace TravAi.TourGuide.Services
                 };
             }
 
+            var bookingCount = await _context.TourBookings.CountAsync(b => b.TourId == tour.Id && b.Status != TravAi.TourGuide.Models.Enums.BookingStatus.Cancelled);
+
             return new TourResponseDto
             {
                 Id = tour.Id,
                 TourGuideId = tour.TourGuideId,
                 TourGuideName = tour.TourGuide?.Name ?? "Unknown",
+                BookingCount = bookingCount,
                 City = tour.City,
                 TourTitle = tour.TourTitle,
                 TourType = tour.TourType,

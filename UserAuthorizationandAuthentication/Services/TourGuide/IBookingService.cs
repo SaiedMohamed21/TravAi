@@ -27,6 +27,7 @@ namespace TravAi.TourGuide.Services
         
         // Get bookings assigned to a Tour Guide
         Task<List<BookingResponseDto>> GetAssignedBookingsAsync(long tourGuideId, BookingStatus? status = null);
+        Task<BookingResponseDto> GetAssignedBookingByIdAsync(long tourGuideId, long bookingId);
 
         Task<List<BookingResponseDto>> GetUserTripsAsync(long userId, string tab);
         Task<BookingResponseDto> GetBookingByIdAsync(long userId, long bookingId);
