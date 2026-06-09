@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using System;
 using System.Collections.Generic;
 using TravAi.Models.Enums;
@@ -40,6 +40,7 @@ namespace TravAi.TourGuide.DTOs.Tour
         public bool Active { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public int BookingCount { get; set; }
 
         public string? ImageUrl { get; set; }
         public int ReviewsCount { get; set; }

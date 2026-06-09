@@ -26,5 +26,21 @@ namespace TravAi.DTOs.AI
 
         // --- Itinerary used ---
         public List<ItineraryCityDto> Itinerary { get; set; } = new();
+
+        // --- Debug Info ---
+        public PlanDebugDto? DebugData { get; set; }
+    }
+
+    public class PlanDebugDto
+    {
+        public decimal MedianGo { get; set; }
+        public decimal MedianReturn { get; set; }
+        public int NumGo { get; set; }
+        public int NumReturn { get; set; }
+        public decimal MedianHotelsSingle { get; set; }
+        public decimal MedianHotelsDouble { get; set; }
+        public int NumHotelsSingle { get; set; }
+        public int NumHotelsDouble { get; set; }
+        public int NumberHotels { get; set; }
     }
 }

@@ -353,13 +353,13 @@ function renderPlan() {
   const totalFlightCost = goPrice + retPrice;
   const flightBudgetEl = document.getElementById('flightBudgetInfo');
   if (flightBudgetEl) {
-    const showBudget = totalFlightCost > 0 ? totalFlightCost : p.flightBudget;
-    if (showBudget > 0) {
+    if (p.flightBudget > 0) {
       flightBudgetEl.innerHTML =
-        `<span style="font-size:.85rem;color:var(--muted)">Flight budget:</span>
-         <strong style="color:var(--accent);font-size:.95rem"> $${fmt(showBudget)}</strong>
+        `<span style="font-size:.85rem;color:var(--muted)">Allocated Budget: $${fmt(p.flightBudget)}</span>
+         ${totalFlightCost > 0 ? `<br><span style="font-size:.85rem;color:var(--muted)">Actual Cost:</span>
+         <strong style="color:var(--accent);font-size:.95rem"> $${fmt(totalFlightCost)}</strong>
          ${goPrice  > 0 ? `<span style="font-size:.75rem;color:var(--muted);margin-left:8px">GO $${fmt(goPrice)}</span>` : ''}
-         ${retPrice > 0 ? `<span style="font-size:.75rem;color:var(--muted);margin-left:4px">· RETURN $${fmt(retPrice)}</span>` : ''}`;
+         ${retPrice > 0 ? `<span style="font-size:.75rem;color:var(--muted);margin-left:4px">· RETURN $${fmt(retPrice)}</span>` : ''}` : ''}`;
     } else {
       flightBudgetEl.innerHTML = '';
     }
@@ -369,6 +369,38 @@ function renderPlan() {
   const cb = document.getElementById('cityPlansBody');
   cb.innerHTML = '';
   p.cityPlans.forEach(city => cb.appendChild(cityCard(city)));
+
+  // Debug Info Panel
+  let debugEl = document.getElementById('debugInfoPanel');
+  if (!debugEl) {
+    debugEl = document.createElement('div');
+    debugEl.id = 'debugInfoPanel';
+    debugEl.style.cssText = 'margin-top:30px; padding:20px; background:rgba(0,0,0,0.2); border:1px dashed var(--glass-border); border-radius:12px; font-family:monospace; font-size:0.9rem; color:var(--text-muted); line-height:1.6; text-align:left;';
+    
+    // Insert before the action buttons at the bottom
+    const actions = document.getElementById('planContent').querySelector('.btn-group');
+    if (actions) {
+      actions.parentElement.insertBefore(debugEl, actions);
+    } else {
+      document.getElementById('planContent').appendChild(debugEl);
+    }
+  }
+  
+  const d = p.debugData;
+  if (d) {
+    debugEl.innerHTML = `
+      <div style="color:#c084fc; margin-bottom:10px; font-weight:bold; font-family:'Outfit', sans-serif;">🛠️ Debug Info</div>
+      Median go: ${d.medianGo}<br>
+      Median return: ${d.medianReturn}<br>
+      num go: (${d.numGo})<br>
+      num return: (${d.numReturn})<br>
+      Median hotels single: ${d.medianHotelsSingle}<br>
+      Median hotels double: ${d.medianHotelsDouble}<br>
+      number of hotels: (${d.numHotelsSingle}, ${d.numHotelsDouble})
+    `;
+  } else {
+    debugEl.style.display = 'none';
+  }
 }
 
 

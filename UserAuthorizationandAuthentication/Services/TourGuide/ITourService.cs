@@ -10,6 +10,7 @@ namespace TravAi.TourGuide.Services
     {
         Task<TourResponseDto> CreateTourAsync(long tourGuideId, CreateTourDto model);
         Task<TourResponseDto> UpdateTourAsync(long tourId, long tourGuideId, UpdateTourDto model);
+        Task<TourResponseDto> RepeatTourAsync(long tourId, long tourGuideId, RepeatTourRequestDto model);
         Task<bool> DeleteTourAsync(long tourId, long tourGuideId);
         Task<bool> AdminDeleteTourAsync(long tourId);
         Task<TourResponseDto> GetTourByIdAsync(long tourId);

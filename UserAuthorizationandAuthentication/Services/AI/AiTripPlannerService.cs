@@ -337,6 +337,10 @@ namespace TravAi.Services.AI
             var hotelDoubleMedians = new List<decimal>();
             var tourMeans          = new List<(string city, decimal mean, int days)>();
 
+            // Debug storage
+            decimal debugSMed = 0, debugDMed = 0;
+            int debugNumSingle = 0, debugNumDouble = 0, debugTotalRooms = 0;
+
             foreach (var city in itinerary)
             {
                 LogDebug($" [CITY SCAN: {city.City.ToUpper()} for {city.Days} Days]");
@@ -358,6 +362,13 @@ namespace TravAi.Services.AI
 
                     decimal sMed = Median(sm);
                     decimal dMed = Median(dm);
+
+                    // Track first city's (or overall) debug info
+                    if (debugTotalRooms == 0) {
+                        debugSMed = sMed; debugDMed = dMed;
+                        debugNumSingle = sm.Count; debugNumDouble = dm.Count;
+                        debugTotalRooms = rooms.Count;
+                    }
 
                     LogDebug($"   - Hotels Selected    : Total Rooms={rooms.Count}");
                     LogDebug($"   - Single Rooms Count : {sm.Count} (Median={sMed})");
@@ -468,13 +479,13 @@ namespace TravAi.Services.AI
                     CheckOut        = co,
                     CityHotelBudget = Math.Round(cityHotelBudget, 2),
                     CityToursBudget = Math.Round(cityToursBudget, 2),
-                    Hotel           = req.ExcludeHotels ? null : await SelectBestHotel(city.City, starMin, starMax, cityHotelBudget, city.Days, req.SingleRooms, req.DoubleRooms),
-                    Tour            = req.ExcludeTours ? null : await SelectBestTour(city.City, tourPMin, tourPMax, lang, ci, co, cityToursBudget, totalPeople)
+                    Hotel           = null, // Selection stopped: Budget divider only
+                    Tour            = null  // Selection stopped: Budget divider only
                 });
             }
 
-            var goFlight = req.ExcludeFlights ? null : await SelectBestFlight(fromCodesP, toCodesP, req.DepartureDate, flightClass, goBudget, req.Adults, req.Children, "Outbound");
-            var retFlight = req.ExcludeFlights ? null : await SelectBestFlight(lastCodesP, fromCodesP, req.ReturnDate, flightClass, retBudget, req.Adults, req.Children, "Return");
+            PlannedFlightDto? goFlight = null;  // Selection stopped
+            PlannedFlightDto? retFlight = null; // Selection stopped
 
             return new TripPlanResponseDto
             {
@@ -490,7 +501,19 @@ namespace TravAi.Services.AI
                 GoFlight           = goFlight,
                 ReturnFlight       = retFlight,
                 CityPlans          = cityPlans,
-                Itinerary          = itinerary
+                Itinerary          = itinerary,
+                DebugData          = new PlanDebugDto
+                {
+                    MedianGo = goMedian,
+                    MedianReturn = retMedian,
+                    NumGo = goPriceList.Count,
+                    NumReturn = retPriceList.Count,
+                    MedianHotelsSingle = debugSMed,
+                    MedianHotelsDouble = debugDMed,
+                    NumHotelsSingle = debugNumSingle,
+                    NumHotelsDouble = debugNumDouble,
+                    NumberHotels = debugTotalRooms
+                }
             };
         }
 
