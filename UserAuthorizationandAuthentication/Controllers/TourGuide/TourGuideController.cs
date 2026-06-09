@@ -16,10 +16,12 @@ namespace TravAi.TourGuide.Controllers
     public class TourGuideController : ControllerBase
     {
         private readonly ITourGuideService _service;
+        private readonly IBookingService _bookingService;
 
-        public TourGuideController(ITourGuideService service)
+        public TourGuideController(ITourGuideService service, IBookingService bookingService)
         {
             _service = service;
+            _bookingService = bookingService;
         }
 
         /// <summary>
@@ -323,6 +325,24 @@ namespace TravAi.TourGuide.Controllers
 
             var result = await _service.GetEarningsChartAsync(tourGuide.Id);
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Get all bookings assigned to the logged-in tour guide
+        /// </summary>
+        [Authorize(Roles = "Tourguide")]
+        [HttpGet("/api/tourguide/my-assigned-bookings")]
+        public async Task<IActionResult> GetMyAssignedBookings([FromQuery] TravAi.TourGuide.Models.Enums.BookingStatus? status = null)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null) return NotFound("Tour Guide profile not found.");
+
+            var bookings = await _bookingService.GetAssignedBookingsAsync(tourGuide.Id, status);
+            return Ok(bookings);
         }
     }
 }

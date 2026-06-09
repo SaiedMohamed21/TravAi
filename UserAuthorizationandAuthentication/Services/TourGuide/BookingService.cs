@@ -258,6 +258,34 @@ namespace TravAi.TourGuide.Services
             return dtos;
         }
 
+        public async Task<List<BookingResponseDto>> GetAssignedBookingsAsync(long tourGuideId, BookingStatus? status = null)
+        {
+            var query = _context.TourBookings
+                .Include(b => b.Tour)
+                .Include(b => b.TourGuide)
+                .Include(b => b.Participants)
+                    .ThenInclude(p => p.Phones)
+                .Include(b => b.Participants)
+                    .ThenInclude(p => p.EmergencyNumbers)
+                .Where(b => b.TourGuideId == tourGuideId);
+
+            if (status.HasValue)
+            {
+                query = query.Where(b => b.Status == status.Value);
+            }
+
+            var bookings = await query
+                .OrderByDescending(b => b.CreatedAt)
+                .ToListAsync();
+
+            var dtos = new List<BookingResponseDto>();
+            foreach (var booking in bookings)
+            {
+                dtos.Add(await MapToDto(booking));
+            }
+            return dtos;
+        }
+
         public async Task<BookingResponseDto> GetBookingByIdAsync(long userId, long bookingId)
         {
             var booking = await _context.TourBookings

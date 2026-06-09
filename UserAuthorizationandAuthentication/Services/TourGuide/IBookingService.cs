@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TravAi.TourGuide.DTOs.Booking;
@@ -24,6 +24,10 @@ namespace TravAi.TourGuide.Services
         
         // Get user's bookings (all statuses or specific status)
         Task<List<BookingResponseDto>> GetUserBookingsAsync(long userId, BookingStatus? status = null);
+        
+        // Get bookings assigned to a Tour Guide
+        Task<List<BookingResponseDto>> GetAssignedBookingsAsync(long tourGuideId, BookingStatus? status = null);
+
         Task<List<BookingResponseDto>> GetUserTripsAsync(long userId, string tab);
         Task<BookingResponseDto> GetBookingByIdAsync(long userId, long bookingId);
         
