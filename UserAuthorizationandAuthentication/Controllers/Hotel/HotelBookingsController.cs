@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TravAi.DTOs.Common;
@@ -72,8 +72,15 @@ namespace TravAi.Controllers.Hotel
         [HttpGet("/api/user/trips/hotels")]
         public async Task<IActionResult> GetUserTrips([FromQuery] string tab)
         {
-            var bookings = await _hotelService.GetUserTripsAsync(GetUserId(), tab);
-            return Ok(new ApiResponse<List<BookingDto>> { Success = true, Message = $"Retrieved {tab} hotel trips.", Data = bookings, Errors = new List<string>() });
+            try
+            {
+                var trips = await _hotelService.GetMyTripsAsync(GetUserId(), tab ?? "upcoming");
+                return Ok(new ApiResponse<List<MyTripHotelDto>> { Success = true, Message = "Trips retrieved.", Data = trips, Errors = new List<string>() });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<string> { Success = false, Message = ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
         }
 
         // 3. Get Hotel Bookings (Owner)
@@ -114,16 +121,20 @@ namespace TravAi.Controllers.Hotel
             }
         }
 
-        // 5. Cancel Booking
-        [HttpPut("{id}/cancel")]
-        public async Task<IActionResult> CancelBooking(long id)
+        // 5. Cancel Booking (User or Owner)
+        [HttpPost("cancel")]
+        public async Task<IActionResult> CancelBooking([FromBody] CancelBookingRequest request)
         {
             try
             {
-                var result = await _hotelService.CancelBookingAsync(GetUserId(), id);
-                if (result)
-                    return Ok(new ApiResponse<string> { Success = true, Message = "Booking cancelled successfully.", Data = null!, Errors = new List<string>() });
-                return BadRequest(new ApiResponse<string> { Success = false, Message = "Failed to cancel booking.", Data = null!, Errors = new List<string> { "Failed to cancel booking." } });
+                var booking = await _hotelService.CancelBookingAsync(GetUserId(), request.BookingId, request.Reason);
+                return Ok(new ApiResponse<BookingDto>
+                {
+                    Success = true,
+                    Message = "Booking cancelled successfully.",
+                    Data = booking,
+                    Errors = new List<string>()
+                });
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -136,6 +147,33 @@ namespace TravAi.Controllers.Hotel
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new ApiResponse<string> { Success = false, Message = ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<string> { Success = false, Message = "Error cancelling booking: " + ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+        }
+
+        // 7. Process Payment (User)
+        [HttpPost("pay")]
+        public async Task<IActionResult> ProcessPayment([FromBody] ProcessPaymentRequest request)
+        {
+            try
+            {
+                var result = await _hotelService.ProcessPaymentAsync(GetUserId(), request);
+                return Ok(new ApiResponse<PaymentResponseDto> { Success = true, Message = "Payment processed successfully.", Data = result, Errors = new List<string>() });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string> { Success = false, Message = ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ApiResponse<string> { Success = false, Message = ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<string> { Success = false, Message = "Error processing payment: " + ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
             }
         }
 

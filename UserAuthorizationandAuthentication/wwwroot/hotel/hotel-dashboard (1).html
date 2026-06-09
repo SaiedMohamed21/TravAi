@@ -1,0 +1,5027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumière Hotel — Admin</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box
+    }
+
+    :root {
+      --navy: #0B0F1A;
+      --navy-2: #111827;
+      --navy-3: #1A2235;
+      --navy-4: #1E2D45;
+      --navy-5: #243352;
+      --gold: #D4A853;
+      --gold-2: #E8C27A;
+      --gold-dim: rgba(212, 168, 83, .12);
+      --gold-dim2: rgba(212, 168, 83, .06);
+      --text-1: #F0EDE8;
+      --text-2: #A8B0C0;
+      --text-3: #5A6478;
+      --border: rgba(255, 255, 255, .07);
+      --border-2: rgba(255, 255, 255, .04);
+      --green: #3ECFA0;
+      --green-dim: rgba(62, 207, 160, .12);
+      --amber: #F5A623;
+      --amber-dim: rgba(245, 166, 35, .12);
+      --red: #F06565;
+      --red-dim: rgba(240, 101, 101, .12);
+      --blue: #5B8DEF;
+      --blue-dim: rgba(91, 141, 239, .12);
+      --purple: #7C6EF0;
+      --purple-dim: rgba(124, 110, 240, .12);
+      --sw: 260px;
+      --hh: 64px;
+      --r: 12px;
+      --r-sm: 8px;
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--navy);
+      color: var(--text-1);
+      min-height: 100vh;
+      display: flex;
+      overflow-x: hidden
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--navy-2)
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--gold);
+      border-radius: 10px;
+      border: 2px solid var(--navy-2)
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--gold-2)
+    }
+
+    /* ══ SIDEBAR ══ */
+    .sidebar {
+      width: var(--sw);
+      background: var(--navy-2);
+      border-right: 1px solid var(--border);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 200;
+      transition: transform .3s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .sb-top {
+      padding: 26px 22px 22px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px
+    }
+
+    .logo-gem {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+      flex-shrink: 0
+    }
+
+    .logo-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px;
+      font-weight: 600;
+      letter-spacing: .4px
+    }
+
+    .logo-tag {
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 2.2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding-left: 38px;
+      margin-top: 3px
+    }
+
+    .nav-wrap {
+      padding: 18px 14px 0;
+      flex: 1;
+      overflow-y: auto
+    }
+
+    .nav-section-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 2.4px;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 0 8px;
+      margin: 18px 0 7px
+    }
+
+    .nav-section-lbl:first-child {
+      margin-top: 0
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 10px 11px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      color: var(--text-2);
+      font-size: 13px;
+      font-weight: 400;
+      transition: all .18s;
+      position: relative;
+      user-select: none;
+      margin-bottom: 1px
+    }
+
+    .nav-item:hover {
+      background: var(--border);
+      color: var(--text-1)
+    }
+
+    .nav-item.on {
+      background: var(--gold-dim);
+      color: var(--gold-2);
+      font-weight: 500
+    }
+
+    .nav-item.on::before {
+      content: '';
+      position: absolute;
+      left: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 58%;
+      background: var(--gold);
+      border-radius: 0 3px 3px 0
+    }
+
+    .nav-ico {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      opacity: .65
+    }
+
+    .nav-item.on .nav-ico {
+      opacity: 1
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--amber-dim);
+      color: var(--amber);
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px
+    }
+
+    .sb-foot {
+      padding: 14px;
+      border-top: 1px solid var(--border)
+    }
+
+    .profile-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 11px;
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: background .18s
+    }
+
+    .profile-btn:hover {
+      background: var(--border)
+    }
+
+    .profile-ava {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, var(--gold), #8B5E1A);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0
+    }
+
+    .profile-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-1)
+    }
+
+    .profile-role {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 1px
+    }
+
+    /* ══ MAIN ══ */
+    .main {
+      margin-left: var(--sw);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh
+    }
+
+    /* ══ HEADER ══ */
+    .hdr {
+      height: var(--hh);
+      background: rgba(11, 15, 26, .88);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      gap: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100
+    }
+
+    .ham {
+      display: none;
+      flex-direction: column;
+      gap: 4.5px;
+      cursor: pointer;
+      padding: 4px;
+      background: none;
+      border: none
+    }
+
+    .ham span {
+      display: block;
+      width: 19px;
+      height: 1.5px;
+      background: var(--text-2);
+      border-radius: 2px
+    }
+
+    .srch {
+      position: relative;
+      flex: 1;
+      max-width: 380px
+    }
+
+    .srch input {
+      width: 100%;
+      padding: 8px 13px 8px 37px;
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12.5px;
+      color: var(--text-1);
+      outline: none;
+      transition: all .2s
+    }
+
+    .srch input:focus {
+      border-color: rgba(212, 168, 83, .4);
+      background: var(--navy-4)
+    }
+
+    .srch input::placeholder {
+      color: var(--text-3)
+    }
+
+    .srch-ic {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3)
+    }
+
+    .hdr-r {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .hdr-ic-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-2);
+      position: relative;
+      transition: all .18s
+    }
+
+    .hdr-ic-btn:hover {
+      border-color: rgba(212, 168, 83, .3);
+      color: var(--gold)
+    }
+
+    .notif-dot {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 5px;
+      height: 5px;
+      background: var(--red);
+      border-radius: 50%;
+      border: 1.5px solid var(--navy-2)
+    }
+
+    .hdr-div {
+      width: 1px;
+      height: 22px;
+      background: var(--border)
+    }
+
+    .hdr-date {
+      font-size: 11.5px;
+      color: var(--text-3);
+      white-space: nowrap
+    }
+
+    /* ══ CONTENT ══ */
+    .content {
+      padding: 28px;
+      flex: 1
+    }
+
+    .page {
+      display: none;
+      animation: pgIn .28s ease
+    }
+
+    .page.on {
+      display: block
+    }
+
+    @keyframes pgIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* ══ PAGE HEADER ══ */
+    .ph {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px
+    }
+
+    .ph-eye {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 5px
+    }
+
+    .ph-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1
+    }
+
+    .ph-sub {
+      font-size: 12.5px;
+      color: var(--text-3);
+      margin-top: 5px
+    }
+
+    /* ══ BUTTONS ══ */
+    .btn-gold {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      background: linear-gradient(135deg, var(--gold), #B8892A);
+      border-radius: 9px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #0B0F1A;
+      transition: all .18s;
+      box-shadow: 0 4px 18px rgba(212, 168, 83, .22);
+      white-space: nowrap
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(212, 168, 83, .32)
+    }
+
+    .btn-ghost {
+      padding: 9px 18px;
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      font-family: 'Outfit', sans-serif;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: all .18s
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(255, 255, 255, .15);
+      color: var(--text-1)
+    }
+
+    /* ══ CARD ══ */
+    .card {
+      background: var(--navy-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden
+    }
+
+    .card-hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-2)
+    }
+
+    .card-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 600
+    }
+
+    .card-link {
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--gold);
+      cursor: pointer;
+      transition: opacity .18s
+    }
+
+    .card-link:hover {
+      opacity: .7
+    }
+
+    /* ══ KPI ══ */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-bottom: 24px
+    }
+
+    .kpi {
+      background: var(--navy-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 20px 18px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .18s, border-color .18s
+    }
+
+    .kpi:hover {
+      transform: translateY(-2px);
+      border-color: rgba(212, 168, 83, .18)
+    }
+
+    .kpi-glow {
+      position: absolute;
+      top: -18px;
+      right: -18px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      filter: blur(28px);
+      opacity: .22
+    }
+
+    .kpi-ic {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1
+    }
+
+    .kpi-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1;
+      position: relative;
+      z-index: 1
+    }
+
+    .kpi-lbl {
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--text-3);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      position: relative;
+      z-index: 1
+    }
+
+    .kpi-d {
+      font-size: 10.5px;
+      font-weight: 500;
+      margin-top: 7px;
+      position: relative;
+      z-index: 1
+    }
+
+    .k-gold .kpi-glow {
+      background: var(--gold)
+    }
+
+    .k-gold .kpi-ic {
+      background: var(--gold-dim);
+      color: var(--gold)
+    }
+
+    .k-gold .kpi-d {
+      color: var(--gold)
+    }
+
+    .k-blue .kpi-glow {
+      background: var(--blue)
+    }
+
+    .k-blue .kpi-ic {
+      background: var(--blue-dim);
+      color: var(--blue)
+    }
+
+    .k-blue .kpi-d {
+      color: var(--blue)
+    }
+
+    .k-red .kpi-glow {
+      background: var(--red)
+    }
+
+    .k-red .kpi-ic {
+      background: var(--red-dim);
+      color: var(--red)
+    }
+
+    .k-red .kpi-d {
+      color: var(--text-3)
+    }
+
+    .k-green .kpi-glow {
+      background: var(--green)
+    }
+
+    .k-green .kpi-ic {
+      background: var(--green-dim);
+      color: var(--green)
+    }
+
+    .k-green .kpi-d {
+      color: var(--green)
+    }
+
+    .k-amber .kpi-glow {
+      background: var(--amber)
+    }
+
+    .k-amber .kpi-ic {
+      background: var(--amber-dim);
+      color: var(--amber)
+    }
+
+    .k-amber .kpi-d {
+      color: var(--amber)
+    }
+
+    /* ══ BODY GRID ══ */
+    .body-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 18px
+    }
+
+    .col-l,
+    .col-r {
+      display: flex;
+      flex-direction: column;
+      gap: 18px
+    }
+
+    /* ══ TABS ══ */
+    .tabs {
+      display: flex;
+      padding: 0 20px;
+      border-bottom: 1px solid var(--border-2)
+    }
+
+    .tab {
+      padding: 11px 13px 12px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--text-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all .16s;
+      font-family: 'Outfit', sans-serif
+    }
+
+    .tab:hover {
+      color: var(--text-2)
+    }
+
+    .tab.on {
+      color: var(--gold-2);
+      border-bottom-color: var(--gold);
+      font-weight: 500
+    }
+
+    /* ══ BOOKING ROW ══ */
+    .bk-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border-2);
+      cursor: pointer;
+      transition: background .14s
+    }
+
+    .bk-row:last-child {
+      border: none
+    }
+
+    .bk-row:hover {
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .bk-ava {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0
+    }
+
+    .bk-name {
+      font-size: 13px;
+      font-weight: 500
+    }
+
+    .bk-meta {
+      font-size: 11px;
+      color: var(--text-3);
+      margin-top: 2px
+    }
+
+    .bk-r {
+      margin-left: auto;
+      text-align: right;
+      flex-shrink: 0
+    }
+
+    .bk-dates {
+      font-size: 11.5px;
+      color: var(--text-2);
+      font-weight: 500
+    }
+
+    .bk-pax {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 2px
+    }
+
+    /* ══ PILL ══ */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 600
+    }
+
+    .pd {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%
+    }
+
+    .p-green {
+      background: var(--green-dim);
+      color: var(--green)
+    }
+
+    .p-green .pd {
+      background: var(--green)
+    }
+
+    .p-amber {
+      background: var(--amber-dim);
+      color: var(--amber)
+    }
+
+    .p-amber .pd {
+      background: var(--amber)
+    }
+
+    .p-red {
+      background: var(--red-dim);
+      color: var(--red)
+    }
+
+    .p-red .pd {
+      background: var(--red)
+    }
+
+    .p-blue {
+      background: var(--blue-dim);
+      color: var(--blue)
+    }
+
+    .p-blue .pd {
+      background: var(--blue)
+    }
+
+    .p-gray {
+      background: rgba(255, 255, 255, .06);
+      color: var(--text-3)
+    }
+
+    .p-gray .pd {
+      background: var(--text-3)
+    }
+
+    .p-purple {
+      background: var(--purple-dim);
+      color: var(--purple)
+    }
+
+    .p-purple .pd {
+      background: var(--purple)
+    }
+
+    /* ══ ROOM STATUS MINI ══ */
+    .rm-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border-2)
+    }
+
+    .rm-cell {
+      padding: 14px 16px;
+      background: var(--navy-2);
+      cursor: pointer;
+      transition: background .14s
+    }
+
+    .rm-cell:hover {
+      background: var(--navy-3)
+    }
+
+    .rm-cell-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 7px
+    }
+
+    .rm-n {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px;
+      font-weight: 700
+    }
+
+    .rm-t {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 1px
+    }
+
+    .rmdot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      margin-top: 4px
+    }
+
+    .d-green {
+      background: var(--green);
+      box-shadow: 0 0 0 2.5px var(--green-dim)
+    }
+
+    .d-blue {
+      background: var(--blue);
+      box-shadow: 0 0 0 2.5px var(--blue-dim)
+    }
+
+    .d-amber {
+      background: var(--amber);
+      box-shadow: 0 0 0 2.5px var(--amber-dim)
+    }
+
+    .d-red {
+      background: var(--red);
+      box-shadow: 0 0 0 2.5px var(--red-dim)
+    }
+
+    .rm-price {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--gold)
+    }
+
+    .rm-units {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 2px
+    }
+
+    /* ══ REVIEW ══ */
+    .rv-item {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-2);
+      cursor: pointer;
+      transition: background .14s
+    }
+
+    .rv-item:last-child {
+      border: none
+    }
+
+    .rv-item:hover {
+      background: rgba(255, 255, 255, .02)
+    }
+
+    .rv-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px
+    }
+
+    .rv-who {
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .rv-ava {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff
+    }
+
+    .rv-gname {
+      font-size: 12.5px;
+      font-weight: 500
+    }
+
+    .rv-meta {
+      font-size: 10.5px;
+      color: var(--text-3)
+    }
+
+    .rv-stars {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--gold)
+    }
+
+    .rv-text {
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden
+    }
+
+    /* ══ QUICK ACTIONS ══ */
+    .qa-list {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px
+    }
+
+    .qa {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 11px 13px;
+      border-radius: 9px;
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all .18s;
+      font-size: 12.5px;
+      color: var(--text-2)
+    }
+
+    .qa:hover {
+      border-color: rgba(212, 168, 83, .22);
+      background: var(--navy-4);
+      color: var(--gold-2)
+    }
+
+    .qa-ic {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: var(--gold-dim);
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    /* ══ OCCUPANCY ══ */
+    .occ-wrap {
+      padding: 20px
+    }
+
+    .occ-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px
+    }
+
+    .occ-big {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--gold);
+      line-height: 1
+    }
+
+    .occ-big-lbl {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 3px
+    }
+
+    .occ-info {
+      font-size: 12.5px;
+      color: var(--text-2);
+      font-weight: 500
+    }
+
+    .occ-info-sub {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 2px
+    }
+
+    .occ-bar-bg {
+      height: 5px;
+      background: var(--navy-4);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 16px
+    }
+
+    .occ-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold), var(--gold-2));
+      border-radius: 3px;
+      width: 0;
+      transition: width 1.2s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    .occ-leg {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px
+    }
+
+    .occ-leg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      color: var(--text-2)
+    }
+
+    .occ-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    /* ══ TABLE ══ */
+    .tbl-wrap {
+      overflow-x: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    thead tr {
+      border-bottom: 1px solid var(--border)
+    }
+
+    th {
+      padding: 12px 18px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-3)
+    }
+
+    td {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border-2);
+      font-size: 13px;
+      color: var(--text-2)
+    }
+
+    tr:last-child td {
+      border: none
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: background .14s
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, .02)
+    }
+
+    td.primary {
+      color: var(--text-1)
+    }
+
+    /* ══ FORMS ══ */
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px
+    }
+
+    .form-grid-5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px
+    }
+
+    .fg {
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .fg.span2 {
+      grid-column: 1/-1
+    }
+
+    .flbl {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: var(--text-3)
+    }
+
+    .finp {
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 13px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      color: var(--text-1);
+      outline: none;
+      transition: all .18s;
+      width: 100%
+    }
+
+    .finp:focus {
+      border-color: rgba(212, 168, 83, .45);
+      background: var(--navy-4)
+    }
+
+    .finp option {
+      background: var(--navy-3)
+    }
+
+    .price-wrap {
+      position: relative
+    }
+
+    .price-sym {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12.5px;
+      color: var(--text-3);
+      font-weight: 500;
+      pointer-events: none
+    }
+
+    .finp-price {
+      padding-left: 24px !important
+    }
+
+    /* ══ STAR PICKER ══ */
+    .star-row {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 5px 0
+    }
+
+    .s-opt {
+      font-size: 21px;
+      cursor: pointer;
+      color: var(--text-3);
+      transition: color .12s;
+      line-height: 1
+    }
+
+    .s-opt.on {
+      color: var(--gold)
+    }
+
+    /* ══ AMENITY TOGGLE ══ */
+    .am-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 10px
+    }
+
+    .am-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all .18s;
+      user-select: none
+    }
+
+    .am-item.on {
+      border-color: rgba(212, 168, 83, .28);
+      background: rgba(212, 168, 83, .05)
+    }
+
+    .am-left {
+      display: flex;
+      align-items: center;
+      gap: 9px
+    }
+
+    .am-ico {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: var(--navy-4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-3);
+      transition: all .18s;
+      flex-shrink: 0
+    }
+
+    .am-item.on .am-ico {
+      background: var(--gold-dim);
+      color: var(--gold)
+    }
+
+    .am-name {
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-2);
+      transition: color .18s
+    }
+
+    .am-item.on .am-name {
+      color: var(--text-1)
+    }
+
+    .toggle {
+      width: 34px;
+      height: 19px;
+      border-radius: 10px;
+      background: var(--navy-5);
+      position: relative;
+      transition: background .18s;
+      flex-shrink: 0
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 2.5px;
+      left: 2.5px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--text-3);
+      transition: all .18s
+    }
+
+    .am-item.on .toggle {
+      background: var(--gold)
+    }
+
+    .am-item.on .toggle::after {
+      left: 17.5px;
+      background: #fff
+    }
+
+    /* ══ GALLERY ══ */
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .18s
+    }
+
+    .drop-zone:hover,
+    .drop-zone.over {
+      border-color: rgba(212, 168, 83, .38);
+      background: rgba(212, 168, 83, .04)
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 14px;
+      margin-top: 20px
+    }
+
+    .gal-card {
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      overflow: hidden;
+      transition: border-color .18s;
+      position: relative
+    }
+
+    .gal-card.primary-card {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 1px var(--gold)
+    }
+
+    .gal-card.primary-card::before {
+      content: 'PRIMARY';
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: var(--gold);
+      color: #0B0F1A;
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      padding: 3px 7px;
+      border-radius: 4px;
+      z-index: 1
+    }
+
+    .gal-thumb {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      background: var(--navy-4)
+    }
+
+    .gal-placeholder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: var(--navy-4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: var(--text-3);
+      font-size: 10.5px
+    }
+
+    .gal-foot {
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px
+    }
+
+    .gal-caption {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 3px 2px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 11.5px;
+      color: var(--text-2);
+      outline: none;
+      width: 100%;
+      transition: border-color .18s
+    }
+
+    .gal-caption:focus {
+      border-bottom-color: var(--gold)
+    }
+
+    .gal-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px
+    }
+
+    .gal-primary-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-3);
+      transition: all .18s;
+      font-family: 'Outfit', sans-serif
+    }
+
+    .gal-primary-btn.on {
+      background: var(--gold-dim);
+      color: var(--gold);
+      border-color: rgba(212, 168, 83, .3)
+    }
+
+    .gal-del {
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      color: var(--text-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .18s
+    }
+
+    .gal-del:hover {
+      background: var(--red-dim);
+      border-color: rgba(240, 101, 101, .3);
+      color: var(--red)
+    }
+
+    /* ══ ROOM TYPE SUMMARY ══ */
+    .rt-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 13px;
+      margin-bottom: 22px
+    }
+
+    .rt-card {
+      background: var(--navy-2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 17px 18px;
+      transition: border-color .18s
+    }
+
+    .rt-card:hover {
+      border-color: rgba(212, 168, 83, .18)
+    }
+
+    .rt-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .9px;
+      text-transform: uppercase;
+      margin-bottom: 9px
+    }
+
+    .rt-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 700
+    }
+
+    .rt-lbl {
+      font-size: 10.5px;
+      color: var(--text-3);
+      margin-top: 2px
+    }
+
+    /* ══ MODAL ══ */
+    .modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .72);
+      backdrop-filter: blur(5px);
+      z-index: 600;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px
+    }
+
+    .modal-bg.open {
+      display: flex;
+      animation: mFade .2s ease
+    }
+
+    @keyframes mFade {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    .modal-box {
+      background: var(--navy-2);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: mUp .22s cubic-bezier(.4, 0, .2, 1)
+    }
+
+    @keyframes mUp {
+      from {
+        opacity: 0;
+        transform: translateY(22px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .modal-hd {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px 18px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--navy-2);
+      z-index: 1
+    }
+
+    .modal-ttl {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px;
+      font-weight: 700
+    }
+
+    .modal-x {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-2);
+      transition: all .18s
+    }
+
+    .modal-x:hover {
+      background: var(--red-dim);
+      color: var(--red);
+      border-color: rgba(240, 101, 101, .3)
+    }
+
+    .modal-body {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px
+    }
+
+    .modal-ft {
+      padding: 14px 22px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 9px;
+      justify-content: flex-end;
+      position: sticky;
+      bottom: 0;
+      background: var(--navy-2)
+    }
+
+    /* ══ PROFILE TABS ══ */
+    .ptab {
+      display: none
+    }
+
+    .ptab.on {
+      display: block
+    }
+
+    /* ══ SECTION DIVIDER ══ */
+    .sec-div {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0
+    }
+
+    .sec-hd {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 14px
+    }
+
+    .sec-ic {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0
+    }
+
+    .sec-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-1)
+    }
+
+    /* ══ ICON ACTION BTN ══ */
+    .ia {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-3);
+      transition: all .18s
+    }
+
+    .ia:hover {
+      background: var(--gold-dim);
+      color: var(--gold);
+      border-color: rgba(212, 168, 83, .28)
+    }
+
+    .ia.del:hover {
+      background: var(--red-dim);
+      color: var(--red);
+      border-color: rgba(240, 101, 101, .3)
+    }
+
+    /* Unit Adjust Controls */
+    .unit-ctrls { display: flex; align-items: center; gap: 8px; }
+    .unit-btn { 
+      width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border); 
+      background: var(--navy-3); color: var(--text-2); cursor: pointer; display: flex; 
+      align-items: center; justify-content: center; font-size: 14px; transition: all .15s;
+    }
+    .unit-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+    .unit-btn:active { transform: scale(0.92); }
+
+    /* ══ TOAST ══ */
+    .toast {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      transform: translateX(-50%) translateY(18px);
+      background: var(--navy-3);
+      border: 1px solid rgba(62, 207, 160, .28);
+      border-radius: 9px;
+      padding: 11px 18px;
+      font-size: 12.5px;
+      color: var(--text-1);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      opacity: 0;
+      transition: all .28s;
+      z-index: 999;
+      pointer-events: none;
+      white-space: nowrap
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    .t-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0
+    }
+
+    /* ══ MOBILE OVERLAY ══ */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .58);
+      z-index: 150
+    }
+
+    .overlay.show {
+      display: block
+    }
+
+    /* ══ RESPONSIVE ══ */
+    @media(max-width:1280px) {
+      .kpi-row {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .body-grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:900px) {
+      .kpi-row {
+        grid-template-columns: repeat(2, 1fr)
+      }
+
+      .form-grid-5 {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    @media(max-width:768px) {
+      .sidebar {
+        transform: translateX(-100%)
+      }
+
+      .sidebar.open {
+        transform: translateX(0)
+      }
+
+      .main {
+        margin-left: 0
+      }
+
+      .ham {
+        display: flex
+      }
+
+      .content {
+        padding: 18px 14px
+      }
+
+      .kpi-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 11px
+      }
+
+      .ph-title {
+        font-size: 26px
+      }
+
+      .hdr-date {
+        display: none
+      }
+
+      .form-grid-2 {
+        grid-template-columns: 1fr
+      }
+
+      .form-grid-5 {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    /* ══ ANIMATIONS ══ */
+    @keyframes kIn {
+      from {
+        opacity: 0;
+        transform: translateY(18px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .kpi {
+      animation: kIn .45s ease both
+    }
+
+    .kpi:nth-child(1) {
+      animation-delay: .04s
+    }
+
+    .kpi:nth-child(2) {
+      animation-delay: .09s
+    }
+
+    .kpi:nth-child(3) {
+      animation-delay: .14s
+    }
+
+    .kpi:nth-child(4) {
+      animation-delay: .19s
+    }
+
+    .kpi:nth-child(5) {
+      animation-delay: .24s
+    }
+
+    @keyframes cIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .card {
+      animation: cIn .38s ease .28s both
+    }
+
+    /* ══ SETTINGS PAGE: DOC CARDS ══ */
+    .doc-card {
+      background: var(--navy-3);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .doc-card:hover {
+      border-color: rgba(212, 168, 83, .2);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, .25);
+    }
+
+    .doc-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .doc-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .doc-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .doc-sub {
+      font-size: 11.5px;
+      color: var(--text-3);
+      margin-top: 2px;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .doc-req {
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      background: var(--red-dim);
+      color: var(--red);
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+
+    .doc-status {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .doc-status.pending {
+      background: var(--amber-dim);
+      color: var(--amber);
+      border: 1px solid rgba(245, 166, 35, .2);
+    }
+
+    .doc-status.approved {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid rgba(62, 207, 160, .2);
+    }
+
+    .doc-status.rejected {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(240, 101, 101, .2);
+    }
+
+    .doc-status.uploaded {
+      background: var(--blue-dim);
+      color: var(--blue);
+      border: 1px solid rgba(91, 141, 239, .2);
+    }
+
+    .doc-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .doc-file-name {
+      font-size: 11.5px;
+      color: var(--text-3);
+      font-style: italic;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 140px;
+    }
+
+    .doc-card.uploaded-state {
+      border-color: rgba(91, 141, 239, .3);
+    }
+
+    /* ══ SETTINGS PAGE: CANCEL OPTIONS ══ */
+    .cancel-opt {
+      padding: 7px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--navy-3);
+      color: var(--text-2);
+      font-size: 12px;
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer;
+      transition: all .18s;
+      display: flex;
+      align-items: center;
+    }
+
+    .cancel-opt:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .cancel-opt.on {
+      background: var(--gold-dim);
+      border-color: var(--gold);
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ══ TOGGLE SWITCH (reuse existing .am-item) ══ */
+    .am-item .toggle {
+      width: 42px;
+      height: 22px;
+      background: var(--navy-5);
+      border-radius: 11px;
+      position: relative;
+      transition: background .2s;
+      cursor: pointer;
+    }
+
+    .am-item .toggle::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      background: var(--text-3);
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: transform .2s, background .2s;
+    }
+
+    .am-item.on .toggle {
+      background: var(--green-dim);
+      border: 1px solid rgba(62, 207, 160, .2);
+    }
+
+    .am-item.on .toggle::after {
+      background: var(--green);
+      transform: translateX(20px);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <div class="overlay" id="ov" onclick="closeSB()"></div>
+
+  <!-- ════════════ SIDEBAR ════════════ -->
+  <aside class="sidebar" id="sb">
+    <div class="sb-top">
+      <div class="logo-row">
+        <div class="logo-gem"></div>
+        <span class="logo-name">Lumière</span>
+      </div>
+      <div class="logo-tag">Hotel Management</div>
+    </div>
+
+    <div class="nav-wrap">
+      <div class="nav-section-lbl">Overview</div>
+      <div class="nav-item on" onclick="go('dashboard',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="3" y="3" width="7" height="7" rx="1.5" />
+          <rect x="14" y="3" width="7" height="7" rx="1.5" />
+          <rect x="3" y="14" width="7" height="7" rx="1.5" />
+          <rect x="14" y="14" width="7" height="7" rx="1.5" />
+        </svg>
+        Dashboard
+      </div>
+
+      <div class="nav-section-lbl">Operations</div>
+      <div class="nav-item" onclick="go('bookings',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+        </svg>
+        Bookings <span class="nav-badge">8</span>
+      </div>
+      <div class="nav-item" onclick="go('rooms',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        Room Types
+      </div>
+      <div class="nav-item" onclick="go('guests',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+        </svg>
+        Guests
+      </div>
+      <div class="nav-item" onclick="go('reviews',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <polygon
+            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        Reviews
+      </div>
+
+      <div class="nav-section-lbl">Administration</div>
+      <div class="nav-item" id="nav-revenue" onclick="go('revenue',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+        </svg>
+        Financials
+      </div>
+      <div class="nav-item" onclick="go('inbox',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg>
+        Admin Inbox <span class="nav-badge" style="background:var(--red)">3</span>
+      </div>
+
+      <div class="nav-section-lbl">Configuration</div>
+      <div class="nav-item" onclick="go('profile',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+          <polyline points="17 21 17 13 7 13 7 21" />
+          <polyline points="7 3 7 8 15 8" />
+        </svg>
+        Hotel Profile
+      </div>
+      <div class="nav-item" onclick="go('hotel-policy',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <polyline points="9 12 11 14 15 10" />
+        </svg>
+        Hotel Policy
+      </div>
+      <div class="nav-item" onclick="go('settings',this)">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+        </svg>
+        Settings
+      </div>
+    </div>
+
+    <div class="sb-foot">
+      <div class="profile-btn">
+        <div class="profile-ava">AH</div>
+        <div>
+          <div class="profile-name">Ahmed Hassan</div>
+          <div class="profile-role">Hotel Manager</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ════════════ MAIN ════════════ -->
+  <div class="main">
+
+    <!-- HEADER -->
+    <header class="hdr">
+      <button class="ham" onclick="toggleSB()"><span></span><span></span><span></span></button>
+      <div class="srch">
+        <svg class="srch-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
+        <input type="text" placeholder="Search rooms, guests, bookings…">
+      </div>
+      <div class="hdr-r">
+        <div class="hdr-date" id="hdrDate"></div>
+        <div class="hdr-div"></div>
+        <div class="hdr-ic-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 01-3.46 0" />
+          </svg>
+          <div class="notif-dot"></div>
+        </div>
+        <div class="hdr-ic-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══════════ DASHBOARD ══════════ -->
+      <div class="page on" id="page-dashboard">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Hotel Operations</div>
+            <div class="ph-title">Dashboard</div>
+            <div class="ph-sub">Good morning, Ahmed. Here's your property overview.</div>
+          </div>
+          <button class="btn-gold" onclick="openRoomModal()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Room Type
+          </button>
+        </div>
+
+        <!-- KPIs — 5 cards -->
+        <div class="kpi-row">
+          <!-- Revenue KPI (Link to Revenue) -->
+          <div class="kpi k-gold" style="cursor:pointer" onclick="go('revenue', document.getElementById('nav-revenue'))"
+            title="View Financials">
+            <div class="kpi-glow"></div>
+            <div class="kpi-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.8">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+              </svg></div>
+            <div class="kpi-val">$125k</div>
+            <div class="kpi-lbl">Total Revenue</div>
+            <div class="kpi-d">↑ 12.4% this month</div>
+          </div>
+          <!-- Total Rooms KPI (Link to Rooms) -->
+          <div class="kpi k-blue" style="cursor:pointer" onclick="go('rooms',document.querySelectorAll('.nav-item')[2])"
+            title="Manage Rooms">
+            <div class="kpi-glow"></div>
+            <div class="kpi-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.8">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              </svg></div>
+            <div class="kpi-val" id="kpi-total-rooms">0</div>
+            <div class="kpi-lbl">Total Room Units</div>
+            <div class="kpi-d" id="kpi-room-types">0 types</div>
+          </div>
+          <!-- Occupied KPI (Link to Modal) -->
+          <div class="kpi k-red" style="cursor:pointer" onclick="viewTodayOccupied()"
+            title="View Today's Occupied Rooms">
+            <div class="kpi-glow"></div>
+            <div class="kpi-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.8">
+                <rect x="3" y="11" width="18" height="11" rx="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg></div>
+            <div class="kpi-val">35</div>
+            <div class="kpi-lbl">Occupied</div>
+            <div class="kpi-d">70% occupancy</div>
+          </div>
+          <!-- Available KPI (Link to Modal) -->
+          <div class="kpi k-green" style="cursor:pointer" onclick="viewAvailableRooms()"
+            title="View Available Rooms Summary">
+            <div class="kpi-glow"></div>
+            <div class="kpi-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.8">
+                <polyline points="20 6 9 17 4 12" />
+              </svg></div>
+            <div class="kpi-val">15</div>
+            <div class="kpi-lbl">Available</div>
+            <div class="kpi-d">Ready to book</div>
+          </div>
+          <!-- Total Guests KPI (Link to Guests) -->
+          <div class="kpi k-amber" style="cursor:pointer"
+            onclick="go('guests',document.querySelectorAll('.nav-item')[3])" title="View Guests">
+            <div class="kpi-glow"></div>
+            <div class="kpi-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.8">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+              </svg></div>
+            <div class="kpi-val">89</div>
+            <div class="kpi-lbl">Total Guests</div>
+            <div class="kpi-d">↑ 3 new today</div>
+          </div>
+        </div>
+
+        <div class="body-grid">
+          <div class="col-l">
+            <!-- Bookings card -->
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Recent Bookings</div>
+                <div class="card-link" onclick="go('bookings',document.querySelectorAll('.nav-item')[1])">View all →
+                </div>
+              </div>
+              <div class="tabs">
+                <button class="tab on" onclick="filterBk('all',this)">All</button>
+                <button class="tab" onclick="filterBk('completed',this)">Completed</button>
+                <button class="tab" onclick="filterBk('pending',this)">Pending</button>
+                <button class="tab" onclick="filterBk('canceled',this)">Canceled</button>
+              </div>
+              <div id="bkList"></div>
+            </div>
+
+            <!-- Occupancy -->
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Occupancy Rate</div><span style="font-size:11.5px;color:var(--text-3)">March
+                  2026</span>
+              </div>
+              <div class="occ-wrap">
+                <div class="occ-top">
+                  <div>
+                    <div class="occ-info">35 rooms occupied</div>
+                    <div class="occ-info-sub">out of 50 total units</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div class="occ-big">70%</div>
+                    <div class="occ-big-lbl">Occupancy Rate</div>
+                  </div>
+                </div>
+                <div class="occ-bar-bg">
+                  <div class="occ-bar" id="occBar"></div>
+                </div>
+                <div class="occ-leg">
+                  <div class="occ-leg-item">
+                    <div class="occ-dot" style="background:var(--blue)"></div>Occupied — 35
+                  </div>
+                  <div class="occ-leg-item">
+                    <div class="occ-dot" style="background:var(--green)"></div>Available — 15
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-r">
+            <!-- Room Type Mini -->
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Room Types</div>
+                <div class="card-link" onclick="go('rooms',document.querySelectorAll('.nav-item')[2])">Manage →</div>
+              </div>
+              <div class="rm-grid" id="rmMini"></div>
+            </div>
+
+            <!-- Reviews -->
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Recent Reviews</div>
+                <div class="card-link" onclick="go('reviews',document.querySelectorAll('.nav-item')[4])">View all →
+                </div>
+              </div>
+              <div id="rvMini"></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+              <div class="card-hd">
+                <div class="card-title">Quick Actions</div>
+              </div>
+              <div class="qa-list">
+                <div class="qa" onclick="openRoomModal()">
+                  <div class="qa-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2">
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg></div>Add Room Type
+                </div>
+                <div class="qa" onclick="go('profile',document.querySelectorAll('.nav-item')[5])">
+                  <div class="qa-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2">
+                      <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+                    </svg></div>Edit Hotel Profile
+                </div>
+                <div class="qa">
+                  <div class="qa-ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg></div>Manage Gallery
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ TODAY'S OCCUPIED ROOMS ══════════ -->
+      <div class="page" id="page-today-occupied">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Operations</div>
+            <div class="ph-title">Today's Occupied Rooms</div>
+            <div class="ph-sub">Currently occupied rooms for today</div>
+          </div>
+          <button class="btn-ghost" onclick="go('dashboard', document.querySelectorAll('.nav-item')[0])">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="margin-right:6px">
+              <line x1="19" y1="12" x2="5" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg> Back to Dashboard
+          </button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Guest</th>
+                  <th>Room Type</th>
+                  <th>Check-in</th>
+                  <th>Check-out</th>
+                  <th>Guests</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="todayOccupiedTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ BOOKINGS ══════════ -->
+      <div class="page" id="page-bookings">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Operations</div>
+            <div class="ph-title">Bookings</div>
+            <div class="ph-sub">All guest reservations</div>
+          </div>
+          <button class="btn-gold"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2.5">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg> New Booking</button>
+        </div>
+        <div class="card" style="margin-bottom:18px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="font-size:13px; font-weight:600; min-width:120px; color:var(--text-1)">Search Availability</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="date" class="finp" style="width:140px; padding:7px 10px;" id="filter-cin">
+              <span style="color:var(--text-3); font-size:12px">to</span>
+              <input type="date" class="finp" style="width:140px; padding:7px 10px;" id="filter-cout">
+            </div>
+            <select class="finp" style="width:140px; padding:7px 10px;" id="filter-type">
+              <option value="all">All Room Types</option>
+              <option value="single">Single Room</option>
+              <option value="double">Double Room</option>
+              <option value="king">King Suite</option>
+            </select>
+            <button class="btn-ghost" style="padding:7px 14px;"
+              onclick="toast('Filtering available rooms...')">Search</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="tabs">
+            <button class="tab on" onclick="filterBkPage('all', this)">All</button>
+            <button class="tab" onclick="filterBkPage('completed', this)">Completed</button>
+            <button class="tab" onclick="filterBkPage('pending', this)">Pending</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Guest / Booking ID</th>
+                  <th>Total Rooms</th>
+                  <th>Details (Single/Double/King)</th>
+                  <th>Booking Date</th>
+                  <th>Check-in</th>
+                  <th>Check-out</th>
+                  <th>Total Paid</th>
+                  <th>Method</th>
+                  <th>Transaction ID</th>
+                  <th>Payment Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="bkTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="margin-top:18px;">
+          <div class="card-hd">
+            <div class="card-title">Booking Activity Log</div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Action</th>
+                  <th>User</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody id="bkLogTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- NEW CANCELLATION SUMMARY SECTION -->
+        <div id="cancel-summary-area" style="margin-top:18px; display:none;">
+          <div class="card"
+            style="border-left: 4px solid var(--red); background: linear-gradient(90deg, rgba(240,101,101,0.05) 0%, transparent 100%);">
+            <div class="card-hd" style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="card-title" style="color:var(--text-1); display:flex; align-items:center; gap:8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                  <path d="M15 14l-2 2-2-2" />
+                </svg>
+                Latest Cancellation Summary
+              </div>
+              <button class="btn-ghost"
+                style="padding:4px 12px; font-size:11px; border-color:var(--red); color:var(--red)"
+                id="btn-view-cancel-full">View Full Breakdown</button>
+            </div>
+            <div
+              style="padding:20px; display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:24px;">
+              <div>
+                <div style="font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px;">Refund
+                  Amount</div>
+                <div style="font-size:22px; font-weight:700; color:var(--green); margin-top:4px;" id="cs-refunded">--
+                </div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;">Original: <span
+                    id="cs-original">--</span></div>
+              </div>
+              <div>
+                <div style="font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px;">
+                  Cancellation Fee</div>
+                <div style="font-size:22px; font-weight:700; color:var(--red); margin-top:4px;" id="cs-fee">--</div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;">Deducted from total</div>
+              </div>
+              <div>
+                <div style="font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px;">Method &
+                  Date</div>
+                <div style="font-size:14px; font-weight:600; color:var(--text-1); margin-top:6px;" id="cs-method">--
+                </div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;" id="cs-date">--</div>
+              </div>
+              <div style="grid-column: span 2;">
+                <div style="font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px;">Primary
+                  Reason</div>
+                <div style="font-size:13px; color:var(--text-2); margin-top:6px; line-height:1.5; font-style:italic;"
+                  id="cs-reason">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ ROOM TYPES ══════════ -->
+      <div class="page" id="page-rooms">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Operations</div>
+            <div class="ph-title">Room Types</div>
+            <div class="ph-sub">Manage room types by category — Single, Double, King, etc.</div>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-ghost" onclick="openRecycleBin()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                style="margin-right:6px">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg> Recycle Bin
+            </button>
+            <button class="btn-gold" onclick="openRoomModal()"><svg width="13" height="13" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg> Add Room Type</button>
+          </div>
+        </div>
+        <div class="rt-cards" id="rtCards"></div>
+
+        <div class="card" style="margin-bottom:18px;">
+          <div class="card-hd">
+            <div class="card-title">Quick Inventory Adjustment</div>
+          </div>
+          <div style="padding:20px;">
+            <div id="bulkUnitGrid" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:16px;"></div>
+            <div style="margin-top:20px; display:flex; justify-content:flex-end;">
+              <button class="btn-gold" onclick="saveBulkUnits()">Save New Units</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">All Room Types</div><span id="rtCount"
+              style="font-size:11.5px;color:var(--text-3)"></span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Code</th>
+                  <th>Type</th>
+                  <th>Bed</th>
+                  <th>Occupancy</th>
+                  <th>Price/Night</th>
+                  <th>Total Units</th>
+                  <th>Availability</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="rtTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ GUESTS ══════════ -->
+      <div class="page" id="page-guests">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Operations</div>
+            <div class="ph-title">Guests</div>
+            <div class="ph-sub">Details of current and upcoming guests</div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:18px; padding:16px;">
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div style="font-size:13px; font-weight:600; min-width:120px; color:var(--text-1)">Search Availability</div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <input type="date" class="finp" style="width:140px; padding:7px 10px;" id="guest-filter-cin">
+              <span style="color:var(--text-3); font-size:12px">to</span>
+              <input type="date" class="finp" style="width:140px; padding:7px 10px;" id="guest-filter-cout">
+            </div>
+            <button class="btn-ghost" style="padding:7px 14px;" onclick="renderGuests()">Search</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Guest</th>
+                  <th>Total Rooms</th>
+                  <th>Details (Single/Double/King)</th>
+                  <th>Check-in</th>
+                  <th>Check-out</th>
+                  <th>Total Paid</th>
+                  <th>Method</th>
+                  <th>Payment Date</th>
+                </tr>
+              </thead>
+              <tbody id="guestsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ REVIEWS ══════════ -->
+      <div class="page" id="page-reviews">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Insights</div>
+            <div class="ph-title">Reviews</div>
+            <div class="ph-sub">Guest feedback and ratings</div>
+          </div>
+        </div>
+
+        <div
+          style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:18px; margin-bottom:18px;">
+          <div class="card" style="display:flex; align-items:center; gap:20px; padding:24px;">
+            <div
+              style="width:50px; height:50px; background:var(--gold-dim); color:var(--gold); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px;">
+              ★</div>
+            <div>
+              <div style="font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px;">Global
+                Rating</div>
+              <div style="font-size:26px; font-weight:700; color:var(--text-1);" id="rvAvg">--</div>
+            </div>
+          </div>
+          <div class="card" style="display:flex; align-items:center; gap:20px; padding:24px;">
+            <div
+              style="width:50px; height:50px; background:var(--blue-dim); color:var(--blue); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px;">
+              👥</div>
+            <div>
+              <div style="font-size:11px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px;">Total
+                Reviewers</div>
+              <div style="font-size:26px; font-weight:700; color:var(--text-1);" id="rvCount">--</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div id="rvFull"></div>
+        </div>
+      </div>
+
+      <!-- ══════════ HOTEL PROFILE ══════════ -->
+      <div class="page" id="page-profile">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Configuration</div>
+            <div class="ph-title">Hotel Profile</div>
+            <div class="ph-sub">Edit your hotel information and submit for platform review</div>
+          </div>
+          <button class="btn-gold" onclick="submitProfileRequest()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+            Submit Request
+          </button>
+        </div>
+
+        <!-- Info Banner -->
+        <div
+          style="display:flex; align-items:flex-start; gap:12px; padding:14px 20px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25); border-radius:10px; margin-bottom:18px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"
+            style="flex-shrink:0; margin-top:1px;">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <div>
+            <div style="font-size:13px; font-weight:600; color:var(--amber); margin-bottom:2px;">Changes require admin
+              review</div>
+            <div style="font-size:12px; color:var(--text-3); line-height:1.5;">Any updates you make here will be
+              submitted as a <strong style="color:var(--text-2)">change request</strong> to the platform team. Your
+              current profile remains active until the request is approved. Changes are typically reviewed within 24–48
+              hours.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tabs" id="profileTabBar">
+            <button class="tab on" onclick="switchPTab('basic',this)">Basic Info</button>
+            <button class="tab" onclick="switchPTab('pricing',this)">Pricing</button>
+            <button class="tab" onclick="switchPTab('amenities',this)">Amenities</button>
+            <button class="tab" onclick="switchPTab('gallery',this)">Gallery</button>
+          </div>
+
+          <!-- TAB: Basic Info -->
+          <div class="ptab on" id="ptab-basic" style="padding:26px">
+            <div class="form-grid-2">
+              <div class="fg span2">
+                <label class="flbl">Hotel Name</label>
+                <input class="finp" type="text" value="Lumière Grand Hotel">
+              </div>
+              <div class="fg">
+                <label class="flbl">Governorate</label>
+                <select class="finp">
+                  <option>Cairo</option>
+                  <option>Alexandria</option>
+                  <option>Giza</option>
+                  <option>Luxor</option>
+                  <option>Aswan</option>
+                  <option>Hurghada</option>
+                  <option>Sharm El-Sheikh</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="flbl">City / Area (CityArea)</label>
+                <input class="finp" type="text" value="Zamalek" placeholder="City or district">
+              </div>
+              <div class="fg">
+                <label class="flbl">Star Rating</label>
+                <div class="star-row" id="starRow">
+                  <span class="s-opt on" onclick="setStar(1)">★</span>
+                  <span class="s-opt on" onclick="setStar(2)">★</span>
+                  <span class="s-opt on" onclick="setStar(3)">★</span>
+                  <span class="s-opt on" onclick="setStar(4)">★</span>
+                  <span class="s-opt" onclick="setStar(5)">★</span>
+                  <span id="starLbl" style="font-size:12px;color:var(--text-3);margin-left:8px">4 Stars</span>
+                </div>
+              </div>
+              <div class="fg">
+                <label class="flbl">Property Type</label>
+                <select class="finp">
+                  <option>Hotel</option>
+                  <option>Resort</option>
+                  <option>Boutique Hotel</option>
+                  <option>Apart-Hotel</option>
+                  <option>Hostel</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="flbl">Accommodation Type</label>
+                <select class="finp">
+                  <option>Entire Property</option>
+                  <option>Private Room</option>
+                  <option>Shared Room</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="flbl">Latitude</label>
+                <input class="finp" type="text" value="30.0626" placeholder="e.g. 30.0626">
+              </div>
+              <div class="fg">
+                <label class="flbl">Longitude</label>
+                <input class="finp" type="text" value="31.2497" placeholder="e.g. 31.2497">
+              </div>
+              <div class="fg">
+                <label class="flbl">Avg. Price Per Night ($) <span
+                    style="font-size:10.5px; color:var(--text-3); font-weight:400;">(AvgPricePerNight)</span></label>
+                <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                    value="120" placeholder="0"></div>
+              </div>
+              <div class="fg">
+                <label class="flbl">Source / Booking Channel</label>
+                <select class="finp">
+                  <option>Direct</option>
+                  <option>Booking.com</option>
+                  <option>Airbnb</option>
+                  <option>Expedia</option>
+                  <option>Agoda</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="flbl">Reviews Bucket <span
+                    style="font-size:10.5px; color:var(--text-3); font-weight:400;">(ReviewsBucket)</span></label>
+                <select class="finp">
+                  <option>Wonderful (Score: 9+)</option>
+                  <option>Very Good (Score: 8–9)</option>
+                  <option selected>Good (Score: 7–8)</option>
+                  <option>Average (Score: 6–7)</option>
+                  <option>Below Average (Score: &lt;6)</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label class="flbl">Avg. Rating <span
+                    style="font-size:10.5px; color:var(--text-3); font-weight:400;">(AvgRating)</span></label>
+                <input class="finp" type="number" step="0.1" min="0" max="10" value="8.7" placeholder="e.g. 8.7">
+              </div>
+              <div class="fg">
+                <label class="flbl">Review Count <span
+                    style="font-size:10.5px; color:var(--text-3); font-weight:400;">(ReviewCount)</span></label>
+                <input class="finp" type="number" value="248" placeholder="Total number of reviews">
+              </div>
+              <div class="fg">
+                <label class="flbl">Double Clean Price ($) <span
+                    style="font-size:10.5px; color:var(--text-3); font-weight:400;">(DoubleCleanPrice)</span></label>
+                <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                    value="110" placeholder="0"></div>
+              </div>
+              <div class="fg span2">
+                <label class="flbl">Hotel Description <span
+                    style="font-size:10.5px; color:var(--text-3); font-weight:400;">(Shown to guests on the
+                    platform)</span></label>
+                <textarea class="finp" rows="4" style="resize:vertical; line-height:1.6;"
+                  placeholder="Describe your hotel, unique features, location highlights...">Lumière Grand Hotel is a stunning 4-star property nestled in the heart of Zamalek, Cairo. Offering breathtaking Nile views, world-class dining, and meticulously designed rooms that blend modern luxury with classic Egyptian charm.</textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Pricing -->
+          <div class="ptab" id="ptab-pricing" style="padding:26px">
+            <div style="display:flex;flex-direction:column;gap:24px">
+
+              <div>
+                <div class="sec-hd">
+                  <div class="sec-ic" style="background:var(--blue-dim);color:var(--blue)"><svg width="13" height="13"
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    </svg></div>
+                  <span class="sec-title">Single Room Prices</span>
+                </div>
+                <div class="form-grid-5">
+                  <div class="fg"><label class="flbl">RO</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="80"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">BB</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="95"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">HB</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="120"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">FB</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="145"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">AI</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="180"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sec-div"></div>
+
+              <div>
+                <div class="sec-hd">
+                  <div class="sec-ic" style="background:var(--gold-dim);color:var(--gold)"><svg width="13" height="13"
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                    </svg></div>
+                  <span class="sec-title">Double Room Prices</span>
+                </div>
+                <div class="form-grid-5">
+                  <div class="fg"><label class="flbl">RO</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="130"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">BB</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="155"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">HB</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="190"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">FB</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="220"></div>
+                  </div>
+                  <div class="fg"><label class="flbl">AI</label>
+                    <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                        value="280"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sec-div"></div>
+
+              <div>
+                <div class="sec-hd">
+                  <div class="sec-ic" style="background:var(--green-dim);color:var(--green)"><svg width="13" height="13"
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg></div>
+                  <span class="sec-title">Double Clean Price</span>
+                </div>
+                <div style="max-width:180px">
+                  <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" type="number"
+                      value="110"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Amenities -->
+          <div class="ptab" id="ptab-amenities" style="padding:26px">
+            <div class="am-grid" id="amGrid"></div>
+          </div>
+
+          <!-- TAB: Gallery -->
+          <div class="ptab" id="ptab-gallery" style="padding:26px">
+            <div class="drop-zone" id="dropZone" onclick="document.getElementById('galInput').click()"
+              ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')"
+              ondrop="handleDrop(event)">
+              <input type="file" id="galInput" multiple accept="image/*" style="display:none"
+                onchange="handleFiles(this.files)">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                style="color:var(--text-3);margin-bottom:10px">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <div style="font-size:13.5px;font-weight:500;color:var(--text-2)">Drop photos here or click to upload
+              </div>
+              <div style="font-size:11.5px;color:var(--text-3);margin-top:5px">JPG, PNG — up to 10MB each</div>
+            </div>
+            <div class="gallery-grid" id="galGrid"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px">
+          <button class="btn-ghost">Discard Changes</button>
+          <button class="btn-gold" onclick="submitProfileRequest()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13" />
+              <polygon points="22 2 15 22 11 13 2 9 22 2" />
+            </svg>
+            Submit Request
+          </button>
+        </div>
+      </div>
+
+      <!-- ══════════ HOTEL POLICY ══════════ -->
+      <div class="page" id="page-hotel-policy">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Configuration</div>
+            <div class="ph-title">Hotel Policy</div>
+            <div class="ph-sub">Taxes, service charges, and cancellation rules</div>
+          </div>
+          <button class="btn-gold" onclick="saveSettings()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+            </svg>
+            Save Policy
+          </button>
+        </div>
+
+        <div class="card" style="margin-bottom:18px; padding:26px;">
+          <div class="sec-hd" style="margin-bottom:20px;">
+            <div class="sec-ic" style="background:var(--gold-dim);color:var(--gold)"><svg width="13" height="13"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+              </svg></div>
+            <span class="sec-title">Pricing & Tax Inclusions</span>
+            <span style="font-size:11.5px; color:var(--text-3); margin-left:8px;">Define what's included in the
+              displayed price</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0;">
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border-2);">
+              <div>
+                <div style="font-size:13.5px; font-weight:600; color:var(--text-1);">Service Charge</div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;">Percentage added on top of room rate
+                  for service</div>
+              </div>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div class="price-wrap" style="width:120px;">
+                  <span class="price-sym" style="left:auto; right:11px; font-size:13px;">%</span>
+                  <input class="finp" type="number" id="sett-service-pct" value="12" min="0" max="100"
+                    style="padding-right:28px; text-align:right;">
+                </div>
+              </div>
+            </div>
+
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border-2);">
+              <div>
+                <div style="font-size:13.5px; font-weight:600; color:var(--text-1);">Price includes Service Charge</div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;">Is the service charge already included
+                  in the displayed price to the guest?</div>
+              </div>
+              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+                <input type="checkbox" id="sett-service-inc" checked style="display:none;"
+                  onchange="toggleSettingCheck(this,'sett-service-inc-ui')">
+                <div class="am-item on" id="sett-service-inc-ui"
+                  style="padding:0; border:none; background:transparent; width:auto;"
+                  onclick="document.getElementById('sett-service-inc').click()">
+                  <div class="toggle" style="margin:0;"></div>
+                </div>
+                <span id="sett-service-inc-lbl"
+                  style="font-size:12px; color:var(--green); font-weight:600;">Included</span>
+              </label>
+            </div>
+
+            <div
+              style="display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:1px solid var(--border-2);">
+              <div>
+                <div style="font-size:13.5px; font-weight:600; color:var(--text-1);">VAT (Value Added Tax)</div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;">Is VAT included in the published room
+                  price?</div>
+              </div>
+              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+                <input type="checkbox" id="sett-vat" style="display:none;"
+                  onchange="toggleSettingCheck(this,'sett-vat-ui')">
+                <div class="am-item" id="sett-vat-ui"
+                  style="padding:0; border:none; background:transparent; width:auto;"
+                  onclick="document.getElementById('sett-vat').click()">
+                  <div class="toggle" style="margin:0;"></div>
+                </div>
+                <span id="sett-vat-lbl" style="font-size:12px; color:var(--text-3); font-weight:600;">Not
+                  Included</span>
+              </label>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:16px 0;">
+              <div>
+                <div style="font-size:13.5px; font-weight:600; color:var(--text-1);">City Tax</div>
+                <div style="font-size:12px; color:var(--text-3); margin-top:2px;">Is the local city / tourism tax
+                  included in the displayed price?</div>
+              </div>
+              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none;">
+                <input type="checkbox" id="sett-city-tax" style="display:none;"
+                  onchange="toggleSettingCheck(this,'sett-city-tax-ui')">
+                <div class="am-item" id="sett-city-tax-ui"
+                  style="padding:0; border:none; background:transparent; width:auto;"
+                  onclick="document.getElementById('sett-city-tax').click()">
+                  <div class="toggle" style="margin:0;"></div>
+                </div>
+                <span id="sett-city-tax-lbl" style="font-size:12px; color:var(--text-3); font-weight:600;">Not
+                  Included</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:32px; padding:26px;">
+          <div class="sec-hd" style="margin-bottom:20px;">
+            <div class="sec-ic" style="background:var(--red-dim);color:var(--red)"><svg width="13" height="13"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg></div>
+            <span class="sec-title">Cancellation Policy</span>
+            <span style="font-size:11.5px; color:var(--text-3); margin-left:8px;">Configure global cancellation and
+              refund rules</span>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:24px;">
+            <div>
+              <label class="flbl">Main Policy Strategy</label>
+              <div style="font-size:11.5px; color:var(--text-3); margin-bottom:12px;">Choose how cancellations are
+                handled at your hotel</div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;"
+                id="cancelStrategyGroup">
+                <button class="cancel-opt on" onclick="selectCancelStrategy(this,'free-all')">
+                  Always Free Cancellation
+                </button>
+                <button class="cancel-opt" onclick="selectCancelStrategy(this,'non-refund')">
+                  Strictly Non-Refundable
+                </button>
+                <button class="cancel-opt" onclick="selectCancelStrategy(this,'window-based')">
+                  Time-Window Based
+                </button>
+              </div>
+            </div>
+
+            <div id="cancelWindowSection" style="display:none; animation: kIn .3s ease both;">
+              <label class="flbl">Free Cancellation Window</label>
+              <div style="font-size:11.5px; color:var(--text-3); margin-bottom:8px;">Guests can cancel for free before
+                this time</div>
+              <div style="display:flex; flex-wrap:wrap; gap:8px;" id="cancelWindowGroup">
+                <button class="cancel-opt on" onclick="selectCancelWindow(this,'1h')">1 Hour</button>
+                <button class="cancel-opt" onclick="selectCancelWindow(this,'24h')">24 Hours</button>
+                <button class="cancel-opt" onclick="selectCancelWindow(this,'48h')">48 Hours</button>
+                <button class="cancel-opt" onclick="selectCancelWindow(this,'7d')">7 Days</button>
+                <button class="cancel-opt" onclick="selectCancelWindow(this,'14d')">14 Days</button>
+              </div>
+
+              <div style="margin-top:20px;">
+                <label class="flbl">Cancellation Penalty</label>
+                <div style="font-size:11.5px; color:var(--text-3); margin-bottom:12px;">The percentage of the total
+                  booking amount charged for late cancellations</div>
+                <div style="max-width:140px;">
+                  <div class="price-wrap">
+                    <span class="price-sym" style="left:auto;right:10px">%</span>
+                    <input class="finp" type="number" id="sett-cancel-penalty" value="100" min="0" max="100"
+                      style="padding-right:25px" oninput="updateCancelPreview()">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style="padding:14px 16px; background:rgba(212,168,83,0.06); border:1px solid rgba(212,168,83,0.18); border-radius:9px; display:flex; align-items:flex-start; gap:10px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"
+                style="flex-shrink:0; margin-top:1px;">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <div style="font-size:12px; color:var(--text-2); line-height:1.6;" id="cancelPolicyPreview">
+                <strong style="color:var(--gold);">Live Preview:</strong> Free cancellation is guaranteed for all
+                bookings made at any time. No penalties apply.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ SETTINGS ══════════ -->
+      <div class="page" id="page-settings">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">System</div>
+            <div class="ph-title">Settings</div>
+            <div class="ph-sub">Legal document management and verification</div>
+          </div>
+          <button class="btn-gold" onclick="toast('Verification request updated')">
+            Update Verification
+          </button>
+        </div>
+
+        <!-- ══ LEGAL DOCUMENTS ══ -->
+        <div style="margin-bottom:8px; margin-top:8px; display:flex; align-items:center; gap:10px;">
+          <div style="width:4px; height:24px; background:var(--blue); border-radius:2px;"></div>
+          <div style="font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:700; color:var(--text-1);">
+            Legal Documents & Verification</div>
+        </div>
+
+        <!-- Application Status Banner -->
+        <div id="appStatusBanner"
+          style="display:flex; align-items:center; gap:14px; padding:16px 22px; background:rgba(245,166,35,0.08); border:1px solid rgba(245,166,35,0.25); border-radius:10px; margin-bottom:20px;">
+          <div
+            style="width:42px; height:42px; border-radius:10px; background:var(--amber-dim); color:var(--amber); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="9" y1="13" x2="15" y2="13" />
+              <line x1="9" y1="17" x2="15" y2="17" />
+            </svg>
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:13.5px; font-weight:700; color:var(--amber);">Application Status: <span
+                id="appStatusText">Under Review</span></div>
+            <div style="font-size:12px; color:var(--text-3); margin-top:2px;" id="appStatusDesc">Your documents are
+              being reviewed by the compliance team. You will receive a decision within 3–5 business days.</div>
+          </div>
+          <div id="appStatusBadge"
+            style="padding:5px 14px; background:var(--amber-dim); color:var(--amber); font-size:11px; font-weight:700; border-radius:20px; border:1px solid rgba(245,166,35,0.3); white-space:nowrap;">
+            ⏳ Pending</div>
+        </div>
+
+        <!-- Documents Grid -->
+        <div
+          style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:14px; margin-bottom:18px;">
+
+          <!-- Doc 1: Tax Card -->
+          <div class="doc-card" id="doc-1">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--blue-dim); color:var(--blue);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Tax Card <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-1-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-1-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(1, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-1-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-1-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 2: Commercial Registry -->
+          <div class="doc-card" id="doc-2">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--purple-dim); color:var(--purple);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
+                  <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Commercial Registry <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-2-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-2-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(2, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-2-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-2-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 3: Ownership/Lease -->
+          <div class="doc-card" id="doc-3">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--green-dim); color:var(--green);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Ownership / Lease Proof <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-3-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-3-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(3, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-3-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-3-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 4: Address Proof -->
+          <div class="doc-card" id="doc-4">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--amber-dim); color:var(--amber);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Address Proof <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-4-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-4-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(4, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-4-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-4-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 5: Real Photos -->
+          <div class="doc-card" id="doc-5">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--blue-dim); color:var(--blue);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Real Photos of Property <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-5-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-5-input" style="display:none;" accept=".jpg,.png,.jpeg,.zip"
+                  onchange="handleDocUpload(5, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-5-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-5-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 6: Safety Certificate -->
+          <div class="doc-card" id="doc-6">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--red-dim); color:var(--red);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <polyline points="9 12 11 14 15 10" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Civil Protection Certificate <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-6-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-6-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(6, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-6-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-6-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 7: Hotel Classification Certificate -->
+          <div class="doc-card" id="doc-7">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--gold-dim); color:var(--gold);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Hotel Classification Certificate <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-7-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-7-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(7, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-7-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-7-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 8: Health Certificate -->
+          <div class="doc-card" id="doc-8">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--green-dim); color:var(--green);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Health Certificate <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-8-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-8-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(8, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-8-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-8-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 9: Bank Account -->
+          <div class="doc-card" id="doc-9">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--blue-dim); color:var(--blue);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="5" width="20" height="14" rx="2" />
+                  <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Bank Account Details <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot">
+              <div class="doc-file-name" id="doc-9-name">No file uploaded</div>
+              <div style="display:flex; gap:8px;">
+                <input type="file" id="doc-9-input" style="display:none;" accept=".pdf,.jpg,.png"
+                  onchange="handleDocUpload(9, this)">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="document.getElementById('doc-9-input').click()">Upload</button>
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px; display:none;" id="doc-9-view"
+                  onclick="toast('Opening document preview...')">View</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doc 10: Contact Info -->
+          <div class="doc-card" id="doc-10">
+            <div class="doc-header">
+              <div class="doc-icon" style="background:var(--amber-dim); color:var(--amber);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </div>
+              <div style="flex:1;">
+                <div class="doc-name">Email, Phone & Fax <span class="doc-req">Required</span></div>
+              </div>
+              <span class="doc-status pending">Pending</span>
+            </div>
+            <div class="doc-foot" style="flex-direction:column; gap:10px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+                <div class="fg">
+                  <label class="flbl">Email</label>
+                  <input class="finp" type="email" placeholder="hotel@email.com"
+                    style="padding:7px 10px; font-size:12px;">
+                </div>
+                <div class="fg">
+                  <label class="flbl">Phone</label>
+                  <input class="finp" type="tel" placeholder="+20 2 ..." style="padding:7px 10px; font-size:12px;">
+                </div>
+                <div class="fg">
+                  <label class="flbl">Fax</label>
+                  <input class="finp" type="tel" placeholder="+20 2 ..." style="padding:7px 10px; font-size:12px;">
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; justify-content:flex-end;">
+                <button class="btn-ghost" style="padding:5px 12px; font-size:11.5px;"
+                  onclick="toast('Contact information saved!')">Save Contact Info</button>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /doc grid -->
+
+        <!-- Submit Application -->
+        <div class="card"
+          style="padding:22px; display:flex; align-items:center; gap:20px; background:rgba(91,141,239,0.05); border-color:rgba(91,141,239,0.2);">
+          <div style="flex:1;">
+            <div style="font-size:14px; font-weight:700; color:var(--text-1); margin-bottom:4px;">Submit Your
+              Application</div>
+            <div style="font-size:12.5px; color:var(--text-3); line-height:1.6;">Once all required documents are
+              uploaded, click <strong style="color:var(--blue)">Submit Application</strong>. Your application will be
+              reviewed and can be approved or rejected. You will be notified by email with the decision. In case of any
+              document issue, the status will indicate which document needs correction.</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:9px; flex-shrink:0;">
+            <button class="btn-gold"
+              style="background:linear-gradient(135deg,var(--blue),#3A6FD8); box-shadow:0 4px 18px rgba(91,141,239,0.25);"
+              onclick="submitApplication()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+              Submit Application
+            </button>
+            <div style="text-align:center; font-size:10.5px; color:var(--text-3);">Typically reviewed in 3–5 days</div>
+          </div>
+        </div>
+
+      </div><!-- /page-settings -->
+
+      <!-- ══════════ REVENUE ══════════ -->
+      <div class="page" id="page-revenue">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Administration</div>
+            <div class="ph-title">Financials</div>
+            <div class="ph-sub">Detailed revenue, profit, and loss tracking</div>
+          </div>
+        </div>
+
+        <!-- Top Overview / Best Month -->
+        <div class="card"
+          style="margin-bottom:18px; display:flex; gap:20px; align-items:center; background:var(--navy-3);">
+          <div style="flex:1;">
+            <div
+              style="font-size:12px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">
+              Highest Earning Month</div>
+            <div style="font-size:28px; font-weight:700; color:var(--gold);" id="best-month-name">--</div>
+            <div style="font-size:13px; color:var(--green); margin-top:4px" id="best-month-net">--</div>
+          </div>
+          <div style="flex:1;">
+            <div
+              style="font-size:12px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">
+              Total Net Revenue</div>
+            <div style="font-size:28px; font-weight:700; color:var(--text-1);" id="total-net-rev">--</div>
+          </div>
+          <div style="flex:1;">
+            <div
+              style="font-size:12px; color:var(--text-3); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px">
+              YTD Growth</div>
+            <div style="font-size:28px; font-weight:700; color:var(--green);">12.4%</div>
+          </div>
+        </div>
+
+        <!-- Yearly Revenue Graph -->
+        <div class="card" style="margin-bottom:18px; padding:24px;">
+          <div class="card-hd" style="padding:0; border:none; margin-bottom:20px;">
+            <div class="card-title">Yearly Revenue Overview</div>
+          </div>
+          <div style="position:relative; height:260px; width:100%;">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Monthly Earnings Table -->
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-title">Monthly Earnings Breakdown</div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Month</th>
+                  <th>Gross Revenue</th>
+                  <th>Occupancy %</th>
+                </tr>
+              </thead>
+              <tbody id="revenue-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ ADMIN INBOX ══════════ -->
+      <div class="page" id="page-inbox">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Administration</div>
+            <div class="ph-title">Admin Inbox</div>
+            <div class="ph-sub">Messages, alerts, and instructions from the platform administrator</div>
+          </div>
+          <button class="btn-gold" onclick="sendEmail('admin@platform.com')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              style="margin-right:2px;">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            Send Emails
+          </button>
+        </div>
+
+        <!-- Transactions -->
+        <div class="card" style="margin-bottom:18px;">
+          <div class="card-hd">
+            <div class="card-title" style="color:var(--text-1)"><svg width="14" height="14" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                style="margin-right:8px;vertical-align:middle;color:var(--green)">
+                <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+              </svg> Financial Transactions</div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Ref ID</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inbox-txn"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Warnings -->
+        <div class="card" style="margin-bottom:18px; border-left:3px solid var(--red)">
+          <div class="card-hd">
+            <div class="card-title" style="color:var(--text-1)"><svg width="14" height="14" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                style="margin-right:8px;vertical-align:middle;color:var(--red)">
+                <path
+                  d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" />
+              </svg> Warnings & Alerts</div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Severity</th>
+                  <th>Message</th>
+                  <th>Resolution Date</th>
+                  <th>Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inbox-warn"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="card" style="border-left:3px solid var(--gold)">
+          <div class="card-hd">
+            <div class="card-title" style="color:var(--text-1)"><svg width="14" height="14" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2"
+                style="margin-right:8px;vertical-align:middle;color:var(--gold)">
+                <polyline points="9 11 12 14 22 4" />
+                <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+              </svg> Upcoming Actions & Instructions</div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Assigned Date</th>
+                  <th>Instruction</th>
+                  <th>Priority</th>
+                  <th>Action</th>
+                  <th>Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody id="inbox-act"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ CANCELLATION DETAILS PAGE ══════════ -->
+      <div class="page" id="page-cancel-details">
+        <div class="ph">
+          <div>
+            <div class="ph-eye">Operations / Canceled</div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <button class="hdr-ic-btn" style="width:30px; height:30px;" onclick="go('bookings')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+              </button>
+              <div class="ph-title">Cancellation Details</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="cancel-page-content" style="padding-bottom:50px;"></div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+  <!-- ════════════ ROOM MODAL ════════════ -->
+  <div class="modal-bg" id="roomModal">
+    <div class="modal-box">
+      <div class="modal-hd">
+        <div class="modal-ttl" id="modalTitle">Add Room Type</div>
+        <button class="modal-x" onclick="closeRoomModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid-2">
+          <div class="fg span2">
+            <label class="flbl">Room Name</label>
+            <input class="finp" id="rm-name" type="text" placeholder="e.g. Deluxe Ocean View">
+          </div>
+          <div class="fg">
+            <label class="flbl">Room Code</label>
+            <input class="finp" id="rm-code" type="text" placeholder="e.g. DLX-101">
+          </div>
+          <div class="fg">
+            <label class="flbl">Room Type</label>
+            <select class="finp" id="rm-type">
+              <option value="single">Single</option>
+              <option value="double">Double</option>
+              <option value="king">King</option>
+              <option value="twin">Twin</option>
+              <option value="suite">Suite</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">Bed Type</label>
+            <select class="finp" id="rm-bed">
+              <option>Single Bed</option>
+              <option>Double Bed</option>
+              <option>King Bed</option>
+              <option>Twin Beds</option>
+              <option>Queen Bed</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">Occupancy (guests)</label>
+            <input class="finp" id="rm-occ" type="number" min="1" max="10" value="2">
+          </div>
+          <div class="fg">
+            <label class="flbl">Base Price / Night</label>
+            <div class="price-wrap"><span class="price-sym">$</span><input class="finp finp-price" id="rm-price"
+                type="number" min="0" placeholder="0"></div>
+          </div>
+          <div class="fg">
+            <label class="flbl">Total Units Available</label>
+            <input class="finp" id="rm-units" type="number" min="0" placeholder="e.g. 5">
+          </div>
+          <div class="fg">
+            <label class="flbl">Status</label>
+            <select class="finp" id="rm-status">
+              <option value="available">Available</option>
+              <option value="occupied">Occupied</option>
+              <option value="cleaning">Cleaning</option>
+              <option value="maintenance">Maintenance</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft">
+        <button class="btn-ghost" onclick="closeRoomModal()">Cancel</button>
+        <button class="btn-gold" onclick="saveRoom()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
+            <polyline points="17 21 17 13 7 13 7 21" />
+          </svg>
+          Save Room Type
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ RECYCLE BIN MODAL ════════════ -->
+  <div class="modal-bg" id="recycleBinModal" onclick="if(event.target===this)closeRecycleBin()">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-hd">
+        <div class="modal-ttl">Recycle Bin</div>
+        <button class="modal-x" onclick="closeRecycleBin()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 22px; max-height: 60vh; overflow-y: auto;">
+        <div id="recycleBinList" style="display:flex; flex-direction:column; gap:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ AVAILABLE ROOMS MODAL ════════════ -->
+  <div class="modal-bg" id="availableRoomsModal" onclick="if(event.target===this)closeAvailableRooms()">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-hd">
+        <div class="modal-ttl">Available Rooms</div>
+        <button class="modal-x" onclick="closeAvailableRooms()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 22px; max-height: 60vh; overflow-y: auto;">
+        <div id="availableRoomsList" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ ROOM BOOKINGS MODAL ════════════ -->
+  <div class="modal-bg" id="rbModal" onclick="if(event.target===this)closeRbModal()">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-hd">
+        <div class="modal-ttl" id="rbModalTitle">Room Bookings</div>
+        <button class="modal-x" onclick="closeRbModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 22px; max-height: 60vh; overflow-y: auto;">
+        <div id="rbList" style="display:flex; flex-direction:column;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ SINGLE BOOKING DETAILS MODAL ════════════ -->
+  <div class="modal-bg" id="bkDetailsModal" onclick="if(event.target===this)closeBkDetails()">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-hd">
+        <div class="modal-ttl">Booking Details</div>
+        <button class="modal-x" onclick="closeBkDetails()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body" id="bkDetailsContent" style="padding: 22px;"></div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toastEl">
+    <div class="t-dot"></div><span id="toastMsg">Saved!</span>
+  </div>
+
+  <script>
+    // ══ DATA ══
+    const C = ['#5B8DEF', '#3ECFA0', '#D4A853', '#7C6EF0', '#F5A623', '#F06565', '#0891B2', '#A16207'];
+
+    const bookings = [
+      { id: 'B001', guest: 'Sarah Mitchell', type: 'Deluxe Double', cin: 'Mar 15', cout: 'Mar 20', pax: '2 Adults', status: 'completed', c: C[0], rooms: ['101'], totalPaid: 130, dateLog: '2026-03-01 10:15 AM', bDate: 'Feb 18' },
+      { id: 'B002', guest: 'Omar Al-Rashid', type: 'King Suite', cin: 'Mar 18', cout: 'Mar 22', pax: '1 Adult', status: 'pending', c: C[1], rooms: ['201', '202'], totalPaid: 440, dateLog: '2026-03-02 02:30 PM', bDate: 'Feb 20' },
+      { id: 'B003', guest: 'Maria Rodriguez', type: 'Standard Single', cin: 'Mar 10', cout: 'Mar 16', pax: '1 Adult', status: 'completed', c: C[2], rooms: ['305'], totalPaid: 80, dateLog: '2026-03-05 09:00 AM', bDate: 'Jan 12' },
+      { id: 'B004', guest: 'James Thompson', type: 'King Suite', cin: 'Mar 20', cout: 'Mar 25', pax: '2 Adults', status: 'pending', c: C[3], rooms: ['205'], totalPaid: 220, dateLog: '2026-03-06 11:45 AM', bDate: 'Feb 28' },
+      { id: 'B005', guest: 'Yuki Tanaka', type: 'Deluxe Double', cin: 'Mar 5', cout: 'Mar 12', pax: '2 Adults', status: 'completed', c: C[4], rooms: ['102', '103'], totalPaid: 260, dateLog: '2026-03-08 08:20 AM', bDate: 'Feb 15' },
+      { id: 'B006', guest: 'Fatima Al-Hassan', type: 'Deluxe Double', cin: 'Mar 14', cout: 'Mar 17', pax: '1 Adult', status: 'canceled', c: C[5], rooms: ['104'], totalPaid: 0, dateLog: '2026-03-09 04:10 PM', bDate: 'Mar 01', cancel: { amountPaid: 390, deduction: 50, refunded: 340, method: 'Visa •••• 4242', date: '2026-03-11 11:30 AM', reason: 'Medical reason: Guest had an unexpected medical emergency and needed to cancel the trip entirely. Supported with medical documents.' } },
+      { id: 'B007', guest: 'Carlos Mendez', type: 'Deluxe Double', cin: 'Mar 19', cout: 'Mar 24', pax: '2 Adults', status: 'completed', c: C[6], rooms: ['105'], totalPaid: 130, dateLog: '2026-03-10 01:15 PM', bDate: 'Mar 05' },
+      { id: 'B008', guest: 'Nina Petrov', type: 'Standard Single', cin: 'Mar 11', cout: 'Mar 15', pax: '1 Adult', status: 'completed', c: C[7], rooms: ['306'], totalPaid: 80, dateLog: '2026-03-11 10:00 AM', bDate: 'Feb 10' },
+    ];
+
+    // Room Types — grouped by TYPE, not individual rooms
+    let roomTypes = [
+      { id: 1, name: 'Standard Single', code: 'SNG-STD', type: 'single', bed: 'Single Bed', occ: 1, price: 80, units: 10, booked: 4, status: 'available' },
+      { id: 2, name: 'Deluxe Double', code: 'DBL-DLX', type: 'double', bed: 'Double Bed', occ: 2, price: 130, units: 15, booked: 8, status: 'available' },
+      { id: 3, name: 'King Suite', code: 'KNG-STE', type: 'king', bed: 'King Bed', occ: 2, price: 220, units: 5, booked: 2, status: 'available' },
+    ];
+    let removedRooms = [];
+    let editId = null;
+
+    const reviews = [
+      { guest: 'Maria Rodriguez', code: 'SNG-STD', date: 'Mar 12', rating: 4.5, text: 'Excellent stay! Room was spotless and staff were incredibly helpful.', c: C[2] },
+      { guest: 'James Thompson', code: 'KNG-STE', date: 'Mar 8', rating: 5.0, text: 'Absolutely perfect. The King Suite exceeded all expectations.', c: C[3] },
+      { guest: 'Yuki Tanaka', code: 'DBL-DLX', date: 'Mar 10', rating: 4.0, text: 'Great location and comfortable room. Minor AC issue but quickly resolved.', c: C[4] },
+      { guest: 'Sarah Mitchell', code: 'DBL-DLX', date: 'Mar 6', rating: 3.5, text: 'Good overall experience. Check-in took a bit longer than expected.', c: C[0] },
+      { guest: 'Carlos Mendez', code: 'DBL-DLX', date: 'Mar 3', rating: 4.8, text: 'Amazing stay! Rooms were very spacious and clean throughout.', c: C[6] },
+    ];
+
+    const guests = [
+      { name: 'Sarah Mitchell', email: 's.mitchell@email.com', bk: 3, spent: '$1,240', c: C[0] },
+      { name: 'Omar Al-Rashid', email: 'omar.r@email.com', bk: 1, spent: '$320', c: C[1] },
+      { name: 'Maria Rodriguez', email: 'maria.r@email.com', bk: 5, spent: '$2,180', c: C[2] },
+      { name: 'James Thompson', email: 'j.thompson@email.com', bk: 2, spent: '$3,450', c: C[3] },
+      { name: 'Yuki Tanaka', email: 'yuki.t@email.com', bk: 4, spent: '$1,890', c: C[4] },
+      { name: 'Fatima Al-Hassan', email: 'fatima.h@email.com', bk: 2, spent: '$640', c: C[5] },
+      { name: 'Carlos Mendez', email: 'c.mendez@email.com', bk: 3, spent: '$1,560', c: C[6] },
+      { name: 'Nina Petrov', email: 'nina.p@email.com', bk: 1, spent: '$255', c: C[7] },
+    ];
+
+    const amenities = [
+      { id: 'wifi', name: 'Free WiFi', icon: '<path d="M5 12.55a11 11 0 0114.08 0"/><path d="M1.42 9a16 16 0 0121.16 0"/><path d="M8.53 16.11a6 6 0 016.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>', on: true },
+      { id: 'pool', name: 'Swimming Pool', icon: '<path d="M2 12h20M2 16c2.5-2 5-2 7.5 0s5 2 7.5 0M2 8c2.5-2 5-2 7.5 0s5 2 7.5 0"/>', on: true },
+      { id: 'parking', name: 'Parking', icon: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17V7h4a3 3 0 010 6H9"/>', on: false },
+      { id: 'ac', name: 'Air Conditioning', icon: '<path d="M17 14l-5-5-5 5M12 9v11"/><path d="M5 7a2 2 0 114 0 2 2 0 01-4 0z"/>', on: true },
+      { id: 'breakfast', name: 'Breakfast', icon: '<path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>', on: true },
+      { id: 'gym', name: 'Gym', icon: '<circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/>', on: false },
+      { id: 'restaurant', name: 'Restaurant', icon: '<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2M7 2v20M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/>', on: true },
+      { id: 'spa', name: 'Spa', icon: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>', on: false },
+      { id: 'roomservice', name: 'Room Service', icon: '<path d="M2 20h20M4 20v-4a8 8 0 0116 0v4"/>', on: true },
+    ];
+
+    let gallery = [
+      { id: 1, src: null, caption: 'Hotel Lobby', primary: true },
+      { id: 2, src: null, caption: 'Deluxe Room View', primary: false },
+      { id: 3, src: null, caption: 'Pool Terrace', primary: false },
+    ];
+    let nextGalId = 4;
+
+    // ══ HELPERS ══
+    const ini = s => s.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+    function pill(s) {
+      const m = { completed: ['p-green', 'Completed'], pending: ['p-amber', 'Pending'], canceled: ['p-red', 'Canceled'], available: ['p-green', 'Available'], occupied: ['p-blue', 'Occupied'], cleaning: ['p-amber', 'Cleaning'], maintenance: ['p-red', 'Maintenance'] };
+      const [cls, lbl] = m[s] || ['p-gray', s];
+      return `<span class="pill ${cls}"><span class="pd"></span>${lbl}</span>`;
+    }
+
+    function typeColor(t) { return { single: 'var(--blue)', double: 'var(--gold)', king: 'var(--amber)', twin: 'var(--green)', suite: 'var(--red)', other: 'var(--purple)' }[t] || 'var(--text-3)'; }
+    function typeBg(t) { return { single: 'var(--blue-dim)', double: 'var(--gold-dim)', king: 'var(--amber-dim)', twin: 'var(--green-dim)', suite: 'var(--red-dim)', other: 'var(--purple-dim)' }[t] || 'rgba(255,255,255,.06)'; }
+    function rdot(s) { return { available: 'd-green', occupied: 'd-blue', cleaning: 'd-amber', maintenance: 'd-red' }[s] || 'd-green'; }
+
+    function toast(msg = 'Saved!') {
+      document.getElementById('toastMsg').textContent = msg;
+      const el = document.getElementById('toastEl');
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2800);
+    }
+
+    // ══ RENDER BOOKINGS ══
+    function renderBkList(filter) {
+      const el = document.getElementById('bkList'); if (!el) return;
+      const d = filter === 'all' ? bookings : bookings.filter(b => b.status === filter);
+      el.innerHTML = d.slice(0, 6).map(b => `
+    <div class="bk-row" onclick="viewBookingDetails('${b.id}')">
+      <div class="bk-ava" style="background:${b.c}">${ini(b.guest)}</div>
+      <div style="flex:1;min-width:0">
+        <div class="bk-name">${b.guest}</div>
+        <div class="bk-meta">${b.type} · ${b.cin} – ${b.cout}</div>
+      </div>
+      <div class="bk-r"><div class="bk-pax">${b.pax}</div></div>
+      <div style="margin-left:12px;flex-shrink:0">${pill(b.status)}</div>
+    </div>`).join('') || '<div style="padding:28px;text-align:center;color:var(--text-3);font-size:12.5px">No bookings</div>';
+    }
+
+    function renderBkTable(filter = 'all') {
+      const el = document.getElementById('bkTable'); if (!el) return;
+      const d = filter === 'all' ? bookings : bookings.filter(b => b.status === filter);
+
+      if (d.length === 0) {
+        el.innerHTML = '<tr><td colspan="9" style="text-align:center; color:var(--text-3); padding:24px;">No bookings found for this status.</td></tr>';
+        return;
+      }
+
+      el.innerHTML = d.map(b => {
+        const isPending = b.status === 'pending';
+        const method = b.totalPaid > 0 ? 'Credit Card' : '--';
+        const txnId = b.totalPaid > 0 ? 'TXN-' + Math.floor(Math.random() * 90000 + 10000) : '--';
+        const pDate = b.totalPaid > 0 ? b.dateLog.split(' ')[0] : (isPending ? '<span style="color:var(--amber); font-weight:600;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Expires in 2hrs</span>' : '--');
+        const total = b.totalPaid > 0 ? '$' + b.totalPaid.toLocaleString() : '<span style="color:var(--red)">Unpaid</span>';
+
+        const roomCount = b.rooms ? b.rooms.length : 1;
+        let sCount = 0, dCount = 0, kCount = 0;
+
+        const rtLower = b.type.toLowerCase();
+        if (rtLower.includes('single')) sCount = roomCount;
+        else if (rtLower.includes('double') || rtLower.includes('twin')) dCount = roomCount;
+        else if (rtLower.includes('king') || rtLower.includes('suite')) kCount = roomCount;
+        else dCount = roomCount;
+
+        // Simulate mixed room types
+        if (b.id === 'B002') { sCount = 0; dCount = 1; kCount = 1; }
+        if (b.id === 'B005') { sCount = 1; dCount = 1; kCount = 0; }
+
+        const countBadges = [];
+        if (sCount) countBadges.push(`<span style="font-size:11.5px; padding:3px 8px; border-radius:4px; background:var(--navy-3); border:1px solid var(--border); color:var(--text-2); white-space:nowrap;">${sCount} Single</span>`);
+        if (dCount) countBadges.push(`<span style="font-size:11.5px; padding:3px 8px; border-radius:4px; background:var(--navy-3); border:1px solid var(--border); color:var(--text-2); white-space:nowrap;">${dCount} Double</span>`);
+        if (kCount) countBadges.push(`<span style="font-size:11.5px; padding:3px 8px; border-radius:4px; background:var(--navy-3); border:1px solid var(--border); color:var(--text-2); white-space:nowrap;">${kCount} King</span>`);
+
+        const statusCell = b.status === 'canceled'
+          ? `<div style="cursor:pointer; display:inline-block; transition:0.2s; opacity:0.9;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.9'" onclick="viewCancelDetails('${b.id}')" title="View Refund Details">${pill(b.status)}</div>`
+          : pill(b.status);
+
+        return `
+    <tr>
+      <td class="primary"><div style="display:flex;align-items:center;gap:9px"><div class="bk-ava" style="background:${b.c};width:30px;height:30px;font-size:11px">${ini(b.guest)}</div><div><div style="font-weight:500;color:var(--text-1)">${b.guest}</div><div style="font-size:10.5px;color:var(--text-3)">${b.id}</div></div></div></td>
+      <td style="cursor:pointer" onclick="viewBookingDetails('${b.id}')" title="View Details"><strong style="color:var(--gold);font-size:15px;text-decoration:underline;text-underline-offset:3px">${roomCount}</strong> <span style="font-size:11px;color:var(--text-3)">rooms</span></td>
+      <td><div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">${countBadges.join('')}</div></td>
+      <td><span style="font-size:12.5px; color:var(--text-2)">${b.bDate}</span></td>
+      <td>${b.cin}</td>
+      <td>${b.cout}</td>
+      <td><strong style="color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:15px;">${total}</strong></td>
+      <td>${method}</td>
+      <td style="font-family:monospace; font-size:11.5px; color:var(--text-3)">${txnId}</td>
+      <td style="font-family:monospace; font-size:11.5px; color:var(--text-2)">${pDate}</td>
+      <td>${statusCell}</td>
+    </tr>`;
+      }).join('');
+    }
+
+    // ══ RENDER ROOM TYPE SUMMARY ══
+    function renderRTSummary() {
+      const el = document.getElementById('rtCards'); if (!el) return;
+      const counts = {};
+      roomTypes.forEach(r => { counts[r.type] = (counts[r.type] || 0) + r.units; });
+      const labels = { single: 'Single Rooms', double: 'Double Rooms', king: 'King Rooms', twin: 'Twin Rooms', suite: 'Suites', other: 'Other' };
+      el.innerHTML = Object.entries(counts).map(([type, units]) => `
+    <div class="rt-card" style="cursor:pointer" onclick="viewBookingsByCategory('${type}')" title="View bookings for ${labels[type] || type}">
+      <div class="rt-badge" style="background:${typeBg(type)};color:${typeColor(type)}">${type.toUpperCase()}</div>
+      <div class="rt-num" style="color:var(--text-1)">${units} <span style="font-size:13px; font-weight:400; color:var(--text-3)">Total</span></div>
+      <div class="rt-lbl">${labels[type] || type} · ${roomTypes.filter(r => r.type === type).length} type${roomTypes.filter(r => r.type === type).length > 1 ? 's' : ''}</div>
+    </div>`).join('');
+
+      const cnt = document.getElementById('rtCount');
+      if (cnt) cnt.textContent = `${roomTypes.length} types · ${roomTypes.reduce((a, r) => a + r.units, 0)} total units`;
+
+      // Update KPI
+      const kv = document.getElementById('kpi-total-rooms');
+      const kt = document.getElementById('kpi-room-types');
+      if (kv) kv.textContent = roomTypes.reduce((a, r) => a + r.units, 0);
+      if (kt) kt.textContent = roomTypes.length + ' types';
+    }
+
+    function renderRTTable() {
+      const el = document.getElementById('rtTable'); if (!el) return;
+      el.innerHTML = roomTypes.map(r => `
+    <tr>
+      <td class="primary">${r.name}</td>
+      <td><span style="font-family:monospace;font-size:11.5px;color:var(--text-3)">${r.code}</span></td>
+      <td><span class="rt-badge" style="background:${typeBg(r.type)};color:${typeColor(r.type)}">${r.type.toUpperCase()}</span></td>
+      <td>${r.bed}</td>
+      <td>${r.occ} guest${r.occ > 1 ? 's' : ''}</td>
+      <td style="color:var(--gold);font-weight:600">$${r.price}</td>
+      <td><strong style="color:var(--text-1)">${r.units}</strong><span style="color:var(--text-3);font-size:11.5px"> units</span></td>
+      <td><strong style="color:var(--green)">${r.units - r.booked}</strong> <span style="font-size:11px;color:var(--text-3)">Available</span><br><span style="font-size:11px;color:var(--gold-2)">${r.booked} Booked</span></td>
+      <td>${pill(r.status)}</td>
+      <td><div style="display:flex;gap:5px">
+        <button class="ia" onclick="viewRoomBookings('${r.name}')" title="View Bookings"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button class="ia" onclick="editRoom(${r.id})" title="Edit"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="ia del" onclick="deleteRoom(${r.id})" title="Delete"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></button>
+      </div></td>
+    </tr>`).join('');
+    }
+
+    // ══ ROOM TYPE MINI (dashboard sidebar) ══
+    function renderRmMini() {
+      const el = document.getElementById('rmMini'); if (!el) return;
+      el.innerHTML = roomTypes.slice(0, 6).map(r => `
+    <div class="rm-cell" title="View bookings" onclick="viewRoomBookings('${r.name}')">
+      <div class="rm-cell-top">
+        <div><div class="rm-n">${r.name}</div><div class="rm-t">${r.bed}</div></div>
+        <div class="rmdot ${rdot(r.status)}"></div>
+      </div>
+      <div class="rm-price">$${r.price}<span style="font-size:9.5px;font-weight:400;color:var(--text-3)">/night</span></div>
+      <div class="rm-units">${r.units} units · ${r.type}</div>
+    </div>`).join('');
+    }
+
+    // ══ MODAL ══
+    function openRoomModal() {
+      editId = null;
+      document.getElementById('modalTitle').textContent = 'Add Room Type';
+      document.getElementById('rm-name').value = '';
+      document.getElementById('rm-code').value = '';
+      document.getElementById('rm-type').value = 'single';
+      document.getElementById('rm-bed').value = 'Single Bed';
+      document.getElementById('rm-occ').value = 2;
+      document.getElementById('rm-price').value = '';
+      document.getElementById('rm-units').value = '';
+      document.getElementById('rm-status').value = 'available';
+      document.getElementById('roomModal').classList.add('open');
+      setTimeout(() => document.getElementById('rm-name').focus(), 100);
+    }
+
+    function editRoom(id) {
+      const r = roomTypes.find(x => x.id === id); if (!r) return;
+      editId = id;
+      document.getElementById('modalTitle').textContent = 'Edit Room Type';
+      document.getElementById('rm-name').value = r.name;
+      document.getElementById('rm-code').value = r.code;
+      document.getElementById('rm-type').value = r.type;
+      document.getElementById('rm-bed').value = r.bed;
+      document.getElementById('rm-occ').value = r.occ;
+      document.getElementById('rm-price').value = r.price;
+      document.getElementById('rm-units').value = r.units;
+      document.getElementById('rm-status').value = r.status;
+      document.getElementById('roomModal').classList.add('open');
+    }
+
+    function closeRoomModal() { document.getElementById('roomModal').classList.remove('open'); }
+
+    function saveRoom() {
+      const name = document.getElementById('rm-name').value.trim();
+      if (!name) { document.getElementById('rm-name').style.borderColor = 'var(--red)'; document.getElementById('rm-name').focus(); return; }
+      document.getElementById('rm-name').style.borderColor = '';
+      const data = {
+        name,
+        code: document.getElementById('rm-code').value.trim() || 'N/A',
+        type: document.getElementById('rm-type').value,
+        bed: document.getElementById('rm-bed').value,
+        occ: parseInt(document.getElementById('rm-occ').value) || 1,
+        price: parseFloat(document.getElementById('rm-price').value) || 0,
+        units: parseInt(document.getElementById('rm-units').value) || 0,
+        status: document.getElementById('rm-status').value,
+      };
+      if (editId) {
+        const i = roomTypes.findIndex(x => x.id === editId);
+        if (i > -1) roomTypes[i] = { ...roomTypes[i], ...data };
+        toast('Room type updated!');
+      } else {
+        const existIdx = roomTypes.findIndex(r => r.name.toLowerCase() === data.name.toLowerCase() || (r.code === data.code && data.code !== 'N/A' && data.code !== ''));
+        if (existIdx > -1) {
+          roomTypes[existIdx].units += data.units;
+          toast('Units added to existing room type!');
+        } else {
+          data.id = Date.now();
+          data.booked = 0; // Ensure booked property exists for new creations
+          roomTypes.push(data);
+          toast('Room type added!');
+        }
+      }
+      closeRoomModal();
+      renderRTSummary(); renderRTTable(); renderRmMini(); renderBulkUnits();
+    }
+
+    function deleteRoom(id) {
+      if (!confirm('Remove this room type?')) return;
+      const idx = roomTypes.findIndex(x => x.id === id);
+      if (idx > -1) {
+        removedRooms.push(roomTypes[idx]);
+        roomTypes.splice(idx, 1);
+      }
+      renderRTSummary(); renderRTTable(); renderRmMini(); renderBulkUnits();
+      toast('Room type moved to recycle bin');
+    }
+
+    function renderBulkUnits() {
+      const el = document.getElementById('bulkUnitGrid'); if (!el) return;
+      el.innerHTML = roomTypes.map(r => `
+        <div style="background:var(--navy-3); border:1px solid var(--border); border-radius:10px; padding:14px; display:flex; align-items:center; gap:12px;">
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:600; color:var(--text-1);">${r.name}</div>
+            <div style="font-size:11px; color:var(--text-3); margin-top:2px;">${r.booked} booked / ${r.units} total</div>
+          </div>
+          <div style="width:100px;">
+            <label class="flbl" style="font-size:9px; margin-bottom:4px;">New Units</label>
+            <input class="finp bulk-units-input" data-id="${r.id}" type="number" value="${r.units}" min="${r.booked}" style="padding:6px 10px; font-size:12px;">
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function saveBulkUnits() {
+      const inputs = document.querySelectorAll('.bulk-units-input');
+      let changed = false;
+      let error = false;
+      inputs.forEach(inp => {
+        const id = parseInt(inp.dataset.id);
+        const newVal = parseInt(inp.value);
+        const r = roomTypes.find(x => x.id === id);
+        if (r && r.units !== newVal) {
+          if (newVal < r.booked) {
+             toast(`Error: ${r.name} cannot have fewer than ${r.booked} units.`);
+             error = true;
+             return;
+          }
+          r.units = newVal;
+          changed = true;
+        }
+      });
+      if (error) return;
+      if (changed) {
+        toast('✓ Inventory updated successfully!');
+        renderRTTable(); renderRTSummary(); renderRmMini(); renderBulkUnits();
+      } else {
+        toast('No changes detected.');
+      }
+    }
+
+    function openRecycleBin() {
+      renderRecycleBin();
+      document.getElementById('recycleBinModal').classList.add('open');
+    }
+
+    function closeRecycleBin() {
+      document.getElementById('recycleBinModal').classList.remove('open');
+    }
+
+    function renderRecycleBin() {
+      const el = document.getElementById('recycleBinList');
+      if (removedRooms.length === 0) {
+        el.innerHTML = '<div style="color:var(--text-3); text-align:center; padding:20px;">Recycle bin is empty.</div>';
+        return;
+      }
+      el.innerHTML = removedRooms.map(r => `
+    <div class="bk-row" style="padding: 12px 14px; background:var(--navy-3); border-radius:9px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <div style="display:flex; flex-direction:column;">
+        <div style="font-weight:600; color:var(--text-1); font-size:13.5px;">${r.name}</div>
+        <div style="font-size:11.5px; color:var(--text-3); font-family:monospace;">${r.code} · ${r.units} units</div>
+      </div>
+      <button class="btn-ghost" style="padding: 6px 12px; font-size: 11px; display:flex; align-items:center; gap:6px; margin:0; line-height:1;" onclick="restoreRoom(${r.id})">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 10h10a5 5 0 0 1 5 5 5 5 0 0 1-5 5H6"/><polyline points="7 6 3 10 7 14"/></svg> Restore
+      </button>
+    </div>
+  `).join('');
+    }
+
+    function restoreRoom(id) {
+      const idx = removedRooms.findIndex(x => x.id === id);
+      if (idx > -1) {
+        roomTypes.push(removedRooms[idx]);
+        removedRooms.splice(idx, 1);
+        toast('Room type restored!');
+        renderRTSummary(); renderRTTable(); renderRmMini(); renderBulkUnits();
+        renderRecycleBin();
+        if (removedRooms.length === 0) closeRecycleBin();
+      }
+    }
+
+    // ══ VIEW BOOKINGS FOR ROOM TYPE ══
+    function viewRoomBookings(typeName) {
+      const bks = bookings.filter(b => b.type === typeName);
+      renderRbModal(typeName + ' Bookings', bks);
+    }
+
+    function viewBookingsByCategory(category) {
+      const rTypes = roomTypes.filter(r => r.type === category).map(r => r.name);
+      const bks = bookings.filter(b => rTypes.includes(b.type));
+      const labels = { single: 'Single Rooms', double: 'Double Rooms', king: 'King Rooms', twin: 'Twin Rooms', suite: 'Suites', other: 'Other' };
+      renderRbModal((labels[category] || category.toUpperCase()) + ' Bookings', bks);
+    }
+
+    function renderRbModal(title, bks) {
+      document.getElementById('rbModalTitle').textContent = title;
+      const listEl = document.getElementById('rbList');
+      if (bks.length === 0) {
+        listEl.innerHTML = '<div style="color:var(--text-3); text-align:center; padding:20px;">No bookings found for this selection.</div>';
+      } else {
+        listEl.innerHTML = bks.map(b => `
+      <div class="bk-row" style="padding: 12px 14px; background:var(--navy-3); border-radius:9px; border:1px solid var(--border); margin-bottom:8px; display:flex;">
+        <div class="bk-ava" style="background:${b.c}">${ini(b.guest)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="bk-name">${b.guest}</div>
+          <div class="bk-meta">${b.type} · ${b.cin} – ${b.cout}</div>
+        </div>
+        <div class="bk-r"><div class="bk-pax">${b.pax}</div></div>
+        <div style="margin-left:12px;flex-shrink:0">${pill(b.status)}</div>
+      </div>`).join('');
+      }
+      document.getElementById('rbModal').classList.add('open');
+    }
+
+    function closeRbModal() { document.getElementById('rbModal').classList.remove('open'); }
+
+    function viewAvailableRooms() {
+      const el = document.getElementById('availableRoomsList');
+      if (!el) return;
+
+      const availableData = roomTypes.map(rt => {
+        return { name: rt.name, type: rt.type, bed: rt.bed, available: rt.units - rt.booked };
+      }).filter(rt => rt.available > 0);
+
+      if (availableData.length === 0) {
+        el.innerHTML = '<div style="color:var(--text-3); text-align:center; padding:20px;">No rooms are currently available.</div>';
+      } else {
+        el.innerHTML = availableData.map(rt => `
+      <div style="padding: 14px; background:var(--navy-3); border-radius:9px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:600; color:var(--text-1); font-size:13.5px;">${rt.name}</div>
+          <div style="font-size:11px; color:var(--text-3); margin-top:3px; text-transform:capitalize;">${rt.type} Room · ${rt.bed}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:20px; font-weight:700; color:var(--green); font-family:'Cormorant Garamond',serif;">${rt.available}</div>
+          <div style="font-size:9px; font-weight:700; color:var(--text-3); text-transform:uppercase; letter-spacing:1px;">Available</div>
+        </div>
+      </div>
+    `).join('');
+      }
+      document.getElementById('availableRoomsModal').classList.add('open');
+    }
+
+    function closeAvailableRooms() { document.getElementById('availableRoomsModal').classList.remove('open'); }
+
+    function viewTodayOccupied() {
+      const currentDate = new Date('Mar 12 2026');
+      const bks = bookings.filter(b => {
+        const checkin = new Date(b.cin + ' 2026');
+        const checkout = new Date(b.cout + ' 2026');
+        return currentDate >= checkin && currentDate < checkout && b.status !== 'canceled';
+      });
+
+      const el = document.getElementById('todayOccupiedTable');
+      if (!el) return;
+
+      if (bks.length === 0) {
+        el.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-3); padding:20px;">No rooms are currently occupied today.</td></tr>';
+      } else {
+        el.innerHTML = bks.map(b => `
+      <tr onclick="viewBookingDetails('${b.id}')">
+        <td class="primary"><div style="display:flex;align-items:center;gap:9px"><div class="bk-ava" style="background:${b.c};width:30px;height:30px;font-size:11px">${ini(b.guest)}</div><div><div style="font-weight:500;color:var(--text-1)">${b.guest}</div><div style="font-size:10.5px;color:var(--text-3)">${b.id}</div></div></div></td>
+        <td>${b.type}</td><td>${b.cin}</td><td>${b.cout}</td>
+        <td>${b.pax}</td><td>${pill(b.status)}</td>
+      </tr>`).join('');
+      }
+
+      // Custom navigation call without a specific sidebar button active state
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('on'));
+      document.getElementById('page-today-occupied').classList.add('on');
+      if (window.innerWidth < 768) closeSB();
+    }
+
+    // ══ BOOKING DETAILS & LOGS ══
+    function viewBookingDetails(id) {
+      const b = bookings.find(x => x.id === id);
+      if (!b) return;
+      const content = `
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+      <div class="bk-ava" style="background:${b.c}; width:48px; height:48px; font-size:16px;">${ini(b.guest)}</div>
+      <div>
+        <div style="font-size:16px; font-weight:600;">${b.guest}</div>
+        <div style="font-size:12px; color:var(--text-3)">Booking ID: ${b.id}</div>
+      </div>
+      <div style="margin-left:auto">${pill(b.status)}</div>
+    </div>
+    <div class="form-grid-2" style="background:var(--navy-3); padding:16px; border-radius:9px; border:1px solid var(--border); margin-bottom:16px;">
+      <div><div class="flbl">Check-in</div><div style="font-size:13px; margin-top:4px; color:var(--text-1)">${b.cin}</div></div>
+      <div><div class="flbl">Check-out</div><div style="font-size:13px; margin-top:4px; color:var(--text-1)">${b.cout}</div></div>
+    </div>
+    <div style="background:var(--navy-3); padding:16px; border-radius:9px; border:1px solid var(--border); margin-top:16px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px; border-bottom:1px solid var(--border-2); padding-bottom:8px;">
+        <span style="font-size:12px; font-weight:600; color:var(--text-1); letter-spacing:0.5px; text-transform:uppercase;">Payment Details</span>
+        ${b.totalPaid > 0 ? `<span style="color:var(--green); font-weight:600; font-size:11.5px;">✓ PAID</span>` : `<span style="color:var(--red); font-weight:600; font-size:11.5px;">✗ UNPAID</span>`}
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div><div style="font-size:11px; color:var(--text-3)">Amount Received</div><div style="font-size:15px; font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--gold)">$${b.totalPaid}</div></div>
+        <div><div style="font-size:11px; color:var(--text-3)">Payment Date</div><div style="font-size:13px; color:var(--text-1); margin-top:2px;">${b.totalPaid > 0 ? b.dateLog : '--'}</div></div>
+        <div><div style="font-size:11px; color:var(--text-3)">Method</div><div style="font-size:13px; color:var(--text-1); margin-top:2px;">${b.totalPaid > 0 ? 'Credit Card (Stripe)' : '--'}</div></div>
+        <div><div style="font-size:11px; color:var(--text-3)">Transaction ID</div><div style="font-size:13px; color:var(--text-1); margin-top:2px; font-family:monospace">${b.totalPaid > 0 ? 'TXN-' + Math.floor(Math.random() * 90000 + 10000) : '--'}</div></div>
+      </div>
+    </div>
+  `;
+      document.getElementById('bkDetailsContent').innerHTML = content;
+      document.getElementById('bkDetailsModal').classList.add('open');
+    }
+
+    function closeBkDetails() { document.getElementById('bkDetailsModal').classList.remove('open'); }
+
+    function viewCancelDetails(id) {
+      const b = bookings.find(x => x.id === id);
+      if (!b) return;
+      const c = b.cancel || { amountPaid: 0, deduction: 0, refunded: 0, method: '--', date: '--', reason: 'No reason provided.' };
+
+      const content = `
+    <div class="body-grid">
+      <div class="col-l">
+        <div class="card" style="padding:24px;">
+          <div style="display:flex; align-items:center; gap:16px; margin-bottom:24px;">
+            <div class="bk-ava" style="background:${b.c}; width:60px; height:60px; font-size:20px;">${ini(b.guest)}</div>
+            <div>
+              <div style="font-size:20px; font-weight:700; color:var(--text-1)">${b.guest}</div>
+              <div style="font-size:13px; color:var(--text-3); margin-top:2px;">Booking ID: <span style="font-family:monospace; color:var(--gold); font-weight:600;">${b.id}</span></div>
+            </div>
+            <div style="margin-left:auto">${pill(b.status)}</div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; background:var(--navy-3); padding:20px; border-radius:12px; border:1px solid var(--border);">
+            <div><div class="flbl">Check-in Date</div><div style="font-size:15px; font-weight:500; margin-top:5px;">${b.cin}</div></div>
+            <div><div class="flbl">Check-out Date</div><div style="font-size:15px; font-weight:500; margin-top:5px;">${b.cout}</div></div>
+          </div>
+
+          <div style="margin-top:20px; background:var(--red-dim); padding:20px; border-radius:12px; border:1px solid rgba(240,101,101,0.2); border-left:4px solid var(--red);">
+             <div style="display:flex; align-items:center; gap:8px; margin-bottom:15px;">
+               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+               <span style="font-size:15px; font-weight:600; color:var(--text-1)">Cancellation Activity</span>
+             </div>
+             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+               <div><div class="flbl" style="color:var(--text-3)">Cancelled On</div><div style="font-size:14px; margin-top:3px;">${c.date}</div></div>
+               <div><div class="flbl" style="color:var(--text-3)">Refund Method</div><div style="font-size:14px; font-weight:600; color:var(--green); margin-top:3px;">${c.method}</div></div>
+             </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;">
+          <div class="card-hd" style="padding:0; border:none; margin-bottom:15px;">
+            <div class="card-title">Reason for Cancellation</div>
+          </div>
+          <div style="background:var(--navy-3); padding:20px; border-radius:12px; border:1px solid var(--border); line-height:1.6; color:var(--text-2); font-style:italic;">
+            "${c.reason}"
+          </div>
+        </div>
+      </div>
+
+      <div class="col-r">
+        <div class="card" style="padding:24px;">
+           <div class="card-hd" style="padding:0; border:none; margin-bottom:20px;">
+             <div class="card-title">Refund Summary</div>
+           </div>
+           
+           <div style="display:flex; flex-direction:column; gap:14px;">
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+               <span style="font-size:13px; color:var(--text-3)">Total Paid</span>
+               <span style="font-size:15px; font-weight:600;">$${c.amountPaid}</span>
+             </div>
+             <div style="display:flex; justify-content:space-between; align-items:center;">
+               <span style="font-size:13px; color:var(--text-3)">Deduction Fee</span>
+               <span style="font-size:15px; font-weight:600; color:var(--red)">- $${c.deduction}</span>
+             </div>
+             <div style="margin:10px 0; border-top:1px dashed var(--border); padding-top:14px; display:flex; justify-content:space-between; align-items:center;">
+               <span style="font-size:15px; font-weight:700; color:var(--text-1)">Total Refunded</span>
+               <span style="font-size:24px; font-weight:700; color:var(--green); font-family:'Cormorant Garamond',serif;">$${c.refunded}</span>
+             </div>
+           </div>
+
+           <button class="btn-gold" style="width:100%; margin-top:20px; justify-content:center;" onclick="toast('Refund receipt generated!')">
+             Download Receipt
+           </button>
+        </div>
+      </div>
+    </div>
+  `;
+      document.getElementById('cancel-page-content').innerHTML = content;
+      go('cancel-details');
+    }
+    function closeBkDetails() { document.getElementById('bkDetailsModal').classList.remove('open'); }
+
+    const activityLogs = [
+      ...bookings.map(b => ({ date: b.dateLog, action: 'Created Booking', user: 'Guest / Agent', details: `Booking ${b.id} for ${b.guest}` })),
+      { date: '2026-03-11 11:30 AM', action: 'Cancelled Booking', user: 'Ahmed Hassan', details: 'Booking B006 cancelled by guest request' }
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    function renderLogs() {
+      const el = document.getElementById('bkLogTable');
+      if (!el) return;
+      el.innerHTML = activityLogs.map(l => `
+    <tr>
+      <td style="color:var(--text-3)">${l.date}</td>
+      <td><strong style="${l.action.includes('Cancel') ? 'color:var(--red)' : 'color:var(--gold-2)'}">${l.action}</strong></td>
+      <td>${l.user}</td>
+      <td class="primary">${l.details}</td>
+    </tr>
+  `).join('');
+
+      // Update Cancellation Summary Area
+      const cancelSum = document.getElementById('cancel-summary-area');
+      const canceledBk = bookings.find(b => b.status === 'canceled' && b.cancel);
+      if (cancelSum && canceledBk) {
+        cancelSum.style.display = 'block';
+        const c = canceledBk.cancel;
+        document.getElementById('cs-refunded').textContent = '$' + c.refunded;
+        document.getElementById('cs-original').textContent = '$' + c.amountPaid;
+        document.getElementById('cs-fee').textContent = '-$' + c.deduction;
+        document.getElementById('cs-method').textContent = c.method;
+        document.getElementById('cs-date').textContent = 'Processed on ' + c.date.split(' ')[0];
+        document.getElementById('cs-reason').textContent = '"' + c.reason.split(':')[0] + '..."';
+        document.getElementById('btn-view-cancel-full').onclick = () => viewCancelDetails(canceledBk.id);
+      } else if (cancelSum) {
+        cancelSum.style.display = 'none';
+      }
+    }
+
+    // ══ REVENUE CHART MODAL ══
+    const revData = [
+      { m: 'Jan', p: 35000 },
+      { m: 'Feb', p: 38000 },
+      { m: 'Mar', p: 45000 },
+      { m: 'Apr', p: 42000 },
+      { m: 'May', p: 51000 },
+      { m: 'Jun', p: 58000 },
+      { m: 'Jul', p: 65000 },
+      { m: 'Aug', p: 72000 },
+      { m: 'Sep', p: 54000 },
+      { m: 'Oct', p: 48000 },
+      { m: 'Nov', p: 49000 },
+      { m: 'Dec', p: 60000 },
+    ];
+
+
+
+    // ══ REVIEWS ══
+    function renderRvMini() {
+      const el = document.getElementById('rvMini'); if (!el) return;
+      el.innerHTML = reviews.slice(0, 3).map(r => `
+    <div style="padding:16px 0; border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="bk-ava" style="background:${r.c};width:32px;height:32px;font-size:11.5px">${ini(r.guest)}</div>
+          <div><div style="font-size:13px;font-weight:600;color:var(--text-1)">${r.guest}</div><div style="font-size:10.5px;color:var(--text-3)">${r.code} · ${r.date}</div></div>
+        </div>
+        <div style="color:var(--gold);font-weight:700;font-size:13px">⭐ ${r.rating}</div>
+      </div>
+      <div style="font-size:12.5px;color:var(--text-2);line-height:1.5;font-style:italic">"${r.text}"</div>
+    </div>`).join('');
+    }
+
+    // ══ REVENUE FINANCIALS ══
+    function renderRevenuePage() {
+      const el = document.getElementById('revenue-table');
+      if (!el) return;
+
+      let bestMonth = null;
+      let maxNet = -Infinity;
+      let totalNet = 0;
+
+      const getOccupancyInfo = (net) => {
+        // Simulated occupancy based on revenue tiers
+        let pct = 0;
+        if (net >= 60000) pct = Math.floor(Math.random() * (98 - 90 + 1)) + 90;
+        else if (net >= 50000) pct = Math.floor(Math.random() * (89 - 80 + 1)) + 80;
+        else if (net >= 40000) pct = Math.floor(Math.random() * (79 - 70 + 1)) + 70;
+        else pct = Math.floor(Math.random() * (69 - 55 + 1)) + 55;
+
+        let color = 'var(--green)';
+        if (pct < 70) color = 'var(--amber)';
+        if (pct < 60) color = 'var(--red)';
+
+        return `
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="flex:1; height:4px; background:var(--navy-4); border-radius:2px; overflow:hidden; max-width:60px;">
+          <div style="height:100%; width:${pct}%; background:${color}; border-radius:2px;"></div>
+        </div>
+        <span style="font-weight:600; color:var(--text-1); font-size:12px;">${pct}%</span>
+      </div>
+    `;
+      };
+
+      el.innerHTML = revData.map(d => {
+        const net = d.p; // removed losses logic
+        totalNet += net;
+        if (net > maxNet) { maxNet = net; bestMonth = d.m; }
+
+        return `
+      <tr>
+        <td style="font-weight:600; color:var(--text-1)">${d.m} 2026</td>
+        <td style="font-family:'Cormorant Garamond',serif; font-size:17px; font-weight:700; color:var(--green)">
+           $${net.toLocaleString()}
+        </td>
+        <td>${getOccupancyInfo(net)}</td>
+      </tr>
+    `;
+      }).join('');
+
+      document.getElementById('best-month-name').textContent = bestMonth + ' 2026';
+      document.getElementById('best-month-net').textContent = '+$' + maxNet.toLocaleString() + ' Gross Revenue';
+      document.getElementById('total-net-rev').textContent = '$' + totalNet.toLocaleString();
+
+      setTimeout(() => {
+        const ctx = document.getElementById('revenueChart');
+        if (ctx && !window.revenueChartInstance) {
+          window.revenueChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: revData.map(d => d.m),
+              datasets: [{
+                label: 'Gross Revenue',
+                data: revData.map(d => d.p),
+                borderColor: '#D4A853',
+                backgroundColor: 'rgba(212, 168, 83, 0.12)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#0B0F1A',
+                pointBorderColor: '#D4A853',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(11, 15, 26, 0.9)',
+                  titleColor: '#A8B0C0',
+                  bodyColor: '#D4A853',
+                  borderColor: 'rgba(255, 255, 255, 0.07)',
+                  borderWidth: 1,
+                  padding: 10,
+                  displayColors: false,
+                  callbacks: { label: c => '$' + c.parsed.y.toLocaleString() }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { display: false, drawBorder: false },
+                  ticks: { color: '#5A6478', font: { family: "'Outfit', sans-serif", size: 11 } }
+                },
+                y: {
+                  grid: { color: 'rgba(255, 255, 255, 0.04)', drawBorder: false },
+                  ticks: {
+                    color: '#5A6478',
+                    font: { family: "'Outfit', sans-serif", size: 11 },
+                    callback: v => '$' + v.toLocaleString()
+                  }
+                }
+              }
+            }
+          });
+        }
+      }, 100);
+    }
+
+    // ══ ADMIN INBOX ══
+    const adminData = {
+      txn: [
+        { date: '2026-03-10', type: 'Monthly Platform Payout', ref: 'TXN-9021A', amt: '+$24,500.00', status: 'completed' },
+        { date: '2026-03-05', type: 'Reservation Commission Fee', ref: 'FEE-8822B', amt: '-$420.00', status: 'completed' },
+        { date: '2026-03-01', type: 'Annual License Renewal processing', ref: 'SUB-0091C', amt: '-$1,200.00', status: 'pending' },
+      ],
+      warn: [
+        { date: '2026-03-11', sev: 'High', msg: 'Missing tax identification number for regional compliance.', due: '2026-03-20', c: 'var(--red)' },
+        { date: '2026-03-09', sev: 'Medium', msg: '3 guest complaints noted regarding Wi-Fi speed in the West Wing.', due: '2026-03-25', c: 'var(--amber)' },
+      ],
+      act: [
+        { date: '2026-03-10', task: 'Update hotel room imagery to high-resolution format', prio: 'Normal', actionLbl: 'Upload Photos' },
+        { date: '2026-03-08', task: 'Review and accept new Terms of Service regarding cancellations', prio: 'High', actionLbl: 'Review Terms' },
+      ]
+    };
+
+    function renderInbox() {
+      const tEl = document.getElementById('inbox-txn');
+      const wEl = document.getElementById('inbox-warn');
+      const aEl = document.getElementById('inbox-act');
+      if (!tEl || !wEl || !aEl) return;
+
+      const btnGrp = (subj) => `
+    <div style="display:flex; gap:6px;">
+      <button class="btn-ghost" style="padding:4px 8px; font-size:10.5px; border-color:var(--border);" onclick="replyToInbox('${subj}')">Reply</button>
+      <button class="btn-ghost" style="padding:4px 8px; font-size:10.5px; border-color:var(--border);" onclick="sendEmail('admin@platform.com')">Email</button>
+    </div>
+  `;
+
+      tEl.innerHTML = adminData.txn.map(t => `
+    <tr>
+      <td style="color:var(--text-3); font-size:12px;">${t.date}</td>
+      <td class="primary">${t.type}</td>
+      <td style="font-family:monospace; font-size:11px; color:var(--text-3)">${t.ref}</td>
+      <td><strong style="${t.amt.startsWith('-') ? 'color:var(--red)' : 'color:var(--gold-2)'}">${t.amt}</strong></td>
+      <td>${pill(t.status)}</td>
+      <td>${btnGrp(t.type)}</td>
+    </tr>
+  `).join('');
+
+      wEl.innerHTML = adminData.warn.map(w => `
+    <tr>
+      <td style="color:var(--text-3); font-size:12px;">${w.date}</td>
+      <td><span style="font-size:11px; font-weight:600; padding:3px 8px; border-radius:4px; background:${w.c}20; color:${w.c}; border:1px solid ${w.c}40">${w.sev.toUpperCase()}</span></td>
+      <td class="primary" style="font-weight:400; font-size:12.5px;">${w.msg}</td>
+      <td><strong style="color:var(--text-2); font-size:12px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${w.due}</strong></td>
+      <td>${btnGrp(w.msg.substring(0, 30) + '...')}</td>
+    </tr>
+  `).join('');
+
+      aEl.innerHTML = adminData.act.map(a => `
+    <tr>
+      <td style="color:var(--text-3); font-size:12px;">${a.date}</td>
+      <td class="primary" style="font-weight:400; font-size:12.5px;">${a.task}</td>
+      <td><strong style="color:${a.prio === 'High' ? 'var(--amber)' : 'var(--text-3)'}; font-size:12px;">${a.prio.toUpperCase()}</strong></td>
+      <td><button class="btn-ghost" style="padding:5px 10px; font-size:11px;">${a.actionLbl}</button></td>
+      <td>${btnGrp(a.task.substring(0, 30) + '...')}</td>
+    </tr>
+  `).join('');
+    }
+
+    function replyToInbox(subj) {
+      const msg = prompt(`Replying to: ${subj}\n\nEnter your message:`);
+      if (msg) toast('Reply sent to administrator!');
+    }
+
+    function sendEmail(addr) {
+      window.location.href = `mailto:${addr}?subject=Inquiry from Hotel Dashboard`;
+    }
+
+    function renderRvFull() {
+      const el = document.getElementById('rvFull'); if (!el) return;
+
+      const total = reviews.length;
+      const avg = (reviews.reduce((s, r) => s + r.rating, 0) / (total || 1)).toFixed(1);
+
+      const avgEl = document.getElementById('rvAvg');
+      const countEl = document.getElementById('rvCount');
+      if (avgEl) avgEl.textContent = avg + ' / 5';
+      if (countEl) countEl.textContent = total + ' Reviews';
+
+      el.innerHTML = reviews.map(r => `
+    <div class="rv-item">
+      <div class="rv-top">
+        <div class="rv-who"><div class="rv-ava" style="background:${r.c}">${ini(r.guest)}</div><div><div class="rv-gname">${r.guest}</div><div class="rv-meta">${r.code} · ${r.date}</div></div></div>
+        <div class="rv-stars"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>${r.rating} / 5</div>
+      </div>
+      <div class="rv-text" style="-webkit-line-clamp:unset">${r.text}</div>
+    </div>`).join('');
+    }
+
+    // ══ GUESTS ══
+    function renderGuests() {
+      const el = document.getElementById('guestsTableBody'); if (!el) return;
+      const currentDate = new Date('Mar 12 2026');
+
+      const fCin = document.getElementById('guest-filter-cin')?.value;
+      const fCout = document.getElementById('guest-filter-cout')?.value;
+
+      const filterCin = fCin ? new Date(fCin) : null;
+      const filterCout = fCout ? new Date(fCout) : null;
+
+      const activeBookings = bookings.filter(b => {
+        if (b.status === 'canceled') return false;
+        const checkoutDate = new Date(b.cout + ' 2026');
+        const checkinDate = new Date(b.cin + ' 2026');
+
+        if (checkoutDate < currentDate) return false;
+
+        if (filterCin && checkoutDate <= filterCin) return false;
+        if (filterCout && checkinDate >= filterCout) return false;
+
+        return true;
+      });
+
+      if (activeBookings.length === 0) {
+        el.innerHTML = '<tr><td colspan="8" style="text-align:center; color:var(--text-3); padding:20px;">No matching guests found.</td></tr>';
+        return;
+      }
+
+      el.innerHTML = activeBookings.map(b => {
+        const roomCount = b.rooms ? b.rooms.length : 1;
+        let sCount = 0, dCount = 0, kCount = 0;
+
+        const rtLower = b.type.toLowerCase();
+        if (rtLower.includes('single')) sCount = roomCount;
+        else if (rtLower.includes('double') || rtLower.includes('twin')) dCount = roomCount;
+        else if (rtLower.includes('king') || rtLower.includes('suite')) kCount = roomCount;
+        else dCount = roomCount;
+
+        // Simulate mixed room types for guests requesting multiple rooms
+        if (b.id === 'B002') { sCount = 0; dCount = 1; kCount = 1; }
+        if (b.id === 'B005') { sCount = 1; dCount = 1; kCount = 0; }
+
+        const countBadges = [];
+        if (sCount) countBadges.push(`<span style="font-size:11.5px; padding:3px 8px; border-radius:4px; background:var(--navy-3); border:1px solid var(--border); color:var(--text-2); white-space:nowrap;">${sCount} Single</span>`);
+        if (dCount) countBadges.push(`<span style="font-size:11.5px; padding:3px 8px; border-radius:4px; background:var(--navy-3); border:1px solid var(--border); color:var(--text-2); white-space:nowrap;">${dCount} Double</span>`);
+        if (kCount) countBadges.push(`<span style="font-size:11.5px; padding:3px 8px; border-radius:4px; background:var(--navy-3); border:1px solid var(--border); color:var(--text-2); white-space:nowrap;">${kCount} King</span>`);
+
+        const method = b.totalPaid > 0 ? 'Credit Card' : '--';
+        const pDate = b.totalPaid > 0 ? b.dateLog.split(' ')[0] : '--';
+        const total = b.totalPaid > 0 ? '$' + b.totalPaid.toLocaleString() : '<span style="color:var(--red)">Unpaid</span>';
+        const gInfo = guests.find(g => g.name === b.guest);
+        const email = gInfo ? gInfo.email : 'info@email.com';
+
+        return `
+      <tr>
+        <td class="primary">
+          <div style="display:flex;align-items:center;gap:9px">
+            <div class="bk-ava" style="background:${b.c};width:32px;height:32px;font-size:12px">${ini(b.guest)}</div>
+            <div>
+              <div style="font-weight:600;color:var(--text-1)">${b.guest}</div>
+              <div style="font-size:11px;color:var(--text-3)">${email}</div>
+            </div>
+          </div>
+        </td>
+        <td style="cursor:pointer" onclick="viewBookingDetails('${b.id}')" title="View Details"><strong style="color:var(--gold);font-size:15px;text-decoration:underline;text-underline-offset:3px">${roomCount}</strong> <span style="font-size:11px;color:var(--text-3)">rooms</span></td>
+        <td><div style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">${countBadges.join('')}</div></td>
+        <td>${b.cin}</td>
+        <td>${b.cout}</td>
+        <td><strong style="color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:16px;">${total}</strong></td>
+        <td>${method}</td>
+        <td class="primary" style="font-family:monospace; font-size:11.5px;">${pDate}</td>
+      </tr>`;
+      }).join('');
+    }
+
+    // ══ PROFILE: STAR ══
+    function setStar(n) {
+      document.querySelectorAll('.s-opt').forEach((s, i) => s.classList.toggle('on', i < n));
+      document.getElementById('starLbl').textContent = n + ' Star' + (n > 1 ? 's' : '');
+    }
+
+    // ══ PROFILE: TABS ══
+    function switchPTab(id, btn) {
+      document.querySelectorAll('#profileTabBar .tab').forEach(t => t.classList.remove('on'));
+      btn.classList.add('on');
+      document.querySelectorAll('.ptab').forEach(t => t.classList.remove('on'));
+      document.getElementById('ptab-' + id).classList.add('on');
+    }
+
+    // ══ AMENITIES ══
+    function renderAmenities() {
+      const el = document.getElementById('amGrid'); if (!el) return;
+      el.innerHTML = amenities.map(a => `
+    <div class="am-item ${a.on ? 'on' : ''}" id="am-${a.id}" onclick="toggleAm('${a.id}')">
+      <div class="am-left">
+        <div class="am-ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">${a.icon}</svg></div>
+        <span class="am-name">${a.name}</span>
+      </div>
+      <div class="toggle"></div>
+    </div>`).join('');
+    }
+
+    function toggleAm(id) {
+      const a = amenities.find(x => x.id === id); if (!a) return;
+      a.on = !a.on;
+      document.getElementById('am-' + id)?.classList.toggle('on', a.on);
+    }
+
+    // ══ GALLERY ══
+    function renderGallery() {
+      const el = document.getElementById('galGrid'); if (!el) return;
+      if (!gallery.length) { el.innerHTML = '<div style="color:var(--text-3);font-size:12.5px;padding:8px 0">No images yet. Upload some above.</div>'; return; }
+      // Sort: primary first, then rest in order
+      const sorted = [...gallery].sort((a, b) => (b.primary ? 1 : 0) - (a.primary ? 1 : 0));
+      let orderIdx = 2; // primary is #1, rest start from #2
+      el.innerHTML = sorted.map(img => {
+        const orderLabel = img.primary
+          ? `<div style="position:absolute;top:8px;left:8px;background:var(--gold);color:#0B0F1A;font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;letter-spacing:0.5px;">&#9733; PRIMARY</div>`
+          : `<div style="position:absolute;top:8px;left:8px;background:rgba(11,15,26,0.75);color:var(--text-2);font-size:10px;font-weight:700;padding:3px 7px;border-radius:6px;border:1px solid var(--border);">#${orderIdx++}</div>`;
+        return `
+    <div class="gal-card ${img.primary ? 'primary-card' : ''}" id="gc-${img.id}" style="position:relative;">
+      ${orderLabel}
+      ${img.src
+            ? `<img class="gal-thumb" src="${img.src}" alt="${img.caption}">`
+            : `<div class="gal-placeholder"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>${img.caption || 'Photo'}</span></div>`}
+      <div class="gal-foot">
+        <input class="gal-caption" type="text" value="${img.caption}" placeholder="Caption…" oninput="updateCap(${img.id},this.value)">
+        <div class="gal-actions">
+          <button class="gal-primary-btn ${img.primary ? 'on' : ''}" onclick="setPrimary(${img.id})" title="Set as primary">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="${img.primary ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            ${img.primary ? 'Primary' : 'Set Primary'}
+          </button>
+          <button class="gal-del" onclick="delGal(${img.id})" title="Delete">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>`;
+      }).join('');
+    }
+
+    function setPrimary(id) { gallery.forEach(i => i.primary = i.id === id); renderGallery(); }
+    function updateCap(id, v) { const i = gallery.find(x => x.id === id); if (i) i.caption = v; }
+    function delGal(id) { gallery = gallery.filter(x => x.id !== id); renderGallery(); }
+    function handleFiles(files) {
+      Array.from(files).forEach(f => {
+        const r = new FileReader();
+        r.onload = e => { gallery.push({ id: nextGalId++, src: e.target.result, caption: f.name.replace(/\.[^.]+$/, ''), primary: false }); renderGallery(); };
+        r.readAsDataURL(f);
+      });
+    }
+    function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('over'); handleFiles(e.dataTransfer.files); }
+
+    function submitProfileRequest() {
+      toast('Change request submitted! Our team will review it within 24–48 hours.');
+    }
+
+
+    // ══ SETTINGS: TOGGLE SWITCH ══
+    function toggleSettingCheck(cb, uiId) {
+      const ui = document.getElementById(uiId);
+      const lblId = uiId.replace('-ui', '-lbl');
+      const lbl = document.getElementById(lblId);
+      if (cb.checked) {
+        ui.classList.add('on');
+        if (lbl) { lbl.textContent = 'Included'; lbl.style.color = 'var(--green)'; }
+      } else {
+        ui.classList.remove('on');
+        if (lbl) { lbl.textContent = 'Not Included'; lbl.style.color = 'var(--text-3)'; }
+      }
+    }
+
+    // ══ SETTINGS: CANCELLATION POLICY ══
+    let cancelStrategy = 'free-all';
+    let cancelWindow = '1h';
+
+    const cancelWindowLabels = { '1h': '1 hour', '24h': '24 hours', '48h': '48 hours', '7d': '7 days', '14d': '14 days' };
+
+    function selectCancelStrategy(btn, val) {
+      document.querySelectorAll('#cancelStrategyGroup .cancel-opt').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      cancelStrategy = val;
+
+      const windowSec = document.getElementById('cancelWindowSection');
+      if (windowSec) windowSec.style.display = (val === 'window-based') ? 'block' : 'none';
+
+      updateCancelPreview();
+    }
+
+    function selectCancelWindow(btn, val) {
+      document.querySelectorAll('#cancelWindowGroup .cancel-opt').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      cancelWindow = val;
+      updateCancelPreview();
+    }
+
+    function updateCancelPreview() {
+      const pv = document.getElementById('cancelPolicyPreview');
+      if (!pv) return;
+
+      const windowLabel = cancelWindowLabels[cancelWindow] || cancelWindow;
+      const penalty = document.getElementById('sett-cancel-penalty')?.value || '100';
+      let text = '';
+
+      if (cancelStrategy === 'free-all') {
+        text = `<strong style="color:var(--gold);">Live Preview:</strong> <span style="color:var(--green);font-weight:600;">Always Free</span> — Cancellation is free for everyone under any circumstances. No penalty ever applies.`;
+      } else if (cancelStrategy === 'non-refund') {
+        text = `<strong style="color:var(--gold);">Live Preview:</strong> <span style="color:var(--red);font-weight:600;">Strictly Non-Refundable</span> — No refund is issued if the customer cancels at any time.`;
+      } else if (cancelStrategy === 'window-based') {
+        text = `<strong style="color:var(--gold);">Live Preview:</strong> Free cancellation up to <strong>${windowLabel}</strong> before check-in. Cancellations after this threshold incur a <strong style="color:var(--red);">${penalty}%</strong> penalty.`;
+      }
+
+      pv.innerHTML = text;
+    }
+
+    // ══ SETTINGS: DOCUMENT UPLOAD ══
+    function handleDocUpload(docNum, inputEl) {
+      if (!inputEl.files.length) return;
+      const file = inputEl.files[0];
+      const nameEl = document.getElementById('doc-' + docNum + '-name');
+      const viewBtn = document.getElementById('doc-' + docNum + '-view');
+      const card = document.getElementById('doc-' + docNum);
+      const statusEl = card.querySelector('.doc-status');
+
+      if (nameEl) nameEl.textContent = file.name;
+      if (viewBtn) viewBtn.style.display = '';
+      if (card) card.classList.add('uploaded-state');
+      if (statusEl) {
+        statusEl.textContent = 'Uploaded';
+        statusEl.className = 'doc-status uploaded';
+      }
+      toast('✓ ' + file.name + ' uploaded successfully');
+    }
+
+    // ══ SETTINGS: APPLICATION STATUS ══
+    function submitApplication() {
+      const cards = document.querySelectorAll('.doc-card');
+      let uploadedCount = 0;
+      cards.forEach(c => { if (c.classList.contains('uploaded-state')) uploadedCount++; });
+
+      const banner = document.getElementById('appStatusBanner');
+      const statusText = document.getElementById('appStatusText');
+      const statusDesc = document.getElementById('appStatusDesc');
+      const statusBadge = document.getElementById('appStatusBadge');
+
+      if (uploadedCount < 3) {
+        toast('⚠️ Please upload at least the required documents before submitting');
+        return;
+      }
+
+      // Update banner to "Under Review"
+      banner.style.background = 'rgba(91,141,239,0.08)';
+      banner.style.borderColor = 'rgba(91,141,239,0.25)';
+      statusText.textContent = 'Under Review';
+      statusDesc.textContent = 'Your application has been submitted. The compliance team is reviewing your documents. You will receive an email with the decision within 3–5 business days.';
+      statusBadge.textContent = '⏳ Under Review';
+      statusBadge.style.background = 'rgba(91,141,239,0.12)';
+      statusBadge.style.color = 'var(--blue)';
+      statusBadge.style.borderColor = 'rgba(91,141,239,0.3)';
+      banner.querySelector('div:first-child').style.background = 'var(--blue-dim)';
+      banner.querySelector('div:first-child').style.color = 'var(--blue)';
+
+      toast('✓ Application submitted successfully! Review will take 3–5 business days.');
+    }
+
+    // ══ SETTINGS: SAVE POLICY ══
+    function saveSettings() {
+      const svc = document.getElementById('sett-service-pct')?.value || 12;
+      const vatIncl = document.getElementById('sett-vat')?.checked ? 'Yes' : 'No';
+      const cityIncl = document.getElementById('sett-city-tax')?.checked ? 'Yes' : 'No';
+      toast(`✓ Settings saved — Service: ${svc}%, VAT Included: ${vatIncl}, City Tax: ${cityIncl}, Cancellation: ${cancelWindowLabels[cancelWindow]}`);
+    }
+
+    // ══ NAV ══
+    function go(id, el) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('on'));
+      document.getElementById('page-' + id).classList.add('on');
+      if (el) el.classList.add('on');
+      if (window.innerWidth < 768) closeSB();
+    }
+
+    function filterBk(f, btn) {
+      document.querySelectorAll('#page-dashboard .tabs .tab').forEach(t => t.classList.remove('on'));
+      btn.classList.add('on');
+      renderBkList(f);
+    }
+
+    function filterBkPage(f, btn) {
+      document.querySelectorAll('#page-bookings .tabs .tab').forEach(t => t.classList.remove('on'));
+      btn.classList.add('on');
+      renderBkTable(f);
+    }
+
+    function toggleSB() { document.getElementById('sb').classList.toggle('open'); document.getElementById('ov').classList.toggle('show'); }
+    function closeSB() { document.getElementById('sb').classList.remove('open'); document.getElementById('ov').classList.remove('show'); }
+
+    document.getElementById('roomModal').addEventListener('click', function (e) { if (e.target === this) closeRoomModal(); });
+
+    // ══ INIT ══
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('hdrDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+      renderBkList('all');
+      renderBkTable();
+      renderRTSummary();
+      renderRTTable();
+      renderRmMini();
+      renderRvMini();
+      renderRvFull();
+      renderLogs();
+      renderGuests();
+      renderAmenities();
+      renderBulkUnits();
+      renderRevenuePage();
+      renderInbox();
+      setTimeout(() => { const b = document.getElementById('occBar'); if (b) b.style.width = '70%'; }, 600);
+    });
+  </script>
+</body>
+
+</html>

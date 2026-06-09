@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -36,8 +36,7 @@ namespace TravAi.TourGuide.DTOs.Tour
         public string? PickupDetails { get; set; }
         public DateTime? AvailableDateTime { get; set; }
         
-        [Required]
-        public CancellationPolicy CancellationPolicy { get; set; }
+        public CancellationPolicy CancellationPolicy { get; set; } = CancellationPolicy.Hours24;
         
         public bool Active { get; set; } = true;
 

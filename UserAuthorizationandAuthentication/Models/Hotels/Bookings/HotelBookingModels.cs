@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using TravAi.Models.Enums;
 using TravAi.Models.Hotels;
@@ -32,8 +32,17 @@ namespace TravAi.Models.Hotels.Bookings
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
+        // Cancellation Info
+        public string? CancellationReason { get; set; }
+        public DateTime? CancelledAt { get; set; }
+        public long? CancelledByUserId { get; set; }
+
+        public decimal? CancellationFee { get; set; }
+        public decimal? RefundAmount { get; set; }
+
         // Relationships
         public ICollection<HotelBookingRoom> BookingRooms { get; set; } = new List<HotelBookingRoom>();
+        public ICollection<HotelPayment> Payments { get; set; } = new List<HotelPayment>();
     }
 
     public class HotelBookingRoom

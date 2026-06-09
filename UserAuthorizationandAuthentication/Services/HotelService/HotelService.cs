@@ -10,6 +10,7 @@ using TravAi.Models.Enums;
 using TravAi.Models.Hotels;
 using TravAi.Models.Hotels.Bookings;
 using TravAi.Services.FileStorage;
+using TravAi.DTOs.AdminManagement;
 
 namespace TravAi.Services.HotelService
 {
@@ -1082,7 +1083,8 @@ namespace TravAi.Services.HotelService
         {
             var bookings = await _context.HotelBookings
                 .Include(b => b.Hotel)
-                .Include(b => b.BookingRooms)
+                .Include(b => b.BookingRooms).ThenInclude(br => br.Room)
+                .Include(b => b.Payments)
                 .Where(b => b.UserId == userId)
                 .OrderByDescending(b => b.CreatedAt)
                 .ToListAsync();
@@ -1098,7 +1100,8 @@ namespace TravAi.Services.HotelService
             var bookings = await _context.HotelBookings
                 .Include(b => b.Hotel)
                 .Include(b => b.User)
-                .Include(b => b.BookingRooms)
+                .Include(b => b.BookingRooms).ThenInclude(br => br.Room)
+                .Include(b => b.Payments)
                 .Where(b => b.HotelId == hotelId)
                 .OrderByDescending(b => b.CreatedAt)
                 .ToListAsync();
@@ -1110,26 +1113,49 @@ namespace TravAi.Services.HotelService
         {
             var booking = await _context.HotelBookings
                 .Include(b => b.Hotel)
-                .Include(b => b.BookingRooms)
+                .Include(b => b.BookingRooms).ThenInclude(br => br.Room)
+                .Include(b => b.Payments)
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
 
             if (booking == null) throw new KeyNotFoundException("Booking not found.");
-            if (booking.UserId != userId && booking.Hotel.UserId != userId) throw new UnauthorizedAccessException("Not authorized.");
+            
+            var currentUser = await _context.Users.FindAsync(userId);
+            bool isAdmin = currentUser?.Role == UserRole.Admin;
+
+            if (!isAdmin && booking.UserId != userId && booking.Hotel.UserId != userId) throw new UnauthorizedAccessException("Not authorized.");
 
             return MapBookingToDto(booking);
         }
 
-        public async Task<bool> CancelBookingAsync(long userId, long bookingId)
+        public async Task<BookingDto> CancelBookingAsync(long userId, long bookingId, string reason)
         {
-            var booking = await _context.HotelBookings.Include(b => b.Hotel).FirstOrDefaultAsync(b => b.Id == bookingId);
+            var booking = await _context.HotelBookings
+                .Include(b => b.Hotel)
+                .Include(b => b.BookingRooms)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
             if (booking == null) throw new KeyNotFoundException("Booking not found.");
-            if (booking.UserId != userId && booking.Hotel.UserId != userId) throw new UnauthorizedAccessException("Not authorized.");
-            if (booking.Status == BookingStatus.Cancelled || booking.Status == BookingStatus.Completed) throw new InvalidOperationException("Cannot cancel this booking.");
+            
+            // Authorization: Either the user who booked or the hotel owner
+            if (booking.UserId != userId && booking.Hotel.UserId != userId) 
+                throw new UnauthorizedAccessException("You are not authorized to cancel this booking.");
+
+            if (booking.Status == BookingStatus.Cancelled) 
+                throw new InvalidOperationException("Booking is already cancelled.");
+            
+            if (booking.Status == BookingStatus.Completed) 
+                throw new InvalidOperationException("Cannot cancel a completed booking.");
 
             booking.Status = BookingStatus.Cancelled;
+            booking.CancellationReason = reason;
+            booking.CancelledAt = DateTime.UtcNow;
+            booking.CancelledByUserId = userId;
+            booking.UpdatedAt = DateTime.UtcNow;
+
             _context.HotelBookings.Update(booking);
             await _context.SaveChangesAsync();
-            return true;
+            
+            return MapBookingToDto(booking);
         }
 
         public async Task<BookingDto> UpdateBookingStatusAsync(long userId, long bookingId, string status)
@@ -1144,6 +1170,51 @@ namespace TravAi.Services.HotelService
             _context.HotelBookings.Update(booking);
             await _context.SaveChangesAsync();
             return MapBookingToDto(booking);
+        }
+
+        public async Task<PaymentResponseDto> ProcessPaymentAsync(long userId, ProcessPaymentRequest request)
+        {
+            var booking = await _context.HotelBookings
+                .Include(b => b.Hotel)
+                .FirstOrDefaultAsync(b => b.Id == request.BookingId && b.UserId == userId);
+
+            if (booking == null) throw new KeyNotFoundException("Booking not found or not authorized.");
+            
+            if (booking.PaymentStatus == PaymentStatus.Paid) 
+                throw new InvalidOperationException("Booking is already paid.");
+
+            var payment = new HotelPayment
+            {
+                BookingId = booking.Id,
+                UserId = userId,
+                HotelId = booking.HotelId,
+                Amount = booking.TotalPrice,
+                PaymentMethod = request.PaymentMethod,
+                TransactionId = "TRX-" + Guid.NewGuid().ToString("N").Substring(0, 12).ToUpper(),
+                Status = HotelPaymentStatus.Paid,
+                PaidAt = DateTime.UtcNow,
+                Notes = request.Notes,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            await _context.HotelPayments.AddAsync(payment);
+
+            booking.PaymentStatus = PaymentStatus.Paid;
+            booking.Status = BookingStatus.Confirmed;
+            booking.UpdatedAt = DateTime.UtcNow;
+
+            _context.HotelBookings.Update(booking);
+            await _context.SaveChangesAsync();
+            
+            return new PaymentResponseDto
+            {
+                BookingId = booking.Id,
+                PaymentStatus = booking.PaymentStatus.ToString(),
+                PaymentMethod = payment.PaymentMethod.ToString(),
+                TransactionId = payment.TransactionId,
+                PaidAt = payment.PaidAt
+            };
         }
 
         // --- Helper Mappers ---
@@ -1193,6 +1264,12 @@ namespace TravAi.Services.HotelService
             var checkInDate = booking.CheckInDate ?? DateTime.Now;
             var checkOutDate = booking.CheckOutDate ?? DateTime.Now;
             
+            var displayStatus = booking.Status;
+            if (booking.PaymentStatus == PaymentStatus.Paid && displayStatus == BookingStatus.Pending)
+            {
+                displayStatus = BookingStatus.Confirmed;
+            }
+
             var dto = new BookingDto
             {
                 Id = booking.Id,
@@ -1205,17 +1282,29 @@ namespace TravAi.Services.HotelService
                 TotalRooms = booking.TotalRooms,
                 TotalPrice = booking.TotalPrice,
                 PaymentStatus = booking.PaymentStatus.ToString(),
-                Status = booking.Status.ToString(),
+                Status = displayStatus.ToString(),
                 CreatedAt = booking.CreatedAt,
                 ImageUrl = booking.Hotel?.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl ?? booking.Hotel?.Images?.FirstOrDefault()?.ImageUrl,
                 RoomName = booking.BookingRooms?.FirstOrDefault()?.RoomName ?? "Various Rooms",
                 CanCancel = booking.Status != BookingStatus.Cancelled && checkInDate > DateTime.UtcNow.AddDays(2),
                 CanReview = booking.Status == BookingStatus.Completed || (booking.Status == BookingStatus.Confirmed && checkOutDate <= DateTime.UtcNow),
                 CanRebook = checkOutDate <= DateTime.UtcNow || booking.Status == BookingStatus.Cancelled,
+                CancellationReason = booking.CancellationReason,
+                CancelledAt = booking.CancelledAt,
+                CancelledByUserId = booking.CancelledByUserId,
+                Payments = booking.Payments?.Select(p => new PaymentResponseDto
+                {
+                    BookingId = p.BookingId,
+                    PaymentStatus = p.Status.ToString(),
+                    PaymentMethod = p.PaymentMethod.ToString(),
+                    TransactionId = p.TransactionId ?? "N/A",
+                    PaidAt = p.PaidAt
+                }).ToList() ?? new List<PaymentResponseDto>(),
                 Rooms = booking.BookingRooms?.Select(br => new BookingRoomDto
                 {
                     RoomId = br.RoomId ?? 0,
                     RoomName = br.RoomName ?? "Unknown Room",
+                    BedType = br.Room?.BedType.ToString() ?? "Standard",
                     MealPlan = br.MealPlan,
                     PricePerNight = br.PricePerNight ?? 0,
                     Nights = br.Nights,
@@ -1502,5 +1591,1067 @@ namespace TravAi.Services.HotelService
             if (acc == null) return prop.ToString();
             return $"{prop} - {acc}";
         }
+
+        public async Task<List<UserBookingMinimalDto>> GetEligibleBookingsForComplaintAsync(long userId)
+        {
+            var bookings = await _context.HotelBookings
+                .Include(b => b.Hotel)
+                .Include(b => b.BookingRooms).ThenInclude(br => br.Room)
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.CheckInDate)
+                .ToListAsync();
+
+            return bookings.Select(b => new UserBookingMinimalDto
+            {
+                BookingId = b.Id,
+                HotelId = b.HotelId,
+                HotelName = b.Hotel?.HotelName ?? "Unknown Hotel",
+                City = b.Hotel?.CityArea ?? (b.Hotel?.Governorate ?? "N/A"),
+                RoomName = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
+                Dates = $"{(b.CheckInDate?.ToString("dd MMM yyyy") ?? "N/A")} - {(b.CheckOutDate?.ToString("dd MMM yyyy") ?? "N/A")}",
+                TotalPrice = $"${b.TotalPrice:N2}"
+            }).ToList();
+        }
+
+        public async Task<long> CreateComplaintAsync(long userId, ComplaintCreateDto dto)
+        {
+            var complaint = new Complaint
+            {
+                UserId = userId,
+                ComplaintType = dto.ComplaintType,
+                Subject = dto.Subject,
+                Message = dto.Message,
+                Status = ComplaintStatus.Pending,
+                Priority = ComplaintPriority.Medium,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            if (dto.ComplaintType == ComplaintType.Booking)
+            {
+                if (!dto.BookingId.HasValue) 
+                    throw new ArgumentException("Booking ID is required for booking complaints.");
+                
+                var booking = await _context.HotelBookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
+                if (booking == null) 
+                    throw new UnauthorizedAccessException("Booking not found or does not belong to you.");
+                
+                complaint.BookingId = dto.BookingId;
+                complaint.HotelId = booking.HotelId;
+            }
+            else // Platform Complaint
+            {
+                if (dto.BookingId.HasValue)
+                    throw new ArgumentException("Booking ID should not be provided for platform complaints.");
+
+                complaint.BookingId = null;
+                complaint.HotelId = null;
+            }
+
+            // Handling attachments before SaveChanges to ensure Atomicity
+            if (dto.Attachments != null && dto.Attachments.Count > 0)
+            {
+                foreach (var file in dto.Attachments)
+                {
+                    // FileService throws on invalid extensions, failing the whole operation (Atomic)
+                    var fileUrl = await _fileService.SaveComplaintAttachmentAsync(file);
+                    if (!string.IsNullOrEmpty(fileUrl))
+                    {
+                        complaint.Attachments.Add(new ComplaintAttachment
+                        {
+                            FileUrl = fileUrl,
+                            ReplyId = null, // Global Integrity Rule: initial complaint evidence has no reply id
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+
+            _context.Complaints.Add(complaint);
+            await _context.SaveChangesAsync();
+
+            return complaint.Id;
+        }
+
+        public async Task<bool> UpdateComplaintAsync(long userId, long complaintId, ComplaintCreateDto dto)
+        {
+            var complaint = await _context.Complaints
+                .FirstOrDefaultAsync(c => c.Id == complaintId && c.UserId == userId);
+
+            if (complaint == null) throw new KeyNotFoundException("Complaint not found.");
+            if (complaint.Status != ComplaintStatus.Pending) throw new InvalidOperationException("Only pending complaints can be edited.");
+
+            complaint.Subject = dto.Subject;
+            complaint.Message = dto.Message;
+            complaint.ComplaintType = dto.ComplaintType;
+            complaint.UpdatedAt = DateTime.UtcNow;
+
+            if (dto.ComplaintType == ComplaintType.Booking && dto.BookingId.HasValue)
+            {
+                var booking = await _context.HotelBookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
+                if (booking == null) throw new UnauthorizedAccessException("Booking not found or does not belong to you.");
+                
+                complaint.BookingId = dto.BookingId;
+                complaint.HotelId = booking.HotelId;
+            }
+            else
+            {
+                complaint.BookingId = null;
+                complaint.HotelId = null;
+            }
+
+            // Optional: Remove existing attachments
+            if (dto.RemovedAttachmentIds != null && dto.RemovedAttachmentIds.Count > 0)
+            {
+                var attachmentsToRemove = await _context.ComplaintAttachments
+                    .Where(a => a.ComplaintId == complaintId && dto.RemovedAttachmentIds.Contains(a.Id))
+                    .ToListAsync();
+                
+                if (attachmentsToRemove.Any())
+                {
+                    _context.ComplaintAttachments.RemoveRange(attachmentsToRemove);
+                }
+            }
+
+            // Optional: New attachments
+            if (dto.Attachments != null && dto.Attachments.Count > 0)
+            {
+                foreach (var file in dto.Attachments)
+                {
+                    var fileUrl = await _fileService.SaveComplaintAttachmentAsync(file);
+                    if (!string.IsNullOrEmpty(fileUrl))
+                    {
+                        _context.ComplaintAttachments.Add(new ComplaintAttachment
+                        {
+                            ComplaintId = complaint.Id,
+                            ReplyId = null, // Global Integrity Rule: initial complaint evidence has no reply id
+                            FileUrl = fileUrl,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<List<ComplaintSummaryDto>> GetMyComplaintsAsync(long userId)
+        {
+            return await _context.Complaints
+                .Where(c => c.UserId == userId)
+                .OrderByDescending(c => c.CreatedAt)
+                .Select(c => new ComplaintSummaryDto
+                {
+                    Id = c.Id,
+                    ComplaintType = c.ComplaintType.ToString(),
+                    Subject = c.Subject,
+                    Status = c.Status.ToString(),
+                    CreatedAt = c.CreatedAt
+                }).ToListAsync();
+        }
+
+        public async Task<ComplaintDetailsDto> GetComplaintDetailsAsync(long userId, long complaintId)
+        {
+            var complaint = await _context.Complaints
+                .Include(c => c.Booking).ThenInclude(b => b.Hotel)
+                .Include(c => c.Booking).ThenInclude(b => b.BookingRooms)
+                .Include(c => c.Attachments)
+                .Include(c => c.Replies).ThenInclude(r => r.AdminUser)
+                .Include(c => c.Replies).ThenInclude(r => r.Attachments)
+                .FirstOrDefaultAsync(c => c.Id == complaintId && c.UserId == userId);
+
+            if (complaint == null) throw new KeyNotFoundException("Complaint not found.");
+
+            return new ComplaintDetailsDto
+            {
+                Id = complaint.Id,
+                ComplaintType = complaint.ComplaintType.ToString(),
+                BookingId = complaint.BookingId,
+                HotelName = complaint.Booking?.Hotel?.HotelName ?? "Platform/Unknown",
+                HotelCity = complaint.Booking?.Hotel != null 
+                    ? (complaint.Booking.Hotel.CityArea ?? complaint.Booking.Hotel.Governorate ?? "N/A") 
+                    : "N/A",
+                RoomName = (complaint.Booking?.BookingRooms != null && complaint.Booking.BookingRooms.Any()) 
+                    ? string.Join(", ", complaint.Booking.BookingRooms.Select(br => br.RoomName ?? "Room")) 
+                    : null,
+                BookingDates = complaint.Booking != null 
+                    ? $"{(complaint.Booking.CheckInDate?.ToString("dd MMM yyyy") ?? "N/A")} - {(complaint.Booking.CheckOutDate?.ToString("dd MMM yyyy") ?? "N/A")}" 
+                    : "N/A",
+                TotalPrice = complaint.Booking != null ? $"${complaint.Booking.TotalPrice:N2}" : null,
+                Subject = complaint.Subject,
+                Message = complaint.Message,
+                Status = complaint.Status.ToString(),
+                Priority = complaint.Priority.ToString(),
+                CreatedAt = complaint.CreatedAt,
+                Attachments = complaint.Attachments?
+                    .Where(a => a.ReplyId == null)
+                    .Select(a => new ComplaintAttachmentDto
+                    {
+                        Id = a.Id,
+                        FileUrl = a.FileUrl
+                    }).ToList() ?? new List<ComplaintAttachmentDto>(),
+                Replies = complaint.Replies?.Select(r => new ComplaintReplyDto
+                {
+                    Id = r.Id,
+                    SenderName = r.AdminUser?.UserName ?? "Support Team",
+                    ReplyMessage = r.ReplyMessage,
+                    CreatedAt = r.CreatedAt,
+                    Attachments = r.Attachments?.Select(ra => new ComplaintAttachmentDto
+                    {
+                        Id = ra.Id,
+                        FileUrl = ra.FileUrl
+                    }).ToList() ?? new List<ComplaintAttachmentDto>()
+                }).ToList() ?? new List<ComplaintReplyDto>()
+            };
+        }
+
+        public async Task<List<AdminComplaintSummaryDto>> GetAdminComplaintsAsync(string? type, string? status, string? search, long? bookingId, string? hotelName)
+        {
+            var query = _context.Complaints
+                .Include(c => c.User)
+                .Include(c => c.Booking).ThenInclude(b => b.Hotel)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(type) && Enum.TryParse<ComplaintType>(type, true, out var typeEnum))
+                query = query.Where(c => c.ComplaintType == typeEnum);
+
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<ComplaintStatus>(status, true, out var statusEnum))
+                query = query.Where(c => c.Status == statusEnum);
+
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(c => c.Subject.Contains(search) || 
+                                         (c.User != null && c.User.UserName.Contains(search)) || 
+                                         (c.Booking != null && c.Booking.Hotel.HotelName.Contains(search)));
+            }
+
+            if (bookingId.HasValue)
+                query = query.Where(c => c.BookingId == bookingId);
+
+            if (!string.IsNullOrEmpty(hotelName))
+                query = query.Where(c => c.Booking != null && c.Booking.Hotel.HotelName.Contains(hotelName));
+
+            var list = await query
+                .OrderByDescending(c => c.CreatedAt)
+                .ToListAsync();
+
+            return list.Select(c => new AdminComplaintSummaryDto
+            {
+                Id = c.Id,
+                ComplaintType = c.ComplaintType.ToString(),
+                BookingId = c.BookingId,
+                FromUser = c.User?.UserName ?? "Unknown",
+                Regarding = c.ComplaintType == ComplaintType.Booking && c.Booking?.Hotel != null 
+                    ? (c.Booking.Hotel.HotelName ?? "Unknown Hotel") 
+                    : "Platform",
+                Subject = c.Subject,
+                Status = c.Status.ToString(),
+                CreatedAt = c.CreatedAt
+            }).ToList();
+        }
+
+        public async Task<AdminComplaintDetailsDto> GetAdminComplaintDetailsAsync(long complaintId)
+        {
+            var c = await _context.Complaints
+                .Include(c => c.User)
+                .Include(c => c.Attachments)
+                .Include(c => c.Replies).ThenInclude(r => r.AdminUser)
+                .Include(c => c.Replies).ThenInclude(r => r.Attachments)
+                .Include(c => c.Booking).ThenInclude(b => b.Hotel)
+                .Include(c => c.Booking).ThenInclude(b => b.BookingRooms)
+                .Include(c => c.Booking).ThenInclude(b => b.Payments)
+                .FirstOrDefaultAsync(c => c.Id == complaintId);
+
+            if (c == null) throw new KeyNotFoundException("Complaint not found.");
+
+            var dto = new AdminComplaintDetailsDto
+            {
+                Id = c.Id,
+                ComplaintType = c.ComplaintType.ToString(),
+                Status = c.Status.ToString(),
+                Priority = c.Priority.ToString(),
+                CreatedAt = c.CreatedAt,
+                FromUser = c.User?.UserName ?? "Unknown",
+                Subject = c.Subject,
+                Message = c.Message,
+                Attachments = c.Attachments
+                    .Where(a => a.ReplyId == null)
+                    .Select(a => new ComplaintAttachmentDto
+                    {
+                        Id = a.Id,
+                        FileUrl = a.FileUrl
+                    }).ToList(),
+                Replies = c.Replies
+                    .OrderBy(r => r.CreatedAt)
+                    .Select(r => new ComplaintReplyDto
+                    {
+                        Id = r.Id,
+                        AdminUserId = r.AdminUserId,
+                        SenderName = r.AdminUser?.UserName ?? "Support",
+                        ReplyMessage = r.ReplyMessage,
+                        CreatedAt = r.CreatedAt,
+                        Attachments = r.Attachments.Select(ra => new ComplaintAttachmentDto
+                        {
+                            Id = ra.Id,
+                            FileUrl = ra.FileUrl
+                        }).ToList()
+                    }).ToList()
+            };
+
+            if (c.ComplaintType == ComplaintType.Booking && c.Booking != null)
+            {
+                var b = c.Booking;
+                var paidPayment = b.Payments.Where(p => p.Status == HotelPaymentStatus.Paid).OrderByDescending(p => p.CreatedAt).FirstOrDefault();
+
+                dto.BookingContext = new AdminBookingContextDto
+                {
+                    BookingId = b.Id,
+                    HotelName = b.Hotel?.HotelName ?? "Unknown Hotel",
+                    City = b.Hotel?.CityArea ?? b.Hotel?.Governorate ?? "N/A",
+                    RoomName = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
+                    BookingDates = (b.CheckInDate.HasValue && b.CheckOutDate.HasValue)
+                        ? b.CheckInDate.Value.ToString("dd MMM yyyy") + " - " + b.CheckOutDate.Value.ToString("dd MMM yyyy")
+                        : "N/A",
+                    Nights = b.Nights ?? 0,
+                    TotalRooms = b.TotalRooms,
+                    TotalPrice = "$" + b.TotalPrice.ToString("N2"),
+                    BookingStatus = b.Status.ToString(),
+                    PaymentStatus = b.PaymentStatus.ToString(),
+                    PaymentMethod = paidPayment?.PaymentMethod.ToString(),
+                    TransactionId = paidPayment?.TransactionId,
+                    PaidAt = paidPayment?.CreatedAt,
+                    RefundAmount = b.RefundAmount
+                };
+            }
+
+            return dto;
+        }
+
+        public async Task<bool> AdminReplyToComplaintAsync(long adminUserId, long complaintId, AdminReplyCreateDto dto)
+        {
+            var complaint = await _context.Complaints.FindAsync(complaintId);
+            if (complaint == null) return false;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var reply = new ComplaintReply
+                {
+                    ComplaintId = complaintId,
+                    AdminUserId = adminUserId,
+                    ReplyMessage = dto.Message,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                _context.ComplaintReplies.Add(reply);
+                await _context.SaveChangesAsync(); 
+
+                if (dto.Attachments != null && dto.Attachments.Count > 0)
+                {
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "complaints");
+                    if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+                    foreach (var file in dto.Attachments)
+                    {
+                        if (file.Length == 0) continue;
+
+                        var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                        var filePath = Path.Combine(uploadPath, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        // ATTACHMENT INTEGRITY: Link to ReplyId ONLY (not both)
+                        _context.ComplaintAttachments.Add(new ComplaintAttachment
+                        {
+                            ReplyId = reply.Id,
+                            ComplaintId = null, // Global Integrity Rule
+                            FileUrl = $"/uploads/complaints/{fileName}",
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                if (complaint.Status == ComplaintStatus.Pending || complaint.Status == ComplaintStatus.Resolved)
+                {
+                    complaint.Status = ComplaintStatus.InReview;
+                }
+                complaint.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> ResolveComplaintAsync(long complaintId)
+        {
+            var complaint = await _context.Complaints.FindAsync(complaintId);
+            if (complaint == null) return false;
+
+            // BACKEND GUARD: Only resolve if not already resolved/closed
+            if (complaint.Status == ComplaintStatus.Resolved || complaint.Status == ComplaintStatus.Closed)
+                return true;
+
+            complaint.Status = ComplaintStatus.Resolved;
+            complaint.UpdatedAt = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteComplaintAsync(long userId, long complaintId)
+        {
+            var complaint = await _context.Complaints
+                .FirstOrDefaultAsync(c => c.Id == complaintId && c.UserId == userId);
+
+            if (complaint == null) return false;
+
+            // Only allow deleting Pending complaints
+            if (complaint.Status != ComplaintStatus.Pending)
+                throw new InvalidOperationException("Only pending complaints can be deleted.");
+
+            _context.Complaints.Remove(complaint);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteAdminReplyAsync(long adminUserId, long replyId)
+        {
+            var reply = await _context.ComplaintReplies.FindAsync(replyId);
+            if (reply == null) return false;
+
+            if (reply.AdminUserId != adminUserId)
+                throw new UnauthorizedAccessException("You can only delete your own replies.");
+
+            _context.ComplaintReplies.Remove(reply);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> EditAdminReplyAsync(long adminUserId, long replyId, AdminReplyEditDto dto)
+        {
+            var reply = await _context.ComplaintReplies
+                .Include(r => r.Attachments)
+                .FirstOrDefaultAsync(r => r.Id == replyId);
+
+            if (reply == null) return false;
+
+            if (reply.AdminUserId != adminUserId)
+                throw new UnauthorizedAccessException("You can only edit your own replies.");
+
+            // 1. Update text
+            reply.ReplyMessage = dto.Message;
+
+            // 2. Remove attachments
+            if (dto.RemovedAttachmentIds != null && dto.RemovedAttachmentIds.Any())
+            {
+                var toRemove = reply.Attachments.Where(a => dto.RemovedAttachmentIds.Contains(a.Id)).ToList();
+                foreach (var att in toRemove)
+                {
+                    _context.ComplaintAttachments.Remove(att);
+                    reply.Attachments.Remove(att); // Clean up collection too
+                }
+            }
+
+            // 3. Add new attachments
+            if (dto.NewAttachments != null && dto.NewAttachments.Any())
+            {
+                string uploadFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "complaints");
+                if (!Directory.Exists(uploadFolder)) Directory.CreateDirectory(uploadFolder);
+
+                foreach (var file in dto.NewAttachments)
+                {
+                    string fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
+                    string filePath = Path.Combine(uploadFolder, fileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    reply.Attachments.Add(new ComplaintAttachment
+                    {
+                        ReplyId = reply.Id,
+                        ComplaintId = null,
+                        FileUrl = "/uploads/complaints/" + fileName,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Database Error: {ex.Message} -> {ex.InnerException?.Message}");
+            }
+        }
+
+        public async Task<PaginatedAdminReviewsResponse> GetAdminReviewsAsync(int pageNumber, int pageSize, string? userName, string? hotelName, string? keyword, int? rating)
+        {
+            var query = _context.HotelReviews
+                .Include(r => r.User)
+                .Include(r => r.Hotel)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(userName))
+            {
+                var s = userName.ToLower();
+                query = query.Where(r => r.User != null && r.User.UserName.ToLower().Contains(s));
+            }
+
+            if (!string.IsNullOrWhiteSpace(hotelName))
+            {
+                var s = hotelName.ToLower();
+                query = query.Where(r => r.Hotel != null && r.Hotel.HotelName.ToLower().Contains(s));
+            }
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var s = keyword.ToLower();
+                query = query.Where(r => r.Comment != null && r.Comment.ToLower().Contains(s));
+            }
+
+            if (rating.HasValue)
+                query = query.Where(r => r.Rating == rating.Value);
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            var items = await query
+                .OrderByDescending(r => r.CreatedAt)
+                .ThenByDescending(r => r.Id)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(r => new AdminHotelReviewDto
+                {
+                    Id = r.Id,
+                    UserName = r.User != null ? r.User.UserName : "Unknown",
+                    HotelName = r.Hotel != null ? r.Hotel.HotelName : "Unknown",
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt
+                })
+                .ToListAsync();
+
+            return new PaginatedAdminReviewsResponse
+            {
+                Items = items,
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages
+            };
+        }
+
+        public async Task<bool> DeleteReviewAsync(long reviewId)
+        {
+            var review = await _context.HotelReviews.FindAsync(reviewId);
+            if (review == null) return false;
+
+            _context.HotelReviews.Remove(review);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        // 13. Commission Settings
+        public async Task<CommissionSettingDto?> GetCurrentCommissionSettingAsync()
+        {
+            var current = await _context.CommissionSettings
+                .Include(c => c.CreatedByAdminUser)
+                .Where(c => c.IsActive && c.EffectiveTo == null)
+                .FirstOrDefaultAsync();
+
+            if (current == null) return null;
+
+            return MapToDto(current);
+        }
+
+        public async Task<List<CommissionSettingDto>> GetCommissionSettingsHistoryAsync()
+        {
+            var history = await _context.CommissionSettings
+                .Include(c => c.CreatedByAdminUser)
+                .OrderByDescending(c => c.IsActive)
+                .ThenByDescending(c => c.EffectiveFrom)
+                .ThenByDescending(c => c.Id)
+                .ToListAsync();
+
+            return history.Select(MapToDto).ToList();
+        }
+
+        public async Task<CommissionSettingDto> SaveCommissionSettingAsync(long adminUserId, CreateCommissionSettingRequest request)
+        {
+            if (request.CityTaxMode == CityTaxMode.Percentage && request.CityTaxValue > 100)
+            {
+                throw new ArgumentException("City Tax Percentage cannot exceed 100.");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var now = DateTime.UtcNow;
+
+                var currentActive = await _context.CommissionSettings
+                    .Where(c => c.IsActive && c.EffectiveTo == null)
+                    .FirstOrDefaultAsync();
+
+                if (currentActive != null)
+                {
+                    currentActive.IsActive = false;
+                    currentActive.EffectiveTo = now;
+                    _context.CommissionSettings.Update(currentActive);
+                }
+
+                var newSetting = new CommissionSetting
+                {
+                    PlatformCommissionPct = request.PlatformCommissionPct,
+                    VatPct = request.VatPct,
+                    CityTaxMode = request.CityTaxMode,
+                    CityTaxValue = request.CityTaxValue,
+                    IsActive = true,
+                    EffectiveFrom = now,
+                    EffectiveTo = null,
+                    CreatedAt = now,
+                    CreatedByAdminUserId = adminUserId
+                };
+
+                await _context.CommissionSettings.AddAsync(newSetting);
+                await _context.SaveChangesAsync();
+                
+                await transaction.CommitAsync();
+
+                // Load navigation property before returning DTO
+                await _context.Entry(newSetting).Reference(c => c.CreatedByAdminUser).LoadAsync();
+
+                return MapToDto(newSetting);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        private CommissionSettingDto MapToDto(CommissionSetting c)
+        {
+            return new CommissionSettingDto
+            {
+                Id = c.Id,
+                PlatformCommissionPct = c.PlatformCommissionPct,
+                VatPct = c.VatPct,
+                CityTaxMode = c.CityTaxMode.ToString(),
+                CityTaxValue = c.CityTaxValue,
+                IsActive = c.IsActive,
+                EffectiveFrom = c.EffectiveFrom,
+                EffectiveTo = c.EffectiveTo,
+                CreatedAt = c.CreatedAt,
+                CreatedByAdminName = c.CreatedByAdminUser != null ? c.CreatedByAdminUser.UserName : "System"
+            };
+        }
+
+        // --- My Bookings ---
+
+        public async Task<List<MyTripHotelDto>> GetMyTripsAsync(long userId, string tab)
+        {
+            var query = _context.HotelBookings
+                .Include(b => b.Hotel).ThenInclude(h => h.Images)
+                .Include(b => b.BookingRooms)
+                .Where(b => b.UserId == userId &&
+                            b.Hotel.Verified &&
+                            (b.Hotel.VerificationStatus == VerificationStatus.Verified || b.Hotel.VerificationStatus == VerificationStatus.Approved));
+
+            DateTime today = DateTime.UtcNow.Date;
+
+            if (tab.Equals("upcoming", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(b => (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.CheckedIn) && b.CheckOutDate >= today);
+            }
+            else if (tab.Equals("past", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(b => b.Status == BookingStatus.CheckedOut && b.CheckOutDate < today && _context.HotelPayments.Any(p => p.BookingId == b.Id && p.Status == HotelPaymentStatus.Paid));
+            }
+            else if (tab.Equals("cancelled", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(b => b.Status == BookingStatus.Cancelled);
+            }
+            else
+            {
+                query = query.Where(b => false);
+            }
+
+            var bookings = await query.OrderByDescending(b => b.CreatedAt).ToListAsync();
+
+            var reviewedHotelIds = await _context.HotelReviews
+                .Where(r => r.UserId == userId)
+                .Select(r => r.HotelId)
+                .ToListAsync();
+
+            var trips = bookings.Select(b =>
+            {
+                var primaryImg = b.Hotel.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl;
+                var roomName = b.BookingRooms?.FirstOrDefault()?.RoomName ?? "Standard Room";
+
+                bool isPast = b.Status == BookingStatus.CheckedOut || b.Status == BookingStatus.Completed;
+                bool canReview = isPast && !reviewedHotelIds.Contains(b.HotelId);
+
+                return new MyTripHotelDto
+                {
+                    BookingId = b.Id,
+                    HotelId = b.HotelId,
+                    HotelName = b.Hotel.HotelName,
+                    ImageUrl = primaryImg,
+                    RoomName = roomName,
+                    CheckInDate = b.CheckInDate,
+                    CheckOutDate = b.CheckOutDate,
+                    TotalPrice = b.TotalPrice,
+                    BookingStatus = b.Status.ToString(),
+                    RefundAmount = b.RefundAmount,
+                    CancellationFee = b.CancellationFee,
+                    CanCancel = (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending) && b.CheckInDate > today,
+                    CanRebook = true,
+                    CanReview = canReview
+                };
+            }).ToList();
+
+            return trips;
+        }
+
+        // --- Admin Management and Dashboard ---
+
+        public async Task<AdminDashboardKpiDto> GetAdminDashboardKpisAsync()
+        {
+            var now = DateTime.UtcNow;
+            var startOfMonth = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var startOfNextMonth = startOfMonth.AddMonths(1);
+
+            var verifiedHotels = _context.Hotels
+                .Where(h => h.Verified && 
+                            (h.VerificationStatus == VerificationStatus.Verified || 
+                             h.VerificationStatus == VerificationStatus.Approved));
+
+            var totalRevenue = await (from p in _context.HotelPayments
+                                      join h in verifiedHotels on p.HotelId equals h.Id
+                                      where p.Status == HotelPaymentStatus.Paid
+                                      select (decimal?)p.Amount).SumAsync() ?? 0m;
+
+            var revenueThisMonth = await (from p in _context.HotelPayments
+                                          join h in verifiedHotels on p.HotelId equals h.Id
+                                          where p.Status == HotelPaymentStatus.Paid && 
+                                                p.PaidAt != null && 
+                                                p.PaidAt >= startOfMonth && 
+                                                p.PaidAt < startOfNextMonth
+                                          select (decimal?)p.Amount).SumAsync() ?? 0m;
+
+            var validBookingStatuses = new[] { BookingStatus.Confirmed, BookingStatus.CheckedIn, BookingStatus.CheckedOut };
+            var totalBookings = await (from b in _context.HotelBookings
+                                       join h in verifiedHotels on b.HotelId equals h.Id
+                                       where validBookingStatuses.Contains(b.Status)
+                                       select b.Id).CountAsync();
+
+            var topHotels = await (from h in verifiedHotels
+                                   join b in _context.HotelBookings on h.Id equals b.HotelId
+                                   where validBookingStatuses.Contains(b.Status)
+                                   group b by new { h.Id, h.HotelName } into g
+                                   orderby g.Count() descending
+                                   select new TopHotelDto
+                                   {
+                                       HotelId = g.Key.Id,
+                                       HotelName = g.Key.HotelName,
+                                       BookingsCount = g.Count()
+                                   })
+                                   .Take(10)
+                                   .ToListAsync();
+
+            var topCities = await (from p in _context.HotelPayments
+                                   join h in verifiedHotels on p.HotelId equals h.Id
+                                   where p.Status == HotelPaymentStatus.Paid
+                                   group p by h.Governorate into g
+                                   orderby g.Sum(x => (decimal?)x.Amount) descending
+                                   select new TopCityDto
+                                   {
+                                       CityName = g.Key ?? "Unknown",
+                                       TotalRevenue = g.Sum(x => (decimal?)x.Amount) ?? 0m
+                                   })
+                                   .Take(10)
+                                   .ToListAsync();
+
+            return new AdminDashboardKpiDto
+            {
+                TotalRevenue = totalRevenue,
+                RevenueThisMonth = revenueThisMonth,
+                TotalBookings = totalBookings,
+                TotalHotels = await verifiedHotels.CountAsync(),
+                PlatformCommission = null,
+                PlatformCommissionSupported = false,
+                CommissionThisMonth = null,
+                CommissionThisMonthSupported = false,
+                TopHotels = topHotels,
+                TopCities = topCities
+            };
+        }
+
+        public async Task<AdminChartDataDto> GetAdminChartDataAsync(int? selectedYear)
+        {
+            var currentYear = DateTime.UtcNow.Year;
+            var startYear = currentYear - 3;
+
+            if (selectedYear.HasValue && (selectedYear < startYear || selectedYear > currentYear))
+            {
+                selectedYear = currentYear;
+            }
+
+            var verifiedHotels = _context.Hotels
+                .Where(h => h.Verified &&
+                            (h.VerificationStatus == VerificationStatus.Verified ||
+                             h.VerificationStatus == VerificationStatus.Approved));
+
+            var targetYears = Enumerable.Range(startYear, 4).ToList();
+            var platformGrowthData = await (from p in _context.HotelPayments
+                                            join h in verifiedHotels on p.HotelId equals h.Id
+                                            where p.Status == HotelPaymentStatus.Paid &&
+                                                  p.PaidAt != null &&
+                                                  p.PaidAt.Value.Year >= startYear &&
+                                                  p.PaidAt.Value.Year <= currentYear
+                                            group p by p.PaidAt.Value.Year into g
+                                            select new YearlyGrowthDto
+                                            {
+                                                Year = g.Key,
+                                                TotalPaidAmount = g.Sum(x => (decimal?)x.Amount) ?? 0m
+                                            })
+                                            .OrderBy(x => x.Year)
+                                            .ToListAsync();
+
+            var finalGrowth = targetYears.Select(y => 
+                platformGrowthData.FirstOrDefault(d => d.Year == y) ?? new YearlyGrowthDto { Year = y, TotalPaidAmount = 0m }
+            ).ToList();
+
+            var validBookingStatuses = new[] { BookingStatus.Confirmed, BookingStatus.CheckedIn, BookingStatus.CheckedOut };
+
+            var trendQuery = from b in _context.HotelBookings
+                             join h in verifiedHotels on b.HotelId equals h.Id
+                             where validBookingStatuses.Contains(b.Status)
+                             select b;
+
+            if (selectedYear.HasValue)
+            {
+                trendQuery = trendQuery.Where(b => b.CreatedAt.Year == selectedYear.Value);
+            }
+
+            var monthlyBookingsData = await trendQuery
+                                             .GroupBy(b => b.CreatedAt.Month)
+                                             .Select(g => new
+                                             {
+                                                 MonthNumber = g.Key,
+                                                 BookingsCount = g.Count()
+                                             })
+                                             .ToListAsync();
+
+            var finalTrend = Enumerable.Range(1, 12).Select(m => new MonthlyTrendDto
+            {
+                MonthNumber = m,
+                MonthName = new DateTime(currentYear, m, 1).ToString("MMM"),
+                BookingsCount = monthlyBookingsData.FirstOrDefault(x => x.MonthNumber == m)?.BookingsCount ?? 0
+            }).ToList();
+
+            var distQuery = from br in _context.HotelBookingRooms
+                            join b in _context.HotelBookings on br.BookingId equals b.Id
+                            join h in verifiedHotels on b.HotelId equals h.Id
+                            where validBookingStatuses.Contains(b.Status)
+                            select new { br.PricePerNight, b.CreatedAt };
+
+            if (selectedYear.HasValue)
+            {
+                distQuery = distQuery.Where(x => x.CreatedAt.Year == selectedYear.Value);
+            }
+
+            var distributionData = await distQuery
+                                          .GroupBy(x => 1)
+                                          .Select(g => new
+                                          {
+                                              r0_50 = g.Count(x => x.PricePerNight >= 0 && x.PricePerNight < 50),
+                                              r50_100 = g.Count(x => x.PricePerNight >= 50 && x.PricePerNight < 100),
+                                              r100_200 = g.Count(x => x.PricePerNight >= 100 && x.PricePerNight < 200),
+                                              r200_300 = g.Count(x => x.PricePerNight >= 200 && x.PricePerNight < 300),
+                                              r300_500 = g.Count(x => x.PricePerNight >= 300 && x.PricePerNight < 500),
+                                              r500plus = g.Count(x => x.PricePerNight >= 500)
+                                          })
+                                          .FirstOrDefaultAsync();
+
+            var finalDistribution = new List<DistributionRangeDto>
+            {
+                new DistributionRangeDto { RangeLabel = "$0 - $50", Count = distributionData?.r0_50 ?? 0 },
+                new DistributionRangeDto { RangeLabel = "$50 - $100", Count = distributionData?.r50_100 ?? 0 },
+                new DistributionRangeDto { RangeLabel = "$100 - $200", Count = distributionData?.r100_200 ?? 0 },
+                new DistributionRangeDto { RangeLabel = "$200 - $300", Count = distributionData?.r200_300 ?? 0 },
+                new DistributionRangeDto { RangeLabel = "$300 - $500", Count = distributionData?.r300_500 ?? 0 },
+                new DistributionRangeDto { RangeLabel = "$500+", Count = distributionData?.r500plus ?? 0 }
+            };
+
+            return new AdminChartDataDto
+            {
+                PlatformGrowth = finalGrowth,
+                BookingsTrend = finalTrend,
+                BookingValueDistribution = finalDistribution
+            };
+        }
+
+        public async Task<List<HotelManageSummaryDto>> GetHotelManagementListAsync(string? searchQuery, VerificationStatus? status, string? city)
+        {
+            var query = _context.Hotels
+                .Where(h => h.VerificationStatus == VerificationStatus.Approved || 
+                            h.VerificationStatus == VerificationStatus.Verified ||
+                            h.VerificationStatus == VerificationStatus.Suspended || 
+                            h.VerificationStatus == VerificationStatus.Banned)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchQuery))
+            {
+                query = query.Where(h => h.HotelName.Contains(searchQuery));
+            }
+
+            if (status.HasValue)
+            {
+                query = query.Where(h => h.VerificationStatus == status.Value);
+            }
+
+            if (!string.IsNullOrEmpty(city))
+            {
+                query = query.Where(h => (h.CityArea != null && h.CityArea.Contains(city)) || (h.Governorate != null && h.Governorate.Contains(city)));
+            }
+
+            var hotels = await query
+                .Select(h => new HotelManageSummaryDto
+                {
+                    HotelId = h.Id,
+                    HotelName = h.HotelName,
+                    City = h.CityArea ?? h.Governorate ?? "Unknown",
+                    Status = h.VerificationStatus,
+                    IsActive = h.Active,
+                    TotalBookings = h.Bookings.Count(b => b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.CheckedIn || b.Status == BookingStatus.CheckedOut),
+                    TotalRevenue = _context.HotelPayments
+                        .Where(p => p.HotelId == h.Id && p.Status == HotelPaymentStatus.Paid)
+                        .Sum(p => (decimal?)p.Amount) ?? 0,
+                    CanApprove = h.VerificationStatus == VerificationStatus.Rejected || h.VerificationStatus == VerificationStatus.Suspended || h.VerificationStatus == VerificationStatus.Banned,
+                    CanSuspend = h.VerificationStatus == VerificationStatus.Approved || h.VerificationStatus == VerificationStatus.Verified,
+                    CanBan = h.VerificationStatus != VerificationStatus.Banned
+                })
+                .ToListAsync();
+
+            return hotels;
+        }
+
+        public async Task<bool> SuspendHotelAsync(long hotelId)
+        {
+            var hotel = await _context.Hotels.FindAsync(hotelId);
+            if (hotel == null) return false;
+            hotel.VerificationStatus = VerificationStatus.Suspended;
+            hotel.Active = false;
+            hotel.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> BanHotelAsync(long hotelId)
+        {
+            var hotel = await _context.Hotels.FindAsync(hotelId);
+            if (hotel == null) return false;
+            hotel.VerificationStatus = VerificationStatus.Banned;
+            hotel.Active = false;
+            hotel.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ApproveHotelAsync(long hotelId)
+        {
+            var hotel = await _context.Hotels.FindAsync(hotelId);
+            if (hotel == null) return false;
+            
+            if (!hotel.Verified) throw new InvalidOperationException("Hotel must complete the initial verification flow first.");
+
+            hotel.VerificationStatus = VerificationStatus.Approved;
+            hotel.Active = true;
+            hotel.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<AdminBookingPaginationResponse> GetAdminBookingsAsync(AdminBookingSearchRequest request)
+        {
+            var query = _context.HotelBookings
+                .Include(b => b.User)
+                .Include(b => b.Hotel)
+                .Include(b => b.BookingRooms)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(request.BookingId))
+            {
+                var searchIdStr = request.BookingId.Replace("#BK-", "").Replace("#", "");
+                if (long.TryParse(searchIdStr, out long bid))
+                    query = query.Where(b => b.Id == bid);
+            }
+
+            if (!string.IsNullOrEmpty(request.Hotel))
+                query = query.Where(b => b.Hotel.HotelName.Contains(request.Hotel));
+
+            if (request.CheckIn.HasValue)
+            {
+                var d = request.CheckIn.Value.Date;
+                query = query.Where(b => b.CheckInDate >= d && b.CheckInDate < d.AddDays(1));
+            }
+
+            if (request.CheckOut.HasValue)
+            {
+                var d = request.CheckOut.Value.Date;
+                query = query.Where(b => b.CheckOutDate >= d && b.CheckOutDate < d.AddDays(1));
+            }
+
+            if (request.Status.HasValue)
+                query = query.Where(b => b.Status == request.Status.Value);
+
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / request.PageSize);
+
+            if (request.PageNumber < 1) request.PageNumber = 1;
+
+            var bookings = await query
+                .OrderByDescending(b => b.CreatedAt)
+                .Skip((request.PageNumber - 1) * request.PageSize)
+                .Take(request.PageSize)
+                .ToListAsync();
+
+            var items = bookings.Select(b => new AdminBookingItemDto
+            {
+                BookingId = b.Id,
+                User = b.User?.UserName ?? "Unknown",
+                Hotel = b.Hotel?.HotelName ?? "Unknown Hotel",
+                City = b.Hotel?.Governorate ?? "N/A",
+                RoomType = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
+                CheckIn = b.CheckInDate?.ToString("dd MMM yyyy") ?? "N/A",
+                CheckOut = b.CheckOutDate?.ToString("dd MMM yyyy") ?? "N/A",
+                Price = $"${b.TotalPrice:N0}",
+                Status = b.Status.ToString()
+            }).ToList();
+
+            return new AdminBookingPaginationResponse
+            {
+                CurrentPage = request.PageNumber,
+                PageSize = request.PageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages,
+                Items = items
+            };
+        }
     }
 }
+

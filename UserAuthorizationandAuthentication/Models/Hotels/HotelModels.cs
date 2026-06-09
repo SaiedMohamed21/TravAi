@@ -274,4 +274,33 @@ namespace TravAi.Models.Hotels
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     }
+
+    public enum CityTaxMode
+    {
+        Fixed,
+        Percentage
+    }
+
+    [Table("hotel_CommissionSettings")]
+    public class CommissionSetting
+    {
+        [Key]
+        public long Id { get; set; }
+
+        public decimal PlatformCommissionPct { get; set; }
+        public decimal VatPct { get; set; }
+
+        public CityTaxMode CityTaxMode { get; set; }
+        public decimal CityTaxValue { get; set; }
+
+        public bool IsActive { get; set; }
+        public DateTime EffectiveFrom { get; set; }
+        public DateTime? EffectiveTo { get; set; }
+
+        public DateTime CreatedAt { get; set; }
+
+        public long CreatedByAdminUserId { get; set; }
+        [ForeignKey("CreatedByAdminUserId")]
+        public User CreatedByAdminUser { get; set; }
+    }
 }

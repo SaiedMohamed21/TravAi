@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
@@ -127,5 +127,103 @@ namespace TravAi.DTOs.Hotel
         public int? ToHoursBeforeCheckIn { get; set; }
         [Range(0, 100)]
         public decimal PenaltyPct { get; set; }
+    }
+
+    public class HotelProfileUpdateRequest
+    {
+        public string? HotelName { get; set; }
+        public string? Description { get; set; }
+        public PropertyType? PropertyType { get; set; }
+        public AccommodationType? AccommodationType { get; set; }
+        public int? StarRating { get; set; }
+        public string? Country { get; set; }
+        public string? Governorate { get; set; }
+        public string? CityArea { get; set; }
+        public string? AddressDetails { get; set; }
+        public List<long>? AmenityIds { get; set; }
+        public List<HotelFieldValueInputDto>? DynamicFields { get; set; }
+        public List<HotelImageInputDto>? Images { get; set; }
+        public List<CreateRoomRequest>? Rooms { get; set; }
+        public List<HotelContactInputDto>? Contacts { get; set; }
+    }
+
+    public class HotelApplicationSummaryDto
+    {
+        public long Id { get; set; }
+        public string HotelName { get; set; } = string.Empty;
+        public string? OwnerName { get; set; }
+        public string? CityArea { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string VerificationStatus { get; set; } = "Pending";
+        public bool Verified { get; set; }
+    }
+
+    public class AdminDashboardKpiDto
+    {
+        public decimal TotalRevenue { get; set; }
+        public decimal? PlatformCommission { get; set; }
+        public bool PlatformCommissionSupported { get; set; } = false;
+        public decimal RevenueThisMonth { get; set; }
+        public decimal? CommissionThisMonth { get; set; }
+        public bool CommissionThisMonthSupported { get; set; } = false;
+        public int TotalBookings { get; set; }
+        public int TotalHotels { get; set; }
+        public List<TopHotelDto> TopHotels { get; set; } = new();
+        public List<TopCityDto> TopCities { get; set; } = new();
+    }
+
+    public class TopHotelDto
+    {
+        public long HotelId { get; set; }
+        public string HotelName { get; set; } = string.Empty;
+        public int BookingsCount { get; set; }
+    }
+
+    public class TopCityDto
+    {
+        public string CityName { get; set; } = string.Empty;
+        public decimal TotalRevenue { get; set; }
+    }
+
+    public class HotelPolicyUpdateRequest
+    {
+        public decimal? ServiceChargePct { get; set; }
+        public bool? IncludeServiceCharge { get; set; }
+        public bool? IncludeVat { get; set; }
+        public bool? IncludeCityTax { get; set; }
+        public CancellationStrategy? CancellationStrategy { get; set; }
+        public List<UpdateHotelCancellationRuleInputDto>? CancellationRules { get; set; }
+    }
+
+    public class HotelLegalUpdateRequest
+    {
+        public List<HotelDocumentInputDto>? Documents { get; set; }
+        public List<HotelContactInputDto>? Contacts { get; set; }
+    }
+
+    public class AdminChartDataDto
+    {
+        public List<YearlyGrowthDto> PlatformGrowth { get; set; } = new();
+        public List<MonthlyTrendDto> BookingsTrend { get; set; } = new();
+        public List<DistributionRangeDto> BookingValueDistribution { get; set; } = new();
+    }
+
+    public class YearlyGrowthDto
+    {
+        public int Year { get; set; }
+        public decimal TotalPaidAmount { get; set; }
+    }
+
+    public class MonthlyTrendDto
+    {
+        public int MonthNumber { get; set; }
+        public string MonthName { get; set; } = string.Empty;
+        public int BookingsCount { get; set; }
+    }
+
+    public class DistributionRangeDto
+    {
+        public string RangeLabel { get; set; } = string.Empty;
+        public int Count { get; set; }
     }
 }

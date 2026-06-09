@@ -682,7 +682,7 @@ namespace TravAi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications");
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("TravAi.Models.Hotels.Amenity", b =>

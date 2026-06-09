@@ -23,6 +23,54 @@ namespace TravAi.Services.AI
             var premium = await CalcRange("Premium", req, itinerary);
             var luxury  = await CalcRange("Luxury",  req, itinerary);
 
+            // Fix overlapping ranges to create continuous, logical tiers
+            // Economy: [Economy.Min, Premium.Min - 1]
+            // Premium: [Premium.Min, Luxury.Min - 1]
+            // Luxury:  [Luxury.Min, Absolute_Max]
+
+            decimal absoluteMax = Math.Max(economy.MaxEstimate, Math.Max(premium.MaxEstimate, luxury.MaxEstimate));
+
+            // Ensure Premium Min is strictly greater than Economy Min
+            decimal premiumMin = Math.Max(premium.MinEstimate, economy.MinEstimate + 100);
+            // Ensure Luxury Min is strictly greater than Premium Min
+            decimal luxuryMin = Math.Max(luxury.MinEstimate, premiumMin + 100);
+
+            // Adjust Economy Max
+            if (economy.IsAvailable && premium.IsAvailable)
+            {
+                economy.MaxEstimate = premiumMin - 1;
+            }
+            else if (economy.IsAvailable && !premium.IsAvailable && luxury.IsAvailable)
+            {
+                economy.MaxEstimate = luxuryMin - 1;
+            }
+            else if (economy.IsAvailable)
+            {
+                economy.MaxEstimate = absoluteMax;
+            }
+            ScaleBreakdownToMatchTotal(economy);
+
+            // Adjust Premium Max
+            if (premium.IsAvailable && luxury.IsAvailable)
+            {
+                premium.MinEstimate = premiumMin;
+                premium.MaxEstimate = luxuryMin - 1;
+            }
+            else if (premium.IsAvailable)
+            {
+                premium.MinEstimate = premiumMin;
+                premium.MaxEstimate = absoluteMax;
+            }
+            ScaleBreakdownToMatchTotal(premium);
+
+            // Adjust Luxury
+            if (luxury.IsAvailable)
+            {
+                luxury.MinEstimate = luxuryMin;
+                luxury.MaxEstimate = absoluteMax;
+            }
+            ScaleBreakdownToMatchTotal(luxury);
+
             return new BudgetEstimationResponseDto
             {
                 Economy   = economy,
@@ -31,6 +79,31 @@ namespace TravAi.Services.AI
                 TotalDays = totalDays,
                 Itinerary = itinerary
             };
+        }
+
+        private void ScaleBreakdownToMatchTotal(BudgetTypeRangeDto budget)
+        {
+            if (!budget.IsAvailable) return;
+
+            // Scale Max
+            decimal oldMaxSum = budget.FlightMaxEstimate + budget.HotelMaxEstimate + budget.ToursMaxEstimate;
+            if (oldMaxSum > 0 && oldMaxSum != budget.MaxEstimate)
+            {
+                decimal ratio = budget.MaxEstimate / oldMaxSum;
+                budget.FlightMaxEstimate = Math.Round(budget.FlightMaxEstimate * ratio, 2);
+                budget.HotelMaxEstimate  = Math.Round(budget.HotelMaxEstimate * ratio, 2);
+                budget.ToursMaxEstimate  = Math.Round(budget.ToursMaxEstimate * ratio, 2);
+            }
+
+            // Scale Min
+            decimal oldMinSum = budget.FlightMinEstimate + budget.HotelMinEstimate + budget.ToursMinEstimate;
+            if (oldMinSum > 0 && oldMinSum != budget.MinEstimate)
+            {
+                decimal ratio = budget.MinEstimate / oldMinSum;
+                budget.FlightMinEstimate = Math.Round(budget.FlightMinEstimate * ratio, 2);
+                budget.HotelMinEstimate  = Math.Round(budget.HotelMinEstimate * ratio, 2);
+                budget.ToursMinEstimate  = Math.Round(budget.ToursMinEstimate * ratio, 2);
+            }
         }
 
         private async Task<BudgetTypeRangeDto> CalcRange(

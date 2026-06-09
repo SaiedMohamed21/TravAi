@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Lumière Egypt</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #070708;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-gold: #e2b45b;
+            --gold-gradient: linear-gradient(135deg, #e2b45b 0%, #a67c37 100%);
+            --glass-glow: rgba(226, 180, 91, 0.15);
+        }
+
+        body { 
+            background-color: var(--admin-bg); 
+            color: #d1d1d1; 
+            font-family: 'Outfit', sans-serif; 
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background Orbs */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(226, 180, 91, 0.03) 0%, transparent 70%);
+            z-index: -1;
+            filter: blur(80px);
+            animation: orbMove 20s infinite alternate;
+        }
+        body::before { top: -200px; left: -200px; }
+        body::after { bottom: -200px; right: -200px; animation-delay: -10s; }
+
+        @keyframes orbMove {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(100px, 100px) scale(1.2); }
+        }
+
+        .admin-nav-fixed {
+            position: fixed;
+            top: 100px;
+            left: 50px;
+            width: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        @media (max-width: 1200px) {
+            .admin-nav-fixed { 
+                position: relative; 
+                top: 0; left: 0; 
+                width: 100%; 
+                flex-direction: row; 
+                padding: 20px;
+                background: rgba(0,0,0,0.3);
+                backdrop-filter: blur(20px);
+                margin-bottom: 30px;
+            }
+        }
+
+        .nav-item {
+            padding: 16px 24px;
+            border-radius: 20px;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-weight: 500;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item i { font-size: 1.2rem; transition: 0.4s; }
+        .nav-item:hover { color: #fff; background: rgba(255,255,255,0.03); }
+        
+        .nav-item.active {
+            background: rgba(226, 180, 91, 0.08);
+            border-color: rgba(226, 180, 91, 0.2);
+            color: var(--accent-gold);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3), inset 0 0 15px rgba(226, 180, 91, 0.05);
+        }
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            left: 0; top: 25%; height: 50%; width: 4px;
+            background: var(--accent-gold);
+            border-radius: 0 4px 4px 0;
+            box-shadow: 0 0 15px var(--accent-gold);
+        }
+
+        .admin-main-content {
+            margin-left: 360px;
+            padding: 60px 60px 100px;
+            max-width: 1500px;
+        }
+
+        @media (max-width: 1200px) {
+            .admin-main-content { margin-left: 0; padding: 30px; }
+        }
+
+        .dashboard-header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 4rem;
+            font-weight: 600;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff 20%, var(--accent-gold) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+
+        .stats-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 30px; 
+            margin-bottom: 60px; 
+        }
+
+        .stat-card { 
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border); 
+            padding: 35px; 
+            border-radius: 32px; 
+            position: relative;
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stat-card:hover { 
+            border-color: rgba(226, 180, 91, 0.4); 
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(226, 180, 91, 0.05);
+        }
+
+        .stat-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            background: rgba(226, 180, 91, 0.05);
+            color: var(--accent-gold);
+            border: 1px solid rgba(226, 180, 91, 0.1);
+            margin-bottom: 25px;
+            box-shadow: inset 0 0 15px rgba(226, 180, 91, 0.1);
+        }
+
+        .stat-val { font-size: 2.8rem; font-weight: 700; color: #fff; margin-bottom: 8px; font-family: 'Outfit', sans-serif; }
+        .stat-lbl { 
+            color: rgba(255,255,255,0.4); 
+            font-size: 0.85rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            font-weight: 600; 
+        }
+
+        .app-table-container {
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--card-border);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
+        .section-title {
+            padding: 40px 50px;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-title h2 { 
+            margin: 0; 
+            font-size: 2.22rem; 
+            color: #fff; 
+            font-family: 'Cormorant Garamond', serif; 
+            font-weight: 500;
+        }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        th { 
+            padding: 25px 30px; 
+            text-align: left;
+            color: var(--accent-gold); 
+            font-size: 0.8rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2.5px; 
+            font-weight: 700;
+            background: rgba(255,255,255,0.01);
+            border-bottom: 1px solid var(--card-border);
+        }
+        td { 
+            padding: 25px 30px; 
+            border-bottom: 1px solid rgba(255,255,255,0.02); 
+            font-size: 1rem;
+            color: rgba(255,255,255,0.7);
+            transition: 0.4s;
+        }
+        tr:hover td { background: rgba(226, 180, 91, 0.03); color: #fff; }
+
+        .status-badge { 
+            padding: 10px 20px; 
+            border-radius: 15px; 
+            font-size: 0.75rem; 
+            font-weight: 700; 
+            letter-spacing: 1px;
+            background: rgba(255,255,255,0.05);
+        }
+        .status-pending { color: #fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.1); }
+        .status-verified { color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.1); }
+
+        .btn-show {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            padding: 10px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        .btn-show:hover { background: var(--accent-gold); color: #000; box-shadow: 0 5px 20px rgba(226, 180, 91, 0.4); }
+
+        .sub-tabs { display: flex; gap: 15px; margin-bottom: 30px; }
+        .sub-tab {
+            padding: 12px 25px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 1px solid var(--card-border);
+            color: rgba(255,255,255,0.5);
+        }
+        .sub-tab.active { background: var(--accent-gold); color: #000; border-color: var(--accent-gold); }
+
+        /* Modal Redesign */
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 2000; 
+            background: rgba(0,0,0,0.85); 
+            backdrop-filter: blur(25px); 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px;
+        }
+
+        .modal-content { 
+            background: #0d0d0f; 
+            border: 1px solid rgba(226, 180, 91, 0.2); 
+            border-radius: 40px; 
+            width: 100%;
+            max-width: 550px;
+            padding: 50px;
+            box-shadow: 0 40px 120px rgba(0,0,0,0.9), 0 0 40px rgba(226, 180, 91, 0.05);
+            position: relative;
+            animation: modalIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-content::after {
+            content: '';
+            position: absolute;
+            top: -1px; left: 50%; width: 50%; height: 1px;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        }
+
+        .form-group { margin-bottom: 25px; }
+        .form-group label { 
+            display: block; 
+            font-size: 0.8rem; 
+            color: var(--accent-gold); 
+            text-transform: uppercase; 
+            letter-spacing: 2px; 
+            margin-bottom: 12px; 
+            font-weight: 700; 
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.03) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            padding: 16px 22px !important;
+            border-radius: 18px !important;
+            color: #fff !important;
+            outline: none !important;
+            transition: 0.3s !important;
+            box-sizing: border-box;
+        }
+        .form-group input:focus { border-color: var(--accent-gold) !important; background: rgba(226, 180, 91, 0.05) !important; }
+
+        .form-actions { display: flex; gap: 15px; margin-top: 40px; }
+        .btn-save { 
+            flex: 2; 
+            background: var(--accent-gold); 
+            color: #000; 
+            border: none; 
+            padding: 18px; 
+            border-radius: 20px; 
+            font-weight: 700; 
+            cursor: pointer;
+            transition: 0.3s;
+            letter-spacing: 1px;
+        }
+        .btn-save:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(226, 180, 91, 0.4); }
+
+        .btn-cancel { 
+            flex: 1; 
+            background: rgba(255,255,255,0.05); 
+            border: 1px solid var(--card-border); 
+            color: rgba(255,255,255,0.5); 
+            padding: 18px; 
+            border-radius: 20px; 
+            font-weight: 600; 
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+        .btn-edit, .btn-delete {
+            width: 42px; height: 42px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+        .btn-edit { color: var(--accent-gold); background: rgba(226, 180, 91, 0.1); border: 1px solid rgba(226, 180, 91, 0.1); }
+        .btn-delete { color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.1); }
+        .btn-edit:hover { background: var(--accent-gold); color: #000; }
+        .btn-delete:hover { background: #ef4444; color: #fff; }
+
+        .inactive-row { opacity: 0.4; filter: grayscale(1); }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--admin-bg); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-area" style="display: flex; align-items: center; gap: 15px; cursor: pointer;" onclick="window.location.href='index.html'">
+                <div class="logo-gem" style="width: 28px; height: 16px; background: var(--gold-gradient); border-radius: 4px; box-shadow: 0 0 15px var(--accent-gold);"></div>
+                <div class="header-title" style="font-size: 1.4rem; letter-spacing: 1px;">LUMIÈRE ADMIN</div>
+            </div>
+            <div class="header-actions">
+                <a href="index.html" class="nav-icon"><i class="fas fa-home"></i></a>
+                <a href="#" onclick="Auth.logout(); return false;" class="nav-icon" style="color: #ef4444;"><i class="fas fa-power-off"></i></a>
+            </div>
+        </header>
+
+        <nav class="admin-nav-fixed">
+            <div class="nav-item active" onclick="switchMainTab('applications', this)">
+                <i class="fas fa-th-large"></i> <span>Applications</span>
+            </div>
+            <div class="nav-item" onclick="switchMainTab('amenities', this)">
+                <i class="fas fa-bell-concierge"></i> <span>Amenities</span>
+            </div>
+            <div class="nav-item" onclick="switchMainTab('docs', this)">
+                <i class="fas fa-shield-alt"></i> <span>Verification Docs</span>
+            </div>
+            <div class="nav-item" onclick="switchMainTab('fields', this)">
+                <i class="fas fa-database"></i> <span>Dynamic Data</span>
+            </div>
+        </nav>
+
+        <main class="admin-main-content">
+            <div class="dashboard-header animate-fade">
+                <h1 id="mainTitle">Registry Intelligence</h1>
+                <p id="mainSubtitle" style="color: rgba(255,255,255,0.4); font-size: 1.22rem;">Comprehensive management of partner lifecycle and assets</p>
+            </div>
+
+            <div id="statsSection" class="stats-grid animate-fade">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-inbox"></i></div>
+                    <div class="stat-val" id="totalApps">0</div>
+                    <div class="stat-lbl">Global Submissions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #fbbf24; background: rgba(251, 191, 36, 0.05); border-color: rgba(251, 191, 36, 0.1);"><i class="fas fa-hourglass-half"></i></div>
+                    <div class="stat-val" id="pendingApps" style="color: #fbbf24;">0</div>
+                    <div class="stat-lbl">Pending Verification</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.1);"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-val" id="approvedApps" style="color: #10b981;">0</div>
+                    <div class="stat-lbl">Verified Partners</div>
+                </div>
+            </div>
+
+            <!-- Applications Section -->
+            <div id="applicationsSection" class="animate-fade">
+                <div class="sub-tabs">
+                    <div class="sub-tab active" onclick="filterTable('all', this)">Overview</div>
+                    <div class="sub-tab" onclick="filterTable('Pending', this)">In Review</div>
+                    <div class="sub-tab" onclick="filterTable('Verified', this)">Active</div>
+                    <div class="sub-tab" onclick="filterTable('Rejected', this)">Archived</div>
+                </div>
+                                <div class="app-table-container">
+                    <div class="section-title">
+                        <h2>Recent Records</h2>
+                        <button class="filter-btn" onclick="loadApplications()"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table id="appsTable">
+                            <thead>
+                                <tr>
+                                    <th>App ID</th>
+                                    <th>Hotel Name</th>
+                                    <th>Owner Name</th>
+                                    <th>Received Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Amenities Section -->
+            <div id="amenitiesSection" style="display: none;">
+                <div class="app-table-container">
+                    <div class="section-title">
+                        <h2>Amenities Library</h2>
+                        <button class="btn-add" onclick="showAddAmenity()"><i class="fas fa-plus"></i> Add New Amenity</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Highlighted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="amenitiesBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Docs Section -->
+            <div id="docsSection" style="display: none;">
+                <div class="app-table-container">
+                    <div class="section-title">
+                        <h2>Required Document Types</h2>
+                        <button class="btn-add" onclick="showAddDoc()"><i class="fas fa-plus"></i> Add Doc Type</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Key (ID)</th>
+                                    <th>Required</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fields Section -->
+            <div id="fieldsSection" style="display: none;">
+                <div class="app-table-container">
+                    <div class="section-title">
+                        <h2>Additional Data Fields</h2>
+                        <button class="btn-add" onclick="showAddField()"><i class="fas fa-plus"></i> Add New Field</button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Display Name</th>
+                                    <th>Key</th>
+                                    <th>Type</th>
+                                    <th>Required</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fieldsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Amenity Modal -->
+    <div id="amenityModal" class="modal">
+        <div class="modal-content">
+            <h3 id="amenityModalTitle" style="color:var(--gold); margin-bottom:24px;">Add Amenity</h3>
+            <form id="amenityForm">
+                <input type="hidden" id="amenityId">
+                <div class="form-group">
+                    <label>Amenity Name</label>
+                    <input type="text" id="amenityName" required placeholder="e.g. Free Wi-Fi">
+                </div>
+                <div class="form-group">
+                    <label>Category (Type)</label>
+                    <input type="text" id="amenityType" required placeholder="e.g. Technology, Wellness">
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="amenityHighlighted" style="width: auto;">
+                    <label style="margin: 0;">Show in Popular Amenities</label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">Save Amenity</button>
+                    <button type="button" class="btn-cancel" onclick="closeModals()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Doc Modal -->
+    <div id="docModal" class="modal">
+        <div class="modal-content">
+            <h3 id="docModalTitle" style="color:var(--gold); margin-bottom:24px;">Document Type Configuration</h3>
+            <form id="docForm">
+                <input type="hidden" id="docId">
+                <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="docName" required>
+                </div>
+                <div class="form-group">
+                    <label>System Key (KeyName)</label>
+                    <input type="text" id="docKeyName" required>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="docRequired" style="width: auto;">
+                    <label style="margin: 0;">Required for Application</label>
+                </div>
+                <div class="form-group" id="docActiveGroup" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="docActive" style="width: auto;" checked>
+                    <label style="margin: 0;">Active</label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">Save Definition</button>
+                    <button type="button" class="btn-cancel" onclick="closeModals()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Field Modal -->
+    <div id="fieldModal" class="modal">
+        <div class="modal-content">
+            <h3 id="fieldModalTitle" style="color:var(--gold); margin-bottom:24px;">Dynamic Field Configuration</h3>
+            <form id="fieldForm">
+                <input type="hidden" id="fieldId">
+                <div class="form-group">
+                    <label>Label / Display Name</label>
+                    <input type="text" id="fieldDisplayName" required>
+                </div>
+                <div class="form-group">
+                    <label>System Key</label>
+                    <input type="text" id="fieldKeyName" required>
+                </div>
+                <div class="form-group">
+                    <label>Input Type</label>
+                    <select id="fieldType">
+                        <option value="0">Text (Single Line)</option>
+                        <option value="1">Text Area (Multi Line)</option>
+                        <option value="2">Number</option>
+                        <option value="3">Date Picker</option>
+                        <option value="4">File Upload</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="fieldRequired" style="width: auto;">
+                    <label style="margin: 0;">Required Field</label>
+                </div>
+                <div class="form-group" id="fieldActiveGroup" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="fieldActive" style="width: auto;" checked>
+                    <label style="margin: 0;">Active</label>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-save">Save Field</button>
+                    <button type="button" class="btn-cancel" onclick="closeModals()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const user = Auth.getUser();
+        const isAdmin = user && (user.role === 'Admin' || user.Role === 'Admin');
+
+        if (!Auth.isLoggedIn() || !isAdmin) {
+            window.location.href = 'login.html';
+        }
+
+        let allApps = [];
+        let allAmenities = [];
+        let allDocs = [];
+        let allFields = [];
+
+        function switchMainTab(target, el) {
+            document.querySelectorAll('.admin-nav-fixed .nav-item').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const sections = ['applicationsSection', 'amenitiesSection', 'docsSection', 'fieldsSection'];
+            sections.forEach(s => {
+                const sec = document.getElementById(s);
+                if (sec) sec.style.display = 'none';
+            });
+            
+            const targetSec = document.getElementById(target + 'Section');
+            if (targetSec) targetSec.style.display = 'block';
+
+            if (target === 'applications') {
+                document.getElementById('mainTitle').innerText = 'Registry Intelligence';
+                document.getElementById('mainSubtitle').innerText = 'Comprehensive management of partner lifecycle and assets';
+                document.getElementById('statsSection').style.display = 'grid';
+                loadApplications();
+            } else {
+                document.getElementById('statsSection').style.display = 'none';
+                if (target === 'amenities') {
+                    document.getElementById('mainTitle').innerText = 'Amenity Framework';
+                    document.getElementById('mainSubtitle').innerText = 'Defining global features and service standards';
+                    loadAmenities();
+                } else if (target === 'docs') {
+                    document.getElementById('mainTitle').innerText = 'Verification Standards';
+                    document.getElementById('mainSubtitle').innerText = 'Governance and legal requirement configurations';
+                    loadDocs();
+                } else if (target === 'fields') {
+                    document.getElementById('mainTitle').innerText = 'Dynamic Schema';
+                    document.getElementById('mainSubtitle').innerText = 'Architecting information points for hotel data collection';
+                    loadFields();
+                }
+            }
+        }
+
+        // --- Applications ---
+        async function loadApplications() {
+            const res = await API.get('/admin/applications');
+            if (res.success) {
+                allApps = res.data;
+                updateStats();
+                renderTable(allApps);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalApps').innerText = allApps.length;
+            document.getElementById('pendingApps').innerText = allApps.filter(a => (a.verificationStatus === 'Pending' || !a.verified) && a.verificationStatus !== 'Rejected').length;
+            document.getElementById('approvedApps').innerText = allApps.filter(a => a.verified).length;
+        }
+
+        function renderTable(apps) {
+            const body = document.getElementById('appsBody');
+            body.innerHTML = apps.map(app => `
+                <tr>
+                    <td style="font-family: monospace; opacity: 0.6; font-size: 0.8rem;">AID-${app.id}</td>
+                    <td>
+                        <div style="font-weight: 600; color: #fff;">${app.hotelName}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">${app.cityArea || ''}, ${app.governorate || ''}</div>
+                    </td>
+                    <td>${app.ownerName || 'Unknown Owner'}</td>
+                    <td style="font-size: 0.85rem; color: var(--text-secondary);">${new Date(app.createdAt).toLocaleDateString()}</td>
+                    <td>
+                        <span class="status-badge status-${(app.verificationStatus || 'Pending').toLowerCase()}">${app.verificationStatus || 'Pending'}</span>
+                    </td>
+                    <td><button class="btn-show" onclick="location.href='application-details.html?id=${app.id}&admin=true'">View</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function filterTable(status, el) {
+            document.querySelectorAll('#applicationsSection .sub-tabs .sub-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            if (status === 'all') renderTable(allApps);
+            else if (status === 'Pending') renderTable(allApps.filter(a => (a.verificationStatus === 'Pending' || !a.verified) && a.verificationStatus !== 'Rejected'));
+            else if (status === 'Verified') renderTable(allApps.filter(a => a.verified));
+            else renderTable(allApps.filter(a => a.verificationStatus === status));
+        }
+
+        // --- Amenities CRUD ---
+        async function loadAmenities() {
+            const res = await API.get('/AdminManagement/amenities');
+            if (res.success) {
+                allAmenities = res.data;
+                const body = document.getElementById('amenitiesBody');
+                body.innerHTML = allAmenities.map(a => `
+                    <tr>
+                        <td>${a.name}</td>
+                        <td><span class="status-badge" style="border-color:var(--glass-border); color:var(--text-muted);">${a.type || 'General'}</span></td>
+                        <td>${a.isHighlighted ? '<i class="fas fa-star" style="color:var(--gold)"></i>' : '-'}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-edit" onclick="editAmenity(${a.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-delete" onclick="deleteAmenity(${a.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function showAddAmenity() {
+            document.getElementById('amenityId').value = '';
+            document.getElementById('amenityForm').reset();
+            document.getElementById('amenityModalTitle').innerText = 'Add New Amenity';
+            document.getElementById('amenityModal').style.display = 'flex';
+        }
+
+        function editAmenity(id) {
+            const a = allAmenities.find(x => x.id == id);
+            document.getElementById('amenityId').value = a.id;
+            document.getElementById('amenityName').value = a.name;
+            document.getElementById('amenityType').value = a.type || '';
+            document.getElementById('amenityHighlighted').checked = a.isHighlighted;
+            document.getElementById('amenityModalTitle').innerText = 'Edit Amenity';
+            document.getElementById('amenityModal').style.display = 'flex';
+        }
+
+        document.getElementById('amenityForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('amenityId').value;
+            const data = {
+                id: id ? parseInt(id) : 0,
+                name: document.getElementById('amenityName').value,
+                type: document.getElementById('amenityType').value,
+                isHighlighted: document.getElementById('amenityHighlighted').checked
+            };
+            const res = id ? await API.put(`/AdminManagement/amenities/${id}`, data) : await API.post('/AdminManagement/amenities', data);
+            if (res.success) { closeModals(); loadAmenities(); } else alert(res.message);
+        };
+
+        async function deleteAmenity(id) {
+            if (confirm('Delete this amenity?')) {
+                const res = await API.delete(`/AdminManagement/amenities/${id}`);
+                if (res.success) loadAmenities(); else alert(res.message);
+            }
+        }
+
+        // --- Docs CRUD ---
+        async function loadDocs() {
+            const res = await API.get('/AdminManagement/document-types');
+            if (res.success) {
+                allDocs = res.data;
+                const body = document.getElementById('docsBody');
+                body.innerHTML = allDocs.map(d => `
+                    <tr class="${d.isActive ? '' : 'inactive-row'}">
+                        <td>${d.name}</td>
+                        <td style="font-family:monospace; font-size:0.8rem;">${d.keyName}</td>
+                        <td>${d.isRequired ? '<span style="color:var(--error);">Yes</span>' : 'No'}</td>
+                        <td>${d.isActive ? '<span style="color:var(--success);">Active</span>' : 'Disabled'}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-edit" onclick="editDoc(${d.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-delete" onclick="deleteDoc(${d.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function showAddDoc() {
+            document.getElementById('docId').value = '';
+            document.getElementById('docForm').reset();
+            document.getElementById('docActiveGroup').style.display = 'none';
+            document.getElementById('docModalTitle').innerText = 'Add Document Type';
+            document.getElementById('docModal').style.display = 'flex';
+        }
+
+        function editDoc(id) {
+            const d = allDocs.find(x => x.id == id);
+            document.getElementById('docId').value = d.id;
+            document.getElementById('docName').value = d.name;
+            document.getElementById('docKeyName').value = d.keyName;
+            document.getElementById('docRequired').checked = d.isRequired;
+            document.getElementById('docActive').checked = d.isActive;
+            document.getElementById('docActiveGroup').style.display = 'flex';
+            document.getElementById('docModalTitle').innerText = 'Edit Document Type';
+            document.getElementById('docModal').style.display = 'flex';
+        }
+
+        document.getElementById('docForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('docId').value;
+            const data = {
+                id: id ? parseInt(id) : 0,
+                name: document.getElementById('docName').value,
+                keyName: document.getElementById('docKeyName').value,
+                isRequired: document.getElementById('docRequired').checked,
+                isActive: document.getElementById('docActive').checked
+            };
+            const res = id ? await API.put(`/AdminManagement/document-types/${id}`, data) : await API.post('/AdminManagement/document-types', data);
+            if (res.success) { closeModals(); loadDocs(); } else alert(res.message);
+        };
+
+        async function deleteDoc(id) {
+            if (confirm('Delete or deactivate this document type?')) {
+                const res = await API.delete(`/AdminManagement/document-types/${id}`);
+                if (res.success) loadDocs(); else alert(res.message);
+            }
+        }
+
+        // --- Fields CRUD ---
+        async function loadFields() {
+            const res = await API.get('/AdminManagement/field-definitions');
+            if (res.success) {
+                allFields = res.data;
+                const body = document.getElementById('fieldsBody');
+                const typeLabels = ['Text', 'Text Area', 'Number', 'Date', 'File'];
+                body.innerHTML = allFields.map(f => `
+                    <tr class="${f.isActive ? '' : 'inactive-row'}">
+                        <td>${f.displayName}</td>
+                        <td style="font-family:monospace; font-size:0.8rem;">${f.keyName}</td>
+                        <td>${typeLabels[f.fieldType] || 'Text'}</td>
+                        <td>${f.isRequired ? 'Required' : '-'}</td>
+                        <td>${f.isActive ? '<span style="color:var(--success);">Active</span>' : 'Disabled'}</td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-edit" onclick="editField(${f.id})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-delete" onclick="deleteField(${f.id})"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function showAddField() {
+            document.getElementById('fieldId').value = '';
+            document.getElementById('fieldForm').reset();
+            document.getElementById('fieldActiveGroup').style.display = 'none';
+            document.getElementById('fieldModalTitle').innerText = 'Add Dynamic Field';
+            document.getElementById('fieldModal').style.display = 'flex';
+        }
+
+        function editField(id) {
+            const f = allFields.find(x => x.id == id);
+            document.getElementById('fieldId').value = f.id;
+            document.getElementById('fieldDisplayName').value = f.displayName;
+            document.getElementById('fieldKeyName').value = f.keyName;
+            document.getElementById('fieldType').value = f.fieldType;
+            document.getElementById('fieldRequired').checked = f.isRequired;
+            document.getElementById('fieldActive').checked = f.isActive;
+            document.getElementById('fieldActiveGroup').style.display = 'flex';
+            document.getElementById('fieldModalTitle').innerText = 'Edit Field';
+            document.getElementById('fieldModal').style.display = 'flex';
+        }
+
+        document.getElementById('fieldForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('fieldId').value;
+            const data = {
+                id: id ? parseInt(id) : 0,
+                keyName: document.getElementById('fieldKeyName').value,
+                displayName: document.getElementById('fieldDisplayName').value,
+                fieldType: parseInt(document.getElementById('fieldType').value),
+                isRequired: document.getElementById('fieldRequired').checked,
+                isActive: document.getElementById('fieldActive').checked
+            };
+            const res = id ? await API.put(`/AdminManagement/field-definitions/${id}`, data) : await API.post('/AdminManagement/field-definitions', data);
+            if (res.success) { closeModals(); loadFields(); } else alert(res.message);
+        };
+
+        async function deleteField(id) {
+            if (confirm('Delete or deactivate this field?')) {
+                const res = await API.delete(`/AdminManagement/field-definitions/${id}`);
+                if (res.success) loadFields(); else alert(res.message);
+            }
+        }
+
+        function closeModals() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+        }
+
+        window.onclick = (e) => {
+            if (e.target.classList.contains('modal')) closeModals();
+        }
+
+        loadApplications();
+    </script>
+</body>
+</html>

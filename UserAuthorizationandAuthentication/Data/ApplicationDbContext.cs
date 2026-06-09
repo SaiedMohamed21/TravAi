@@ -38,6 +38,19 @@ namespace TravAi.Data
 
         public DbSet<HotelPolicy> HotelPolicies { get; set; }
         public DbSet<HotelCancellationRule> HotelCancellationRules { get; set; }
+        
+        public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<ComplaintAttachment> ComplaintAttachments { get; set; }
+        public DbSet<ComplaintReply> ComplaintReplies { get; set; }
+        public DbSet<CommissionSetting> CommissionSettings { get; set; }
+        public DbSet<HotelPayment> HotelPayments { get; set; }
+        public DbSet<HotelAdminInboxMessage> HotelAdminInboxMessages { get; set; }
+        public DbSet<HotelAdminInboxReply> HotelAdminInboxReplies { get; set; }
+        public DbSet<HotelToAdminMessage> HotelToAdminMessages { get; set; }
+        public DbSet<HotelPendingProfile> HotelPendingProfiles { get; set; }
+        public DbSet<HotelPendingPolicy> HotelPendingPolicies { get; set; }
+        public DbSet<HotelPendingCancellationRule> HotelPendingCancellationRules { get; set; }
+        public DbSet<HotelPendingLegalDocument> HotelPendingLegalDocuments { get; set; }
 
         // Airline DbSets
         public DbSet<Airport> Airports { get; set; }
@@ -363,6 +376,139 @@ namespace TravAi.Data
                 .HasForeignKey(r => r.HotelPolicyId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Complaints Configuration
+            modelBuilder.Entity<Complaint>()
+                .Property(c => c.ComplaintType)
+                .HasConversion<string>();
+            modelBuilder.Entity<Complaint>()
+                .Property(c => c.Status)
+                .HasConversion<string>();
+            modelBuilder.Entity<Complaint>()
+                .Property(c => c.Priority)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<Complaint>()
+                .HasOne(c => c.User)
+                .WithMany()
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ComplaintAttachment>()
+                .HasOne(a => a.Complaint)
+                .WithMany(c => c.Attachments)
+                .HasForeignKey(a => a.ComplaintId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ComplaintReply>()
+                .HasOne(r => r.Complaint)
+                .WithMany(c => c.Replies)
+                .HasForeignKey(r => r.ComplaintId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Hotel Payment Configurations
+            modelBuilder.Entity<HotelPayment>().ToTable("hotel_payment");
+
+            modelBuilder.Entity<HotelPayment>()
+                .Property(p => p.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<HotelPayment>()
+                .Property(p => p.PaymentMethod)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<HotelPayment>()
+                .Property(p => p.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<HotelPayment>()
+                .HasIndex(p => p.TransactionId)
+                .IsUnique();
+
+            modelBuilder.Entity<HotelPayment>()
+                .HasOne(p => p.Booking)
+                .WithMany(b => b.Payments)
+                .HasForeignKey(p => p.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<HotelPayment>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HotelPayment>()
+                .HasOne(p => p.Hotel)
+                .WithMany()
+                .HasForeignKey(p => p.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Hotel Admin Inbox and To Admin Messages
+            modelBuilder.Entity<HotelAdminInboxMessage>()
+                .Property(m => m.Amount)
+                .HasPrecision(18, 2);
+                
+            modelBuilder.Entity<HotelAdminInboxMessage>()
+                .HasOne(m => m.Hotel)
+                .WithMany()
+                .HasForeignKey(m => m.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HotelAdminInboxReply>()
+                .HasOne(r => r.InboxMessage)
+                .WithMany(m => m.Replies)
+                .HasForeignKey(r => r.InboxMessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<HotelAdminInboxReply>()
+                .HasOne(r => r.Hotel)
+                .WithMany()
+                .HasForeignKey(r => r.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HotelAdminInboxReply>()
+                .HasOne(r => r.FromUser)
+                .WithMany()
+                .HasForeignKey(r => r.FromUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HotelToAdminMessage>()
+                .ToTable("hotel_ToAdminMessages");
+            
+            modelBuilder.Entity<HotelToAdminMessage>()
+                .Property(m => m.Category)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<HotelToAdminMessage>()
+                .HasOne(m => m.Hotel)
+                .WithMany()
+                .HasForeignKey(m => m.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HotelToAdminMessage>()
+                .HasOne(m => m.FromUser)
+                .WithMany()
+                .HasForeignKey(m => m.FromUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Pending Configurations
+            modelBuilder.Entity<HotelPendingProfile>()
+                .HasOne(r => r.Hotel)
+                .WithMany()
+                .HasForeignKey(r => r.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HotelPendingPolicy>()
+                .HasOne(r => r.Hotel)
+                .WithMany()
+                .HasForeignKey(r => r.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<HotelPendingLegalDocument>()
+                .HasOne(r => r.Hotel)
+                .WithMany()
+                .HasForeignKey(r => r.HotelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             // Airline Flights
             modelBuilder.Entity<Flight>()
                 .HasOne(f => f.DepartureAirport)
@@ -422,6 +568,17 @@ namespace TravAi.Data
             modelBuilder.Entity<Tour>().HasIndex(t => t.TourType);
             modelBuilder.Entity<Tour>().HasIndex(t => t.AvailableDateTime);
             modelBuilder.Entity<Tour>().HasIndex(t => new { t.City, t.TourScore });
+
+            modelBuilder.Entity<CommissionSetting>()
+                .HasOne(c => c.CreatedByAdminUser)
+                .WithMany()
+                .HasForeignKey(c => c.CreatedByAdminUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CommissionSetting>()
+                .HasIndex(c => c.IsActive)
+                .IsUnique()
+                .HasFilter("[IsActive] = 1");
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
@@ -12,6 +12,7 @@ namespace TravAi.Services.FileStorage
         Task<string?> SaveHotelImageAsync(IFormFile? file);
         Task<string?> SaveHotelDocumentAsync(IFormFile? file);
         Task<string?> SaveProfileImageAsync(IFormFile? file);
+        Task<string?> SaveComplaintAttachmentAsync(IFormFile? file);
     }
 
     public class FileService : IFileService
@@ -38,6 +39,11 @@ namespace TravAi.Services.FileStorage
         public async Task<string?> SaveProfileImageAsync(IFormFile? file)
         {
             return await SaveFileInternalAsync(file, "profiles", "profile", AllowedImageExtensions);
+        }
+
+        public async Task<string?> SaveComplaintAttachmentAsync(IFormFile? file)
+        {
+            return await SaveFileInternalAsync(file, "hotels/complaints", "complaint", AllowedImageExtensions);
         }
 
         private async Task<string?> SaveFileInternalAsync(IFormFile? file, string subFolder, string prefix, string[] allowedExtensions)

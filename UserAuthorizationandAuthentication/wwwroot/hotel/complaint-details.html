@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complaint Details</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: var(--gold);
+            --bg-dark: var(--bg-primary);
+            --glass: var(--glass-bg);
+            --glass-border: var(--glass-border);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(212, 168, 83, 0.07) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(212, 168, 83, 0.07) 0%, transparent 40%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            font-family: 'Outfit', 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--r);
+            box-shadow: var(--shadow-md);
+            padding: 30px;
+        }
+
+        .detail-group {
+            margin-bottom: 25px;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            color: #fff;
+            line-height: 1.6;
+        }
+
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-Pending { background: rgba(245, 166, 35, 0.15); color: #F5A623; border: 1px solid rgba(245, 166, 35, 0.3); }
+        .status-Resolved { background: rgba(62, 207, 160, 0.15); color: #3ECFA0; border: 1px solid rgba(62, 207, 160, 0.3); }
+        .status-Rejected { background: rgba(240, 101, 101, 0.15); color: #F06565; border: 1px solid rgba(240, 101, 101, 0.3); }
+
+        .attachment-thumb {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .attachment-thumb:hover {
+            transform: scale(1.05);
+            border-color: var(--gold);
+        }
+
+        .reply-card {
+            background: rgba(255,255,255,0.03);
+            border-left: 4px solid var(--gold);
+            padding: 20px;
+            border-radius: 0 16px 16px 0;
+            margin-bottom: 15px;
+        }
+
+        .reply-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .booking-card {
+            background: var(--gold-dim);
+            border: 1px solid var(--gold);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .booking-info h4 { margin: 0; color: #fff; font-size: 1.2rem; }
+        .booking-info p { margin: 5px 0 0; color: var(--text-secondary); font-size: 0.9rem; }
+
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header" style="border-bottom: 1px solid var(--glass-border);">
+            <a href="complaint.html" style="color: #fff;"><i class="fas fa-arrow-left"></i></a>
+            <div class="header-title">Complaint Details</div>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <main style="max-width: 900px; margin: 40px auto; padding: 0 25px;">
+            <div id="loader" style="text-align: center; padding: 100px;">
+                <i class="fas fa-circle-notch fa-spin fa-3x" style="color: var(--gold);"></i>
+                <p style="margin-top: 20px; color: var(--text-secondary);">Loading full details...</p>
+            </div>
+
+            <div id="content" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px;">
+                    <div>
+                        <span id="c-type" style="color: var(--gold); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;"></span>
+                        <h1 id="c-subject" style="font-size: 2.2rem; margin: 10px 0;"></h1>
+                        <p id="c-date" style="color: var(--text-secondary); font-size: 0.9rem;"></p>
+                    </div>
+                    <span id="c-status" class="status-badge"></span>
+                </div>
+
+                <div class="glass-panel detail-group" style="background: rgba(255,255,255,0.05);">
+                    <span class="detail-label">Complaint Message</span>
+                    <div id="c-message" class="detail-value" style="white-space: pre-wrap;"></div>
+                </div>
+
+                <!-- Booking Info -->
+                <div id="bookingSection" style="display: none; margin-bottom: 30px;">
+                    <span class="detail-label">Related Booking Information</span>
+                    <div class="booking-card">
+                        <div style="width: 60px; height: 60px; background: var(--gold); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #000;">
+                            <i class="fas fa-hotel"></i>
+                        </div>
+                        <div class="booking-info" style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                <h4 id="b-hotel"></h4>
+                                <span id="b-price" style="font-weight: 800; color: #fff;"></span>
+                            </div>
+                            <p id="b-city" style="color: var(--gold); font-size: 0.8rem; margin-top: 2px;"></p>
+                            <p id="b-room" style="font-weight: 500; font-size: 0.85rem; margin-top: 5px;"></p>
+                            <p id="b-dates" style="margin-top: 2px;"></p>
+                            <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 8px;">REFERENCE ID: #<span id="b-id"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attachments -->
+                <div id="attachmentsSection" style="display: none; margin-bottom: 30px;">
+                    <span class="detail-label">Evidence & Screenshots</span>
+                    <div id="attachmentsList" style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px;"></div>
+                </div>
+
+                <!-- Replies -->
+                <div style="margin-top: 50px;">
+                    <h3 style="margin-bottom: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-comments" style="color: var(--gold);"></i> Support Correspondence
+                    </h3>
+                    <div id="repliesList">
+                        <!-- Replies will render here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const complaintId = urlParams.get('id');
+
+        if (!Auth.isLoggedIn()) window.location.href = 'login.html';
+        if (!complaintId) window.location.href = 'complaint.html';
+
+        async function loadDetails() {
+            const res = await API.get(`/user/complaints/${complaintId}`);
+            document.getElementById('loader').style.display = 'none';
+
+            if (res.success) {
+                const c = res.data;
+                document.getElementById('content').style.display = 'block';
+
+                // Basic Info
+                document.getElementById('c-type').innerText = c.complaintType;
+                document.getElementById('c-subject').innerText = c.subject;
+                document.getElementById('c-date').innerText = `Submitted on ${new Date(c.createdAt).toLocaleString()}`;
+                
+                const statusPill = document.getElementById('c-status');
+                statusPill.innerText = c.status;
+                statusPill.className = `status-badge status-${c.status}`;
+
+                document.getElementById('c-message').innerText = c.message;
+
+                // Booking
+                if (c.bookingId) {
+                    document.getElementById('bookingSection').style.display = 'block';
+                    document.getElementById('b-hotel').innerText = c.hotelName || 'N/A';
+                    document.getElementById('b-city').innerText = c.hotelCity || '';
+                    document.getElementById('b-room').innerText = c.roomName || '';
+                    document.getElementById('b-dates').innerText = c.bookingDates || '';
+                    document.getElementById('b-price').innerText = c.totalPrice || '';
+                    document.getElementById('b-id').innerText = c.bookingId;
+                }
+
+                // Attachments
+                if (c.attachments && c.attachments.length > 0) {
+                    document.getElementById('attachmentsSection').style.display = 'block';
+                    document.getElementById('attachmentsList').innerHTML = c.attachments.map(att => `
+                        <a href="${att.fileUrl}" target="_blank">
+                            <img src="${att.fileUrl}" class="attachment-thumb" onerror="this.src='https://via.placeholder.com/120?text=File'">
+                        </a>
+                    `).join('');
+                }
+
+                // Replies
+                const repliesList = document.getElementById('repliesList');
+                if (c.replies && c.replies.length > 0) {
+                    repliesList.innerHTML = c.replies.map(r => `
+                        <div class="reply-card">
+                            <div class="reply-meta">
+                                <span style="font-weight: 800; color: var(--gold);">${r.senderName}</span>
+                                <span>${new Date(r.createdAt).toLocaleString()}</span>
+                            </div>
+                            <div style="color: #f8fafc; font-size: 1rem; line-height: 1.5;">${r.replyMessage}</div>
+                            ${r.attachments && r.attachments.length > 0 ? `
+                                <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                                    ${r.attachments.map(att => `
+                                        <a href="${att.fileUrl}" target="_blank">
+                                            <img src="${att.fileUrl}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--glass-border); transition: 0.3s;" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--glass-border)'">
+                                        </a>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    repliesList.innerHTML = `
+                        <div style="text-align: center; padding: 40px; background: rgba(255,255,255,0.02); border-radius: 16px; color: var(--text-secondary);">
+                            <i class="fas fa-clock fa-2x" style="margin-bottom: 15px; opacity: 0.5;"></i>
+                            <p>No replies yet. Our support team is currently reviewing your request.</p>
+                        </div>
+                    `;
+                }
+
+            } else {
+                alert('Failed to load complaint details: ' + res.message);
+                window.location.href = 'complaint.html';
+            }
+        }
+
+        loadDetails();
+    </script>
+</body>
+</html>

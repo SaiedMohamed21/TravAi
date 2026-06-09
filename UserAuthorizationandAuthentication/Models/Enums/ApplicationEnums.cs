@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace TravAi.Models.Enums
 {
@@ -25,7 +25,10 @@ namespace TravAi.Models.Enums
         Pending,
         Uploaded,
         Verified,
-        Rejected
+        Approved,
+        Rejected,
+        Suspended,
+        Banned
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

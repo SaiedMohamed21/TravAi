@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using TravAi.TourGuide.DTOs.TourGuide;
 using TravAi.TourGuide.Services;
 using TravAi.TourGuide.DTOs.WithdrawRequest;
-
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 namespace TravAi.TourGuide.Controllers
 {
     [Route("api/tourguide/profile")]
@@ -44,6 +46,26 @@ namespace TravAi.TourGuide.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// Get the application status of the currently logged in user
+        /// </summary>
+        [Authorize]
+        [HttpGet("status")]
+        public async Task<IActionResult> GetMyApplicationStatus()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null)
+            {
+                return Ok(new { applicationStatus = "No Application" });
+            }
+
+            return Ok(new { applicationStatus = tourGuide.Status });
         }
 
         /// <summary>
@@ -90,6 +112,114 @@ namespace TravAi.TourGuide.Controllers
             if (!result) return BadRequest("Could not update profile.");
 
             return Ok("Profile updated successfully. Status changed to Pending awaiting admin approval.");
+        }
+
+        /// <summary>
+        /// Upload profile picture for the Tour Guide (User entity)
+        /// </summary>
+        [Authorize]
+        [HttpPost("upload-profile-picture")]
+        public async Task<IActionResult> UploadProfilePicture(
+            IFormFile file, 
+            [FromServices] IWebHostEnvironment env,
+            [FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            var ext = System.IO.Path.GetExtension(file.FileName).ToLower();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".webp")
+                return BadRequest("Only image files (jpg, jpeg, png, webp) are allowed.");
+
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var uploadsFolder = System.IO.Path.Combine(env.WebRootPath ?? System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot"), "uploads", "images");
+            if (!System.IO.Directory.Exists(uploadsFolder))
+                System.IO.Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = System.Guid.NewGuid().ToString() + ext;
+            var filePath = System.IO.Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var fileUrl = $"{baseUrl}/uploads/images/{uniqueFileName}";
+
+            // Update user profile pic
+            var user = await context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user != null)
+            {
+                user.ProfilePic = fileUrl;
+                await context.SaveChangesAsync();
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "Profile picture uploaded successfully",
+                data = new { imageUrl = fileUrl }
+            });
+        }
+
+        /// <summary>
+        /// Upload license document (PDF or Image) for the Tour Guide
+        /// </summary>
+        [Authorize(Roles = "Tourguide")]
+        [HttpPost("upload-license")]
+        public async Task<IActionResult> UploadLicense(
+            IFormFile file, 
+            [FromServices] IWebHostEnvironment env,
+            [FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded.");
+
+            var ext = System.IO.Path.GetExtension(file.FileName).ToLower();
+            if (ext != ".pdf" && ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+                return BadRequest("Only PDF and image files (jpg, jpeg, png) are allowed.");
+
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var subFolder = ext == ".pdf" ? "documents" : "images";
+            var uploadsFolder = System.IO.Path.Combine(env.WebRootPath ?? System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot"), "uploads", subFolder);
+            
+            if (!System.IO.Directory.Exists(uploadsFolder))
+                System.IO.Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = System.Guid.NewGuid().ToString() + ext;
+            var filePath = System.IO.Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new System.IO.FileStream(filePath, System.IO.FileMode.Create))
+            {
+                await file.CopyToAsync(fileStream);
+            }
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var fileUrl = $"{baseUrl}/uploads/{subFolder}/{uniqueFileName}";
+
+            // Update TourGuide license card
+            var tourGuide = await context.TourGuides.FirstOrDefaultAsync(tg => tg.UserId == userId);
+            if (tourGuide != null)
+            {
+                tourGuide.LicenseCard = fileUrl;
+                await context.SaveChangesAsync();
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "License uploaded successfully",
+                data = new { fileUrl = fileUrl }
+            });
         }
         /// <summary>
         /// Tour Guide requests to withdraw money from their wallet/earnings

@@ -29,6 +29,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
 
 builder.Services.AddScoped<TravAi.Services.HotelService.IHotelService, TravAi.Services.HotelService.HotelService>();
+builder.Services.AddScoped<TravAi.Services.HotelService.IHotelDashboardService, TravAi.Services.HotelService.HotelDashboardService>();
 builder.Services.AddScoped<TravAi.Services.FileStorage.IFileService, TravAi.Services.FileStorage.FileService>();
 
 // --- Airline Services ---

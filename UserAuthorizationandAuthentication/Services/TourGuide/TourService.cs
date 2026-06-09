@@ -341,7 +341,7 @@ namespace TravAi.TourGuide.Services
 
             TourGuideResponseInfo? guideInfo = null;
 
-            var rating = tourReviews.Any() ? Math.Round((decimal)tourReviews.Average(r => r.Rating), 1) : (tour.Rating ?? 0);
+            var rating = tourReviews.Any() ? Math.Round((decimal)tourReviews.Average(r => (decimal)r.Rating), 1) : (tour.Rating ?? 0m);
             var reviewsCount = tourReviews.Any() ? tourReviews.Count : (tour.NumberOfReviews ?? 0);
 
             if (isDetail && tour.TourGuide != null)
@@ -349,7 +349,8 @@ namespace TravAi.TourGuide.Services
                 await _context.Entry(tour.TourGuide).Reference(tg => tg.User).LoadAsync();
                 
                 var guideTours = await _context.Tours.Where(t => t.TourGuideId == tour.TourGuideId).ToListAsync();
-                decimal guideAvgRating = guideTours.Where(t => t.Rating.HasValue).Any() ? guideTours.Average(t => t.Rating.Value) : 0;
+                var ratedTours = guideTours.Where(t => t.Rating.HasValue).ToList();
+                decimal guideAvgRating = ratedTours.Any() ? ratedTours.Average(t => t.Rating.Value) : 0m;
                 int guideTotalReviews = guideTours.Sum(t => t.NumberOfReviews ?? 0);
 
                 guideInfo = new TourGuideResponseInfo
@@ -402,7 +403,7 @@ namespace TravAi.TourGuide.Services
                 GuideName = tour.TourGuide?.Name ?? "Unknown",
                 Languages = langs,
                 StartTime = tour.AvailableDateTime,
-                EndTime = tour.AvailableDateTime.HasValue && tour.DurationHours.HasValue ? tour.AvailableDateTime.Value.AddHours(tour.DurationHours.Value) : null,
+                EndTime = (tour.AvailableDateTime.HasValue && tour.DurationHours.HasValue) ? tour.AvailableDateTime.Value.AddHours((double)tour.DurationHours.Value) : (DateTime?)null,
                 Date = tour.AvailableDateTime,
                 Description = tour.TourDescription,
                 IncludedFeatures = features,
@@ -497,7 +498,7 @@ namespace TravAi.TourGuide.Services
             foreach (var tour in tours)
             {
                 var tourReviews = allReviews.Where(r => r.TourId == tour.Id).ToList();
-                var rating = tourReviews.Any() ? (decimal)tourReviews.Average(r => r.Rating) : (tour.Rating ?? 0);
+                var rating = tourReviews.Any() ? (decimal)tourReviews.Average(r => (decimal)r.Rating) : (tour.Rating ?? 0m);
                 var reviewsCount = tourReviews.Any() ? tourReviews.Count : (tour.NumberOfReviews ?? 0);
 
                 var primaryImage = tour.TourImages.FirstOrDefault(i => i.IsPrimary)?.ImageUrl 
@@ -530,7 +531,7 @@ namespace TravAi.TourGuide.Services
                     Date = date,
                     StartTime = startTime,
                     EndTime = endTime,
-                    Price = tour.BasePriceUsd ?? 0,
+                    Price = tour.BasePriceUsd ?? 0m,
                     Currency = tour.Currency ?? "USD",
                     TourScore = tour.TourScore
                 });
@@ -563,7 +564,7 @@ namespace TravAi.TourGuide.Services
                 .Select(l => l.Language.ToString())
                 .ToList() ?? new List<string>();
 
-            var rating = tourReviews.Any() ? Math.Round((decimal)tourReviews.Average(r => r.Rating), 1) : (tour.Rating ?? 0);
+            var rating = tourReviews.Any() ? Math.Round((decimal)tourReviews.Average(r => (decimal)r.Rating), 1) : (tour.Rating ?? 0m);
             var reviewsCount = tourReviews.Any() ? tourReviews.Count : (tour.NumberOfReviews ?? 0);
 
             var date      = tour.AvailableDateTime?.ToString("yyyy-MM-dd");
@@ -627,7 +628,7 @@ namespace TravAi.TourGuide.Services
                 GroupSize     = tour.GroupSizeMax,
                 AvailableSeats = availableSeats,
 
-                Price       = tour.BasePriceUsd ?? 0,
+                Price       = tour.BasePriceUsd ?? 0m,
                 Currency    = tour.Currency ?? "USD",
 
                 Description = tour.TourDescription,
