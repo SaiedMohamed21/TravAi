@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using System;
 using System.Collections.Generic;
 using TravAi.Models.Enums;
@@ -43,6 +43,7 @@ namespace TravAi.TourGuide.DTOs.Tour
 
         public string? ImageUrl { get; set; }
         public int ReviewsCount { get; set; }
+        public int BookingCount { get; set; }
         public string? GuideName { get; set; }
         public List<string> Languages { get; set; } = new List<string>();
         public DateTime? StartTime { get; set; }

@@ -9,6 +9,7 @@ using TravAi.Airline.Models;
 using TravAi.Airline.Models.Airlines;
 using TravAi.TourGuide.Models;
 using TravAi.Models.Common;
+using TravAi.Models.AI;
 
 namespace TravAi.Data
 {
@@ -88,6 +89,9 @@ namespace TravAi.Data
         public DbSet<CheckoutSessionItem> CheckoutSessionItems { get; set; }
         public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
         public DbSet<StripeWebhookEvent> StripeWebhookEvents { get; set; }
+
+        public DbSet<ChatSession> ChatSessions { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -626,6 +630,22 @@ namespace TravAi.Data
                 .WithMany()
                 .HasForeignKey(e => e.PaymentTransactionId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // AI Chatbot
+            modelBuilder.Entity<ChatSession>().ToTable("ai_ChatSessions");
+            modelBuilder.Entity<ChatMessage>().ToTable("ai_ChatMessages");
+
+            modelBuilder.Entity<ChatSession>()
+                .HasOne(s => s.User)
+                .WithMany()
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ChatMessage>()
+                .HasOne(m => m.ChatSession)
+                .WithMany(s => s.Messages)
+                .HasForeignKey(m => m.ChatSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

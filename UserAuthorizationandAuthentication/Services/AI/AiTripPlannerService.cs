@@ -146,28 +146,22 @@ namespace TravAi.Services.AI
                 var toCodes    = await _db.Airports.Where(a => a.City.ToLower() == firstCity.ToLower()).Select(a => a.Code).ToListAsync();
                 var lastCodes  = await _db.Airports.Where(a => a.City.ToLower() == lastCity.ToLower()).Select(a => a.Code).ToListAsync();
 
-                // Search within ±7 days of departure date for best price estimate
-                var goDateFrom = req.DepartureDate.Date.AddDays(-7);
-                if (goDateFrom < DateTime.Today) goDateFrom = DateTime.Today;
-                var goDateTo   = req.DepartureDate.Date.AddDays(7);
+                // Search on the exact departure date
+                var goDate = req.DepartureDate.Date;
                 var goPrices = await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
                         && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
-                        && f.DepartureTime!.Value.Date >= goDateFrom
-                        && f.DepartureTime!.Value.Date <= goDateTo
+                        && f.DepartureTime!.Value.Date == goDate
                         && fromCodes.Contains(f.DepartureAirportCode!)
                         && toCodes.Contains(f.ArrivalAirportCode!))
                     .Select(f => f.Price!.Value).ToListAsync();
 
-                // Search within ±7 days of return date for best price estimate
-                var retDateFrom = req.ReturnDate.Date.AddDays(-7);
-                if (retDateFrom < DateTime.Today) retDateFrom = DateTime.Today;
-                var retDateTo   = req.ReturnDate.Date.AddDays(7);
+                // Search on the exact return date
+                var retDate = req.ReturnDate.Date;
                 var retPrices = await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
                         && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
-                        && f.DepartureTime!.Value.Date >= retDateFrom
-                        && f.DepartureTime!.Value.Date <= retDateTo
+                        && f.DepartureTime!.Value.Date == retDate
                         && lastCodes.Contains(f.DepartureAirportCode!)
                         && fromCodes.Contains(f.ArrivalAirportCode!))
                     .Select(f => f.Price!.Value).ToListAsync();
@@ -293,29 +287,23 @@ namespace TravAi.Services.AI
             var toCodesP    = await _db.Airports.Where(a => a.City.ToLower() == firstCity.ToLower()).Select(a => a.Code).ToListAsync();
             var lastCodesP  = await _db.Airports.Where(a => a.City.ToLower() == lastCity.ToLower()).Select(a => a.Code).ToListAsync();
 
-            // ±7 days window — same as EstimateBudget so market averages are consistent
-            var goDateFrom = req.DepartureDate.Date.AddDays(-7);
-                if (goDateFrom < DateTime.Today) goDateFrom = DateTime.Today;
-            var goDateTo   = req.DepartureDate.Date.AddDays(7);
+            // Exact departure date matching
+            var goDate = req.DepartureDate.Date;
             var goPriceList = req.ExcludeFlights ? new List<decimal>() :
                 await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
                         && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
-                        && f.DepartureTime!.Value.Date >= goDateFrom
-                        && f.DepartureTime!.Value.Date <= goDateTo
+                        && f.DepartureTime!.Value.Date == goDate
                         && fromCodesP.Contains(f.DepartureAirportCode!)
                         && toCodesP.Contains(f.ArrivalAirportCode!))
                     .Select(f => f.Price!.Value).ToListAsync();
 
-            var retDateFrom = req.ReturnDate.Date.AddDays(-7);
-                if (retDateFrom < DateTime.Today) retDateFrom = DateTime.Today;
-            var retDateTo   = req.ReturnDate.Date.AddDays(7);
+            var retDate = req.ReturnDate.Date;
             var retPriceList = req.ExcludeFlights ? new List<decimal>() :
                 await _db.Flights
                     .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
                         && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
-                        && f.DepartureTime!.Value.Date >= retDateFrom
-                        && f.DepartureTime!.Value.Date <= retDateTo
+                        && f.DepartureTime!.Value.Date == retDate
                         && lastCodesP.Contains(f.DepartureAirportCode!)
                         && fromCodesP.Contains(f.ArrivalAirportCode!))
                     .Select(f => f.Price!.Value).ToListAsync();
@@ -545,9 +533,7 @@ namespace TravAi.Services.AI
             List<string> fromCodes, List<string> toCodes, DateTime date, string flightClass,
             decimal budget, int adults, int children, string direction)
         {
-            var dateFrom = date.Date.AddDays(-7);
-            if (dateFrom < DateTime.Today) dateFrom = DateTime.Today;
-            var dateTo   = date.Date.AddDays(7);
+            var exactDate = date.Date;
 
             var dbFlights = await _db.Flights
                 .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport)
@@ -556,8 +542,7 @@ namespace TravAi.Services.AI
                 .Include(f => f.Layovers)
                 .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
                     && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
-                    && f.DepartureTime!.Value.Date >= dateFrom
-                    && f.DepartureTime!.Value.Date <= dateTo
+                    && f.DepartureTime!.Value.Date == exactDate
                     && fromCodes.Contains(f.DepartureAirportCode!)
                     && toCodes.Contains(f.ArrivalAirportCode!))
                 .ToListAsync();
@@ -594,7 +579,7 @@ namespace TravAi.Services.AI
                     Duration = f.Duration,
                     Stops = f.NumberOfStops ?? 0,
                     PriceUsd = (double)f.Price!.Value,
-                    Route = $"{f.DepartureAirport?.City}_{f.ArrivalAirport?.City}",
+                    Route = direction == "Return" ? $"{f.ArrivalAirport?.City}_{f.DepartureAirport?.City}" : $"{f.DepartureAirport?.City}_{f.ArrivalAirport?.City}",
                     DepartureDatetime = f.DepartureTime?.ToString("M/d/yyyy H:mm"),
                     ArrivalDatetime = f.ArrivalTime?.ToString("M/d/yyyy H:mm"),
                     DurationMinutes = f.DurationMinutes ?? 0
@@ -658,7 +643,7 @@ namespace TravAi.Services.AI
 
                         if (bestDbFlight == null) 
                         {
-                            LogDebug("   - ERROR: Could not match the returned flight to any local DB flight!");
+                            throw new Exception($"AI returned a flight, but it could not be matched to the local DB for {direction}.");
                         }
                         else
                         {
@@ -686,36 +671,19 @@ namespace TravAi.Services.AI
                             };
                         }
                     }
+                    
+                    throw new Exception($"AI API returned success but no flight was found in the response for {direction}.");
+                }
+                else
+                {
+                    throw new Exception($"AI API Error for {direction}: {jsonResponse}");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error calling AI Flight API: {ex.Message}");
+                throw new Exception($"Failed to get flight recommendation for {direction}: {ex.Message}");
             }
 
-            LogDebug($"   - API failed or didn't match. Using local fallback for {direction}!");
-            var fallback = validFlights.OrderBy(f => f.Price).ThenBy(f => f.DurationMinutes).First();
-            return new PlannedFlightDto
-            {
-                SessionId            = $"FALLBACK_{fallback.Id}",
-                Id                   = fallback.Id,
-                FlightNumber         = fallback.FlightNumber ?? "",
-                AirlineName          = fallback.Airline?.Name ?? "",
-                DepartureAirportCode = fallback.DepartureAirportCode ?? "",
-                DepartureCity        = fallback.DepartureAirport?.City ?? "",
-                ArrivalAirportCode   = fallback.ArrivalAirportCode ?? "",
-                ArrivalCity          = fallback.ArrivalAirport?.City ?? "",
-                DepartureTime        = fallback.DepartureTime,
-                ArrivalTime          = fallback.ArrivalTime,
-                FlightClass          = fallback.FlightClass,
-                Duration             = fallback.Duration,
-                NumberOfStops        = fallback.NumberOfStops,
-                DestinationImageUrl  = fallback.DestinationImageUrl,
-                PricePerAdult        = fallback.Price!.Value,
-                PricePerChild        = fallback.Price!.Value * 0.75m,
-                TotalPrice           = Math.Round(FlightTotalPrice(fallback.Price!.Value, adults, children), 2),
-                Direction            = direction
-            };
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -841,52 +809,7 @@ namespace TravAi.Services.AI
         // ─────────────────────────────────────────────────────────────────────
         public async Task<PlannedFlightDto?> RegenerateFlightAsync(string sessionId, int adults, int children, string direction)
         {
-            if (sessionId.StartsWith("FALLBACK_"))
-            {
-                if (long.TryParse(sessionId.Replace("FALLBACK_", ""), out long originalId))
-                {
-                    var originalFlight = await _db.Flights.FindAsync(originalId);
-                    if (originalFlight != null)
-                    {
-                        var altFlight = await _db.Flights
-                            .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport).Include(f => f.Airline)
-                            .Where(f => f.DepartureAirportCode == originalFlight.DepartureAirportCode &&
-                                        f.ArrivalAirportCode == originalFlight.ArrivalAirportCode &&
-                                        f.FlightClass == originalFlight.FlightClass &&
-                                        f.DepartureTime.HasValue && originalFlight.DepartureTime.HasValue &&
-                                        f.DepartureTime.Value.Date == originalFlight.DepartureTime.Value.Date &&
-                                        f.Id != originalId)
-                            .OrderBy(x => Guid.NewGuid()) // Pick a random alternative
-                            .FirstOrDefaultAsync();
 
-                        if (altFlight != null)
-                        {
-                            return new PlannedFlightDto
-                            {
-                                SessionId            = $"FALLBACK_{altFlight.Id}",
-                                Id                   = altFlight.Id,
-                                FlightNumber         = altFlight.FlightNumber ?? "",
-                                AirlineName          = altFlight.Airline?.Name ?? "",
-                                DepartureAirportCode = altFlight.DepartureAirportCode ?? "",
-                                DepartureCity        = altFlight.DepartureAirport?.City ?? "",
-                                ArrivalAirportCode   = altFlight.ArrivalAirportCode ?? "",
-                                ArrivalCity          = altFlight.ArrivalAirport?.City ?? "",
-                                DepartureTime        = altFlight.DepartureTime,
-                                ArrivalTime          = altFlight.ArrivalTime,
-                                FlightClass          = altFlight.FlightClass,
-                                Duration             = altFlight.Duration,
-                                NumberOfStops        = altFlight.NumberOfStops,
-                                DestinationImageUrl  = altFlight.DestinationImageUrl,
-                                PricePerAdult        = altFlight.Price!.Value,
-                                PricePerChild        = altFlight.Price!.Value * 0.75m,
-                                TotalPrice           = Math.Round(FlightTotalPrice(altFlight.Price!.Value, adults, children), 2),
-                                Direction            = direction
-                            };
-                        }
-                    }
-                }
-                return null;
-            }
 
             var baseUrl = _config["FlightRecommendationApi:BaseUrl"];
             if (string.IsNullOrEmpty(baseUrl)) return null;
@@ -907,30 +830,19 @@ namespace TravAi.Services.AI
 
                     if (altFlightModel != null)
                     {
-                        // Match the alternative flight back to our db flights
-                        // In this case, we search the entire DB based on departure time, price, and airline since we don't have the original validFlights list
-                        
-                        var altDbFlight = await _db.Flights
+                        decimal targetPrice = (decimal)altFlightModel.PriceUsd;
+                        decimal lowerBound = targetPrice - 1m;
+                        decimal upperBound = targetPrice + 1m;
+
+                        var candidateFlights = await _db.Flights
                             .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport)
                             .Include(f => f.Airline)
-                            .FirstOrDefaultAsync(f =>
-                                Math.Abs((double)f.Price!.Value - altFlightModel.PriceUsd) < 0.01 &&
-                                f.Airline != null && f.Airline.Name == altFlightModel.Airline);
+                            .Where(f => f.Airline != null && f.Airline.Name == altFlightModel.Airline &&
+                                        f.Price >= lowerBound && f.Price <= upperBound)
+                            .ToListAsync();
 
-                        // If FirstOrDefaultAsync is too slow without date, we might need a broader search or memory load
-                        if (altDbFlight == null)
-                        {
-                            // fallback logic if Exact match fails
-                            var allMatchingAirline = await _db.Flights
-                                .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport)
-                                .Include(f => f.Airline)
-                                .Where(f => f.Airline != null && f.Airline.Name == altFlightModel.Airline)
-                                .ToListAsync();
-
-                            altDbFlight = allMatchingAirline.FirstOrDefault(f => 
-                                Math.Abs((double)f.Price!.Value - altFlightModel.PriceUsd) < 0.01 &&
-                                f.DepartureTime?.ToString("M/d/yyyy H:mm") == altFlightModel.DepartureDatetime);
-                        }
+                        var altDbFlight = candidateFlights.FirstOrDefault(f => 
+                            f.DepartureTime?.ToString("M/d/yyyy H:mm") == altFlightModel.DepartureDatetime);
 
                         if (altDbFlight != null)
                         {
@@ -956,15 +868,24 @@ namespace TravAi.Services.AI
                                 Direction            = direction
                             };
                         }
+                        else
+                        {
+                            throw new Exception("AI returned a flight, but it could not be matched to the local DB.");
+                        }
                     }
+                    
+                    throw new Exception("AI API returned success but no flight was found in the response.");
+                }
+                else
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    throw new Exception(jsonResponse);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error calling AI Flight Regenerate API: {ex.Message}");
+                throw new Exception(ex.Message);
             }
-
-            return null;
         }
     }
 }
