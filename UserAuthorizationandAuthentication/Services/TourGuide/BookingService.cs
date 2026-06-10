@@ -1,4 +1,4 @@
-using TravAi.TourGuide.Models;
+﻿using TravAi.TourGuide.Models;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
 
@@ -284,21 +284,6 @@ namespace TravAi.TourGuide.Services
                 dtos.Add(await MapToDto(booking));
             }
             return dtos;
-        }
-
-        public async Task<BookingResponseDto> GetAssignedBookingByIdAsync(long tourGuideId, long bookingId)
-        {
-            var booking = await _context.TourBookings
-                .Include(b => b.Tour)
-                .Include(b => b.TourGuide)
-                .Include(b => b.Participants)
-                    .ThenInclude(p => p.Phones)
-                .Include(b => b.Participants)
-                    .ThenInclude(p => p.EmergencyNumbers)
-                .FirstOrDefaultAsync(b => b.Id == bookingId && b.TourGuideId == tourGuideId);
-
-            if (booking == null) return null;
-            return await MapToDto(booking);
         }
 
         public async Task<BookingResponseDto> GetBookingByIdAsync(long userId, long bookingId)

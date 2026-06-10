@@ -647,6 +647,104 @@ namespace TravAi.Migrations
                     b.ToTable("UserPhones", (string)null);
                 });
 
+            modelBuilder.Entity("TravAi.Models.CheckoutSession", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CheckoutType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("StripeCheckoutSessionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("StripePaymentIntentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CheckoutSessions", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.CheckoutSessionItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("CheckoutSessionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long>("ReferenceId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckoutSessionId");
+
+                    b.ToTable("CheckoutSessionItems", (string)null);
+                });
+
             modelBuilder.Entity("TravAi.Models.Common.Notification", b =>
                 {
                     b.Property<long>("Id")
@@ -682,7 +780,7 @@ namespace TravAi.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("TravAi.Models.Hotels.Amenity", b =>
@@ -722,6 +820,18 @@ namespace TravAi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<decimal?>("CancellationFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("CancellationReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CancelledByUserId")
+                        .HasColumnType("bigint");
+
                     b.Property<DateTime?>("CheckInDate")
                         .HasColumnType("datetime2");
 
@@ -739,6 +849,9 @@ namespace TravAi.Migrations
 
                     b.Property<int>("PaymentStatus")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -804,6 +917,230 @@ namespace TravAi.Migrations
                     b.HasIndex("RoomId");
 
                     b.ToTable("hotel_HotelBookingRooms", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelPayment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("BookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentReference")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TransactionId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("HotelId");
+
+                    b.HasIndex("TransactionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("hotel_payment", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.CommissionSetting", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("CityTaxMode")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("CityTaxValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedByAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("PlatformCommissionPct")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("VatPct")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByAdminUserId");
+
+                    b.HasIndex("IsActive")
+                        .IsUnique()
+                        .HasFilter("[IsActive] = 1");
+
+                    b.ToTable("hotel_CommissionSettings");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.Complaint", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("BookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ComplaintType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BookingId");
+
+                    b.HasIndex("HotelId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("hotel_Complaints");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.ComplaintAttachment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("ComplaintId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long?>("ReplyId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ComplaintId");
+
+                    b.HasIndex("ReplyId");
+
+                    b.ToTable("hotel_ComplaintAttachments");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.ComplaintReply", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("AdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ComplaintId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReplyMessage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminUserId");
+
+                    b.HasIndex("ComplaintId");
+
+                    b.ToTable("hotel_ComplaintReplies");
                 });
 
             modelBuilder.Entity("TravAi.Models.Hotels.DocumentTypeDefinition", b =>
@@ -928,6 +1265,118 @@ namespace TravAi.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("hotel_Hotels", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelAdminInboxMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ActionLabel")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("AdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal?>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsResolved")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RefId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RefType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResolutionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminUserId");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("hotel_AdminInboxMessages");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelAdminInboxReply", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("FromUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("InboxMessageId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ReplyMessage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("ToAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("HotelId");
+
+                    b.HasIndex("InboxMessageId");
+
+                    b.HasIndex("ToAdminUserId");
+
+                    b.ToTable("hotel_AdminInboxReplies");
                 });
 
             modelBuilder.Entity("TravAi.Models.Hotels.HotelAmenity", b =>
@@ -1164,6 +1613,201 @@ namespace TravAi.Migrations
                     b.ToTable("hotel_HotelImages", (string)null);
                 });
 
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingCancellationRule", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("FromHoursBeforeCheckIn")
+                        .HasColumnType("int");
+
+                    b.Property<long>("HotelPendingPolicyId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("PenaltyPct")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int?>("ToHoursBeforeCheckIn")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HotelPendingPolicyId");
+
+                    b.ToTable("hotel_PendingCancellationRules");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingLegalDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AdminComment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("DocumentTypeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("RequestedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentTypeId");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("hotel_PendingLegalDocuments");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingPolicy", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AdminComment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("CancellationStrategy")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool?>("IncludeCityTax")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IncludeServiceCharge")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IncludeVat")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("RequestedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal?>("ServiceChargePct")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("hotel_PendingPolicies");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingProfile", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AccommodationType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AddressDetails")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AdminComment")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AmenitiesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CityArea")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DynamicFieldsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Governorate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("HotelName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImagesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("PropertyType")
+                        .HasColumnType("int");
+
+                    b.Property<long>("RequestedByUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RoomsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StarRating")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("hotel_PendingProfiles");
+                });
+
             modelBuilder.Entity("TravAi.Models.Hotels.HotelPolicy", b =>
                 {
                     b.Property<long>("Id")
@@ -1300,6 +1944,144 @@ namespace TravAi.Migrations
                     b.HasIndex("HotelId");
 
                     b.ToTable("hotel_HotelRooms", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelToAdminMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("FromUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("HotelId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromUserId");
+
+                    b.HasIndex("HotelId");
+
+                    b.ToTable("hotel_ToAdminMessages", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.PaymentTransaction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("CheckoutSessionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ProviderCheckoutSessionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ProviderTransactionId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("RawProviderResponse")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckoutSessionId");
+
+                    b.ToTable("PaymentTransactions", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.StripeWebhookEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("CheckoutSessionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<long?>("PaymentTransactionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("RawJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeEventId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CheckoutSessionId");
+
+                    b.HasIndex("PaymentTransactionId");
+
+                    b.ToTable("StripeWebhookEvents", (string)null);
                 });
 
             modelBuilder.Entity("TravAi.TourGuide.Models.Review", b =>
@@ -2131,6 +2913,28 @@ namespace TravAi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TravAi.Models.CheckoutSession", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravAi.Models.CheckoutSessionItem", b =>
+                {
+                    b.HasOne("TravAi.Models.CheckoutSession", "CheckoutSession")
+                        .WithMany("Items")
+                        .HasForeignKey("CheckoutSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CheckoutSession");
+                });
+
             modelBuilder.Entity("TravAi.Models.Common.Notification", b =>
                 {
                     b.HasOne("TravAi.Models.Auth.User", "User")
@@ -2179,6 +2983,102 @@ namespace TravAi.Migrations
                     b.Navigation("Room");
                 });
 
+            modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelPayment", b =>
+                {
+                    b.HasOne("TravAi.Models.Hotels.Bookings.HotelBooking", "Booking")
+                        .WithMany("Payments")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Hotel");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.CommissionSetting", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "CreatedByAdminUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByAdminUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByAdminUser");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.Complaint", b =>
+                {
+                    b.HasOne("TravAi.Models.Hotels.Bookings.HotelBooking", "Booking")
+                        .WithMany()
+                        .HasForeignKey("BookingId");
+
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId");
+
+                    b.HasOne("TravAi.Models.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Hotel");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.ComplaintAttachment", b =>
+                {
+                    b.HasOne("TravAi.Models.Hotels.Complaint", "Complaint")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ComplaintId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("TravAi.Models.Hotels.ComplaintReply", "Reply")
+                        .WithMany("Attachments")
+                        .HasForeignKey("ReplyId");
+
+                    b.Navigation("Complaint");
+
+                    b.Navigation("Reply");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.ComplaintReply", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "AdminUser")
+                        .WithMany()
+                        .HasForeignKey("AdminUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Hotels.Complaint", "Complaint")
+                        .WithMany("Replies")
+                        .HasForeignKey("ComplaintId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AdminUser");
+
+                    b.Navigation("Complaint");
+                });
+
             modelBuilder.Entity("TravAi.Models.Hotels.Hotel", b =>
                 {
                     b.HasOne("TravAi.Models.Auth.User", "User")
@@ -2188,6 +3088,56 @@ namespace TravAi.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelAdminInboxMessage", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "AdminUser")
+                        .WithMany()
+                        .HasForeignKey("AdminUserId");
+
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AdminUser");
+
+                    b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelAdminInboxReply", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "FromUser")
+                        .WithMany()
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Hotels.HotelAdminInboxMessage", "InboxMessage")
+                        .WithMany("Replies")
+                        .HasForeignKey("InboxMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Auth.User", "ToAdminUser")
+                        .WithMany()
+                        .HasForeignKey("ToAdminUserId");
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("Hotel");
+
+                    b.Navigation("InboxMessage");
+
+                    b.Navigation("ToAdminUser");
                 });
 
             modelBuilder.Entity("TravAi.Models.Hotels.HotelAmenity", b =>
@@ -2280,6 +3230,58 @@ namespace TravAi.Migrations
                     b.Navigation("Hotel");
                 });
 
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingCancellationRule", b =>
+                {
+                    b.HasOne("TravAi.Models.Hotels.HotelPendingPolicy", "PendingPolicy")
+                        .WithMany("CancellationRules")
+                        .HasForeignKey("HotelPendingPolicyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PendingPolicy");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingLegalDocument", b =>
+                {
+                    b.HasOne("TravAi.Models.Hotels.DocumentTypeDefinition", "DocumentType")
+                        .WithMany()
+                        .HasForeignKey("DocumentTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DocumentType");
+
+                    b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingPolicy", b =>
+                {
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingProfile", b =>
+                {
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Hotel");
+                });
+
             modelBuilder.Entity("TravAi.Models.Hotels.HotelPolicy", b =>
                 {
                     b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
@@ -2319,6 +3321,53 @@ namespace TravAi.Migrations
                         .IsRequired();
 
                     b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelToAdminMessage", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "FromUser")
+                        .WithMany()
+                        .HasForeignKey("FromUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Hotels.Hotel", "Hotel")
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FromUser");
+
+                    b.Navigation("Hotel");
+                });
+
+            modelBuilder.Entity("TravAi.Models.PaymentTransaction", b =>
+                {
+                    b.HasOne("TravAi.Models.CheckoutSession", "CheckoutSession")
+                        .WithMany("Transactions")
+                        .HasForeignKey("CheckoutSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CheckoutSession");
+                });
+
+            modelBuilder.Entity("TravAi.Models.StripeWebhookEvent", b =>
+                {
+                    b.HasOne("TravAi.Models.CheckoutSession", "CheckoutSession")
+                        .WithMany()
+                        .HasForeignKey("CheckoutSessionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("TravAi.Models.PaymentTransaction", "PaymentTransaction")
+                        .WithMany()
+                        .HasForeignKey("PaymentTransactionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CheckoutSession");
+
+                    b.Navigation("PaymentTransaction");
                 });
 
             modelBuilder.Entity("TravAi.TourGuide.Models.Review", b =>
@@ -2563,6 +3612,13 @@ namespace TravAi.Migrations
                     b.Navigation("UserPhones");
                 });
 
+            modelBuilder.Entity("TravAi.Models.CheckoutSession", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Transactions");
+                });
+
             modelBuilder.Entity("TravAi.Models.Hotels.Amenity", b =>
                 {
                     b.Navigation("HotelAmenities");
@@ -2571,6 +3627,20 @@ namespace TravAi.Migrations
             modelBuilder.Entity("TravAi.Models.Hotels.Bookings.HotelBooking", b =>
                 {
                     b.Navigation("BookingRooms");
+
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.Complaint", b =>
+                {
+                    b.Navigation("Attachments");
+
+                    b.Navigation("Replies");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.ComplaintReply", b =>
+                {
+                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("TravAi.Models.Hotels.DocumentTypeDefinition", b =>
@@ -2599,9 +3669,19 @@ namespace TravAi.Migrations
                     b.Navigation("Rooms");
                 });
 
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelAdminInboxMessage", b =>
+                {
+                    b.Navigation("Replies");
+                });
+
             modelBuilder.Entity("TravAi.Models.Hotels.HotelFieldDefinition", b =>
                 {
                     b.Navigation("Values");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Hotels.HotelPendingPolicy", b =>
+                {
+                    b.Navigation("CancellationRules");
                 });
 
             modelBuilder.Entity("TravAi.Models.Hotels.HotelPolicy", b =>
