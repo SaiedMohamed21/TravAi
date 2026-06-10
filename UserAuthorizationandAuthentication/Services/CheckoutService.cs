@@ -23,6 +23,9 @@ namespace TravAi.Services
 {
     public class CheckoutService : ICheckoutService
     {
+        private const int AirlineExpirationMinutes = 10;
+        private const int HotelTourExpirationMinutes = 60;
+
         private readonly ApplicationDbContext _context;
         private readonly StripeOptions _stripeOptions;
         private readonly ILogger<CheckoutService> _logger;
@@ -60,7 +63,7 @@ namespace TravAi.Services
 
             foreach (var b in airlineBookings)
             {
-                var expiresAt = b.BookingDate.AddMinutes(10);
+                var expiresAt = b.BookingDate.AddMinutes(AirlineExpirationMinutes);
                 if (expiresAt > now)
                 {
                     list.Add(new PendingCheckoutItemDto
@@ -91,7 +94,7 @@ namespace TravAi.Services
 
             foreach (var b in hotelBookings)
             {
-                var expiresAt = b.CreatedAt.AddHours(1);
+                var expiresAt = b.CreatedAt.AddMinutes(HotelTourExpirationMinutes);
                 if (expiresAt > now)
                 {
                     list.Add(new PendingCheckoutItemDto
@@ -122,7 +125,7 @@ namespace TravAi.Services
 
             foreach (var b in tourBookings)
             {
-                var expiresAt = b.CreatedAt.AddHours(1);
+                var expiresAt = b.CreatedAt.AddMinutes(HotelTourExpirationMinutes);
                 if (expiresAt > now)
                 {
                     list.Add(new PendingCheckoutItemDto
@@ -160,7 +163,7 @@ namespace TravAi.Services
             if (booking.PaymentStatus == "Paid")
                 throw new InvalidOperationException("This booking has already been paid.");
 
-            var expiresAt = booking.BookingDate.AddMinutes(10);
+            var expiresAt = booking.BookingDate.AddMinutes(AirlineExpirationMinutes);
             if (expiresAt < now)
             {
                 await DeleteAirlineBookingInternalAsync(booking);
@@ -294,7 +297,7 @@ namespace TravAi.Services
             {
                 if (h.PaymentStatus == PaymentStatus.Paid)
                     throw new InvalidOperationException($"Hotel booking #{h.Id} is already paid.");
-                if (h.CreatedAt.AddHours(1) < now)
+                if (h.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
                 {
                     anyExpired = true;
                     await DeleteHotelBookingInternalAsync(h);
@@ -305,7 +308,7 @@ namespace TravAi.Services
             {
                 if (t.PaymentStatus == TourGuidePaymentStatus.Completed)
                     throw new InvalidOperationException($"Tour booking #{t.Id} is already paid.");
-                if (t.CreatedAt.AddHours(1) < now)
+                if (t.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
                 {
                     anyExpired = true;
                     await DeleteTourBookingInternalAsync(t);
@@ -325,12 +328,12 @@ namespace TravAi.Services
             DateTime expiresAt = DateTime.MaxValue;
             foreach (var h in hotelBookings)
             {
-                var hExpiry = h.CreatedAt.AddHours(1);
+                var hExpiry = h.CreatedAt.AddMinutes(HotelTourExpirationMinutes);
                 if (hExpiry < expiresAt) expiresAt = hExpiry;
             }
             foreach (var t in tourBookings)
             {
-                var tExpiry = t.CreatedAt.AddHours(1);
+                var tExpiry = t.CreatedAt.AddMinutes(HotelTourExpirationMinutes);
                 if (tExpiry < expiresAt) expiresAt = tExpiry;
             }
 
@@ -825,7 +828,7 @@ namespace TravAi.Services
                 .Where(b => b.UserId == userId &&
                             b.PaymentStatus != "Paid" &&
                             b.Status != "Confirmed" &&
-                            b.BookingDate.AddMinutes(10) < now)
+                            b.BookingDate.AddMinutes(AirlineExpirationMinutes) < now)
                 .ToListAsync();
 
             foreach (var b in expiredAirlines)
@@ -838,7 +841,7 @@ namespace TravAi.Services
                 .Where(b => b.UserId == userId &&
                             b.PaymentStatus != PaymentStatus.Paid &&
                             b.Status != BookingStatus.Confirmed &&
-                            b.CreatedAt.AddHours(1) < now)
+                            b.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
                 .ToListAsync();
 
             foreach (var h in expiredHotels)
@@ -851,7 +854,7 @@ namespace TravAi.Services
                 .Where(b => b.UserId == userId &&
                             b.PaymentStatus != TourGuidePaymentStatus.Completed &&
                             b.Status != TourGuideBookingStatus.Confirmed &&
-                            b.CreatedAt.AddHours(1) < now)
+                            b.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
                 .ToListAsync();
 
             foreach (var t in expiredTours)

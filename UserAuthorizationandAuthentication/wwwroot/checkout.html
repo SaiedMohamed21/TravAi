@@ -439,6 +439,13 @@
                         el.innerText = "Expired";
                         el.style.color = "var(--danger)";
                         
+                        const payBtn = document.getElementById('payBtn');
+                        if (payBtn) {
+                            payBtn.style.pointerEvents = 'none';
+                            payBtn.style.opacity = '0.5';
+                            payBtn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Expired Item Detected';
+                        }
+                        
                         if (!el.classList.contains('is-expired')) {
                             el.classList.add('is-expired');
                             anyExpired = true;
