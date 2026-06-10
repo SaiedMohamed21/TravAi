@@ -15,6 +15,7 @@ namespace TravAi.DTOs.AI
         /// <summary>Best hotel selected within city hotel budget (null if excluded)</summary>
         public PlannedHotelDto? Hotel { get; set; }
         /// <summary>Best tour selected within city tours budget (null if excluded)</summary>
-        public PlannedTourDto? Tour { get; set; }
+        public PlannedTourDto? Tour { get; set; } // Legacy, keep for a bit if needed or remove.
+        public List<PlannedTourDto> Tours { get; set; } = new();
     }
 }

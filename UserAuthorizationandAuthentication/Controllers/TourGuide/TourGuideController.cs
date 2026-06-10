@@ -64,16 +64,73 @@ namespace TravAi.TourGuide.Controllers
             var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
             if (tourGuide == null)
             {
-                return Ok(new { applicationStatus = "No Application" });
+                return Ok(new { applicationStatus = "NotApplied" });
             }
 
-            return Ok(new { applicationStatus = tourGuide.Status });
+            return Ok(new { 
+                applicationStatus = tourGuide.Status,
+                rejectionReason = tourGuide.RejectionReason,
+                canReapply = tourGuide.Status == "Rejected" || tourGuide.Status == "Banned"
+            });
+        }
+
+        /// <summary>
+        /// Get the submitted application data for the currently logged in user
+        /// </summary>
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyApplicationData()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null) return NotFound("Tour Guide application not found.");
+
+            return Ok(tourGuide);
+        }
+
+        /// <summary>
+        /// Get the currently submitted Tour Guide Application details formatted for frontend screens
+        /// </summary>
+        [Authorize]
+        [HttpGet("application")]
+        public async Task<IActionResult> GetMyApplicationDetails()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null) return NotFound("Tour Guide application not found.");
+
+            var details = new TourGuideApplicationDetailsDto
+            {
+                FullName = tourGuide.Name,
+                Bio = tourGuide.Bio,
+                LicenseId = tourGuide.LicenseId,
+                ExperienceYears = tourGuide.ExperienceYears,
+                Certification = tourGuide.Certification,
+                Emails = tourGuide.Emails?.Select(e => e.Email).ToList() ?? new List<string>(),
+                PhoneNumbers = tourGuide.Phones?.Select(p => p.PhoneNumber).ToList() ?? new List<string>(),
+                Languages = tourGuide.Languages?.Select(l => l.Language.ToString()).ToList() ?? new List<string>(),
+                Cities = tourGuide.Cities?.Select(c => c.City).ToList() ?? new List<string>(),
+                LicenseFileUrl = tourGuide.LicenseCard,
+                LicenseFrontUrl = tourGuide.LicenseIdFrontPhoto,
+                LicenseBackUrl = tourGuide.LicenseIdBackPhoto,
+                ApplicationStatus = tourGuide.Status,
+                RejectionReason = tourGuide.RejectionReason,
+                SubmittedAt = null // Currently not tracked in DB schema
+            };
+
+            return Ok(details);
         }
 
         /// <summary>
         /// Tour Guide updates their license photos and waits for admin approval
         /// </summary>
-        [Authorize(Roles = "Tourguide")]
+        [Authorize(Roles = "Tourguide,User")]
         [HttpPost("update-license")]
         public async Task<IActionResult> UpdateLicense([FromBody] UpdateLicenseDto model)
         {
@@ -97,7 +154,7 @@ namespace TravAi.TourGuide.Controllers
         /// <summary>
         /// Tour Guide updates their profile and waits for admin approval
         /// </summary>
-        [Authorize(Roles = "Tourguide")]
+        [Authorize(Roles = "Tourguide,User")]
         [HttpPost("update-profile")]
         public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto model)
         {
@@ -170,25 +227,57 @@ namespace TravAi.TourGuide.Controllers
         }
 
         /// <summary>
-        /// Upload license document (PDF or Image) for the Tour Guide
+        /// Upload documents (License, National ID Front, National ID Back) for the Tour Guide. 
+        /// Max 5MB per file. Allowed: PDF, JPG, JPEG, PNG.
+        /// Returns the URLs of the uploaded files.
         /// </summary>
-        [Authorize(Roles = "Tourguide")]
-        [HttpPost("upload-license")]
-        public async Task<IActionResult> UploadLicense(
-            IFormFile file, 
+        [Authorize(Roles = "Tourguide,User")]
+        [HttpPost("upload-documents")]
+        public async Task<IActionResult> UploadDocuments(
+            IFormFile? licenseFile,
+            IFormFile? nationalIdFront,
+            IFormFile? nationalIdBack,
             [FromServices] IWebHostEnvironment env,
             [FromServices] TravAi.Data.ApplicationDbContext context)
         {
-            if (file == null || file.Length == 0)
-                return BadRequest("No file uploaded.");
-
-            var ext = System.IO.Path.GetExtension(file.FileName).ToLower();
-            if (ext != ".pdf" && ext != ".jpg" && ext != ".jpeg" && ext != ".png")
-                return BadRequest("Only PDF and image files (jpg, jpeg, png) are allowed.");
-
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
                 return Unauthorized("User ID not found in token.");
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            
+            var resultUrls = new
+            {
+                licenseFileUrl = await ProcessFile(licenseFile, env, baseUrl),
+                licenseFrontUrl = await ProcessFile(nationalIdFront, env, baseUrl),
+                licenseBackUrl = await ProcessFile(nationalIdBack, env, baseUrl)
+            };
+
+            // If profile exists, auto-update the fields
+            var tourGuide = await context.TourGuides.FirstOrDefaultAsync(tg => tg.UserId == userId);
+            if (tourGuide != null)
+            {
+                if (resultUrls.licenseFileUrl != null) tourGuide.LicenseCard = resultUrls.licenseFileUrl;
+                if (resultUrls.licenseFrontUrl != null) tourGuide.LicenseIdFrontPhoto = resultUrls.licenseFrontUrl;
+                if (resultUrls.licenseBackUrl != null) tourGuide.LicenseIdBackPhoto = resultUrls.licenseBackUrl;
+                await context.SaveChangesAsync();
+            }
+
+            return Ok(resultUrls);
+        }
+
+        private async Task<string?> ProcessFile(IFormFile? file, IWebHostEnvironment env, string baseUrl)
+        {
+            if (file == null || file.Length == 0) return null;
+
+            // 5MB Limit
+            if (file.Length > 5 * 1024 * 1024)
+                throw new System.Exception($"File {file.FileName} exceeds the 5MB limit.");
+
+            var ext = System.IO.Path.GetExtension(file.FileName).ToLower();
+            if (ext != ".pdf" && ext != ".jpg" && ext != ".jpeg" && ext != ".png")
+                throw new System.Exception($"File {file.FileName} has an invalid extension. Only PDF, JPG, JPEG, PNG are allowed.");
 
             var subFolder = ext == ".pdf" ? "documents" : "images";
             var uploadsFolder = System.IO.Path.Combine(env.WebRootPath ?? System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "wwwroot"), "uploads", subFolder);
@@ -204,24 +293,7 @@ namespace TravAi.TourGuide.Controllers
                 await file.CopyToAsync(fileStream);
             }
 
-            var request = HttpContext.Request;
-            var baseUrl = $"{request.Scheme}://{request.Host}";
-            var fileUrl = $"{baseUrl}/uploads/{subFolder}/{uniqueFileName}";
-
-            // Update TourGuide license card
-            var tourGuide = await context.TourGuides.FirstOrDefaultAsync(tg => tg.UserId == userId);
-            if (tourGuide != null)
-            {
-                tourGuide.LicenseCard = fileUrl;
-                await context.SaveChangesAsync();
-            }
-
-            return Ok(new
-            {
-                success = true,
-                message = "License uploaded successfully",
-                data = new { fileUrl = fileUrl }
-            });
+            return $"{baseUrl}/uploads/{subFolder}/{uniqueFileName}";
         }
         /// <summary>
         /// Tour Guide requests to withdraw money from their wallet/earnings
@@ -281,6 +353,24 @@ namespace TravAi.TourGuide.Controllers
         }
 
         /// <summary>
+        /// Get all reviews for the logged-in tour guide (Dashboard view)
+        /// </summary>
+        [Authorize(Roles = "Tourguide")]
+        [HttpGet("/api/tourguide/reviews")]
+        public async Task<IActionResult> GetMyDashboardReviews()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null) return NotFound("Tour Guide profile not found.");
+
+            var reviewsDashboard = await _service.GetTourGuideReviewsDashboardAsync(tourGuide.Id);
+            return Ok(reviewsDashboard);
+        }
+
+        /// <summary>
         /// Get full profile information for a specific tour guide
         /// </summary>
         [AllowAnonymous]
@@ -324,6 +414,24 @@ namespace TravAi.TourGuide.Controllers
             if (tourGuide == null) return NotFound("Tour Guide profile not found.");
 
             var result = await _service.GetEarningsChartAsync(tourGuide.Id);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get Earnings Summary Data for the logged-in tour guide
+        /// </summary>
+        [Authorize(Roles = "Tourguide")]
+        [HttpGet("/api/tourguide/earnings/summary")]
+        public async Task<IActionResult> GetEarningsSummary()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized("User ID not found in token.");
+
+            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
+            if (tourGuide == null) return NotFound("Tour Guide profile not found.");
+
+            var result = await _service.GetEarningsSummaryAsync(tourGuide.Id);
             return Ok(result);
         }
 

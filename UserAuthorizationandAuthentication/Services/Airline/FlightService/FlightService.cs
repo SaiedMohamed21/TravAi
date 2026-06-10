@@ -11,10 +11,12 @@ namespace TravAi.Airline.Services.FlightService
     public class FlightService : IFlightService
     {
         private readonly ApplicationDbContext _context;
+        private readonly Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor;
 
-        public FlightService(ApplicationDbContext context)
+        public FlightService(ApplicationDbContext context, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<FlightResultDto?> GetByIdAsync(long id)
@@ -130,7 +132,7 @@ namespace TravAi.Airline.Services.FlightService
                 Airline = new AirlineInfoDto
                 {
                     Name = f.Airline?.Name ?? "EgyptAir",
-                    Logo = f.Airline?.LogoUrl ?? "https://logo.clearbit.com/egyptair.com"
+                    Logo = BuildFullLogoUrl(f.Airline?.LogoUrl)
                 },
                 AirlineName = f.Airline?.Name ?? "EgyptAir",
                 Price = f.Price ?? 0,
@@ -180,8 +182,19 @@ namespace TravAi.Airline.Services.FlightService
             return dto;
         }
 
+        private string BuildFullLogoUrl(string logoUrl)
+        {
+            if (string.IsNullOrEmpty(logoUrl)) return "https://logo.clearbit.com/egyptair.com";
+            if (!logoUrl.StartsWith("/")) return logoUrl;
+            
+            var request = _httpContextAccessor.HttpContext?.Request;
+            var baseUrl = request != null ? $"{request.Scheme}://{request.Host}{request.PathBase}" : "";
+            return $"{baseUrl}{logoUrl}";
+        }
+
         public async Task CreateAsync(long userId, CreateFlightDto dto) { }
         public async Task UpdateAsync(long id, UpdateFlightDto dto) { }
         public async Task CancelAsync(long id) { }
     }
 }
+

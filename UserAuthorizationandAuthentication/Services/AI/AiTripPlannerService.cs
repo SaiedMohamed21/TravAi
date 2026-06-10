@@ -472,6 +472,7 @@ namespace TravAi.Services.AI
                 var co = ci.AddDays(city.Days);
 
                 var cityLowerP = city.City.ToLower();
+                
                 cityPlans.Add(new CityPlanDto
                 {
                     City            = city.City,
@@ -481,7 +482,7 @@ namespace TravAi.Services.AI
                     CityHotelBudget = Math.Round(cityHotelBudget, 2),
                     CityToursBudget = Math.Round(cityToursBudget, 2),
                     Hotel           = null, // Selection stopped: Budget divider only
-                    Tour            = null  // Selection stopped: Budget divider only
+                    Tour            = null  // Will be assigned from new API structure later
                 });
             }
 
@@ -492,6 +493,118 @@ namespace TravAi.Services.AI
             {
                 goFlight = await GetAiRecommendedFlightAsync(fromCodesP, toCodesP, req.DepartureDate, flightClass, goBudget, req.Adults, req.Children, "Outbound");
                 retFlight = await GetAiRecommendedFlightAsync(lastCodesP, fromCodesP, req.ReturnDate, flightClass, retBudget, req.Adults, req.Children, "Return");
+            }
+
+            string tourApiRequestJsonStr = "";
+            string tourApiResponseJsonStr = null;
+            string tourSessionId = null;
+            if (!req.ExcludeTours)
+            {
+                DateTime startDate = req.DepartureDate.Date.AddDays(1);
+                if (!req.ExcludeFlights && goFlight != null && goFlight.ArrivalTime.HasValue)
+                {
+                    startDate = goFlight.ArrivalTime.Value.Date.AddDays(1);
+                }
+
+                DateTime endDate = req.ReturnDate.Date.AddDays(-1);
+                if (!req.ExcludeFlights && retFlight != null && retFlight.DepartureTime.HasValue)
+                {
+                    endDate = retFlight.DepartureTime.Value.Date.AddDays(-1);
+                }
+
+                // Adjust days array to match the new start_date and end_date
+                List<int> originalDays = itinerary.Select(c => c.Days).ToList();
+                List<int> adjustedDays = new List<int>(originalDays);
+
+                if (adjustedDays.Count == 1)
+                {
+                    // For a single city, just take the total inclusive days between start and end
+                    adjustedDays[0] = Math.Max(1, (int)(endDate - startDate).TotalDays + 1);
+                }
+                else if (adjustedDays.Count > 1)
+                {
+                    // For multiple cities, subtract the chopped off days from the first and last cities
+                    int startDiff = (int)(startDate - req.DepartureDate.Date).TotalDays;
+                    int endDiff = (int)(req.ReturnDate.Date - endDate).TotalDays;
+                    
+                    adjustedDays[0] = Math.Max(1, adjustedDays[0] - startDiff);
+                    int lastIdx = adjustedDays.Count - 1;
+                    adjustedDays[lastIdx] = Math.Max(1, adjustedDays[lastIdx] - endDiff);
+                }
+
+                var tourReq = new TourRecommendationRequestDto
+                {
+                    BudgetType = req.BudgetType,
+                    Cities = itinerary.Select(c => c.City).ToList(),
+                    Days = adjustedDays,
+                    StartDate = startDate.ToString("yyyy-MM-dd"),
+                    EndDate = endDate.ToString("yyyy-MM-dd"),
+                    Preferences = new List<string>(), // Empty for now
+                    TourBudget = toursBudget,
+                    Travelers = totalPeople
+                };
+
+                tourApiRequestJsonStr = JsonSerializer.Serialize(tourReq, new JsonSerializerOptions { WriteIndented = true });
+                
+                var client = _httpClientFactory.CreateClient();
+                var baseUrl = _config["TourRecommendationApi:BaseUrl"];
+                if (!string.IsNullOrEmpty(baseUrl)) {
+                    var content = new StringContent(tourApiRequestJsonStr, System.Text.Encoding.UTF8, "application/json");
+                    try {
+                        var response = await client.PostAsync($"{baseUrl.TrimEnd('/')}/tour/recommend", content);
+                        
+                        if (response.IsSuccessStatusCode) {
+                            var responseStr = await response.Content.ReadAsStringAsync();
+                            tourApiResponseJsonStr = responseStr;
+                            
+                            var apiResp = JsonSerializer.Deserialize<TourRecommendationResponseDto>(responseStr);
+                            
+                            if (apiResp != null && apiResp.Recommendations != null) {
+                                tourSessionId = apiResp.SessionId;
+                                var tourIds = apiResp.Recommendations.Where(r => r.Tour != null).Select(r => r.Tour.TourId).Distinct().ToList();
+                                var dbTours = await _db.Tours
+                                    .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
+                                    .Include(t => t.TourImages)
+                                    .Where(t => tourIds.Contains(t.Id))
+                                    .ToDictionaryAsync(t => t.Id);
+
+                                foreach (var rec in apiResp.Recommendations) {
+                                    if (rec.Tour != null) {
+                                        dbTours.TryGetValue(rec.Tour.TourId, out var dbTour);
+                                        
+                                        var pTour = new PlannedTourDto {
+                                            Id              = dbTour?.Id ?? rec.Tour.TourId,
+                                            TourTitle       = dbTour?.TourTitle ?? rec.Tour.TourTitle ?? "AI Recommended Tour",
+                                            City            = dbTour?.City ?? rec.City,
+                                            GuideName       = dbTour?.TourGuide?.Name ?? rec.Tour.GuideName ?? "Auto-Assigned",
+                                            TourType        = dbTour?.TourType ?? "Standard",
+                                            TourDescription = dbTour?.TourDescription ?? "A great tour around the city.",
+                                            Rating          = dbTour?.Rating ?? rec.Tour.Rating ?? 4.5m,
+                                            NumberOfReviews = dbTour?.NumberOfReviews ?? rec.Tour.NumberOfReviews ?? 10,
+                                            DurationHours   = dbTour?.DurationHours ?? (rec.Tour.DurationHours.HasValue ? (int?)Math.Round(rec.Tour.DurationHours.Value) : 4),
+                                            SitesCovered    = dbTour?.SitesCovered ?? "Various attractions",
+                                            TransportIncluded = dbTour?.TransportIncluded ?? false,
+                                            MealsIncluded   = dbTour?.MealsIncluded ?? false,
+                                            ImageUrl        = dbTour?.TourImages.FirstOrDefault()?.ImageUrl,
+                                            AvailableDate   = DateTime.TryParse(rec.Date, out var d) ? d : (dbTour?.AvailableDateTime ?? DateTime.Now),
+                                            PricePerPerson  = dbTour?.BasePriceUsd ?? rec.Tour.BasePriceUsd,
+                                            TotalPrice      = Math.Round((dbTour?.BasePriceUsd ?? rec.Tour.BasePriceUsd) * totalPeople, 2)
+                                        };
+                                        
+                                        var cityPlan = cityPlans.FirstOrDefault(cp => cp.City.Equals(rec.City, StringComparison.OrdinalIgnoreCase));
+                                        if (cityPlan != null) {
+                                            cityPlan.Tours.Add(pTour);
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            tourApiResponseJsonStr = $"HTTP Error: {response.StatusCode}\n{await response.Content.ReadAsStringAsync()}";
+                        }
+                    } catch (Exception ex) { 
+                        tourApiResponseJsonStr = $"Exception: {ex.Message}\n{ex.StackTrace}";
+                    }
+                }
             }
 
             return new TripPlanResponseDto
@@ -509,10 +622,13 @@ namespace TravAi.Services.AI
                 ToursBudget        = Math.Round(toursBudget,  2),
                 GoFlight           = goFlight,
                 ReturnFlight       = retFlight,
+                TourSessionId      = tourSessionId,
                 CityPlans          = cityPlans,
                 Itinerary          = itinerary,
                 DebugData          = new PlanDebugDto
                 {
+                    TourApiRequestJson = tourApiRequestJsonStr,
+                    TourApiResponseJson = tourApiResponseJsonStr,
                     MedianGo = goMedian,
                     MedianReturn = retMedian,
                     NumGo = goPriceList.Count,
@@ -804,6 +920,8 @@ namespace TravAi.Services.AI
                 TotalPrice      = Math.Round(best.Total, 2)
             };
         }
+
+
         // ─────────────────────────────────────────────────────────────────────
         //  Regenerate Flight Alternative
         // ─────────────────────────────────────────────────────────────────────
@@ -886,6 +1004,73 @@ namespace TravAi.Services.AI
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<List<PlannedTourDto>> RegenerateTourAsync(string sessionId, List<string> fixedDates, int totalPeople)
+        {
+            var reqObj = new RegenerateTourPythonRequestDto
+            {
+                SessionId = sessionId,
+                FixedDates = fixedDates ?? new List<string>()
+            };
+
+            var jsonReq = JsonSerializer.Serialize(reqObj);
+            var content = new StringContent(jsonReq, System.Text.Encoding.UTF8, "application/json");
+
+            var baseUrl = _config["TourRecommendationApi:BaseUrl"];
+            if (string.IsNullOrEmpty(baseUrl)) return null;
+
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.PostAsync($"{baseUrl.TrimEnd('/')}/tour/regenerate", content);
+
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var responseStr = await response.Content.ReadAsStringAsync();
+            var apiResp = JsonSerializer.Deserialize<RegenerateTourPythonResponseDto>(responseStr);
+
+            if (apiResp == null || apiResp.Recommendations == null || apiResp.Recommendations.Count == 0)
+                return null;
+
+            var tourIds = apiResp.Recommendations.Where(r => r.Tour != null).Select(r => r.Tour.TourId).Distinct().ToList();
+            var dbTours = await _db.Tours
+                .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
+                .Include(t => t.TourImages)
+                .Where(t => tourIds.Contains(t.Id))
+                .ToDictionaryAsync(t => t.Id);
+
+            var generatedTours = new List<PlannedTourDto>();
+
+            foreach (var rec in apiResp.Recommendations)
+            {
+                if (rec.Tour != null)
+                {
+                    dbTours.TryGetValue(rec.Tour.TourId, out var dbTour);
+                    
+                    var pTour = new PlannedTourDto
+                    {
+                        Id = dbTour?.Id ?? rec.Tour.TourId,
+                        TourTitle = dbTour?.TourTitle ?? rec.Tour.TourTitle ?? "AI Recommended Tour",
+                        City = dbTour?.City ?? rec.City,
+                        GuideName = dbTour?.TourGuide?.Name ?? rec.Tour.GuideName ?? "Auto-Assigned",
+                        TourType = dbTour?.TourType ?? "Standard",
+                        TourDescription = dbTour?.TourDescription ?? "A great tour around the city.",
+                        Rating = dbTour?.Rating ?? rec.Tour.Rating ?? 4.5m,
+                        NumberOfReviews = dbTour?.NumberOfReviews ?? rec.Tour.NumberOfReviews ?? 10,
+                        DurationHours = dbTour?.DurationHours ?? (rec.Tour.DurationHours.HasValue ? (int?)Math.Round(rec.Tour.DurationHours.Value) : 4),
+                        SitesCovered = dbTour?.SitesCovered ?? "Various attractions",
+                        TransportIncluded = dbTour?.TransportIncluded ?? false,
+                        MealsIncluded = dbTour?.MealsIncluded ?? false,
+                        ImageUrl = dbTour?.TourImages.FirstOrDefault()?.ImageUrl,
+                        AvailableDate = DateTime.TryParse(rec.Date, out var d) ? d : (dbTour?.AvailableDateTime ?? DateTime.Now),
+                        PricePerPerson = dbTour?.BasePriceUsd ?? rec.Tour.BasePriceUsd,
+                        TotalPrice = Math.Round((dbTour?.BasePriceUsd ?? rec.Tour.BasePriceUsd) * totalPeople, 2)
+                    };
+                    generatedTours.Add(pTour);
+                }
+            }
+
+            return generatedTours;
         }
     }
 }
