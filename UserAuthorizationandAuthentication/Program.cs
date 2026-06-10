@@ -52,6 +52,10 @@ builder.Services.AddScoped<TravAi.TourGuide.Services.IWithdrawRequestService, Tr
 // --- AI Trip Planner Service ---
 builder.Services.AddScoped<IAiTripPlannerService, AiTripPlannerService>();
 
+// --- Simple Stripe Checkout Integration ---
+builder.Services.Configure<TravAi.Options.StripeOptions>(builder.Configuration.GetSection("Stripe"));
+builder.Services.AddScoped<ICheckoutService, CheckoutService>();
+
 // --- AI Chatbot Service (Python microservice proxy) ---
 builder.Services.AddHttpClient<IAiChatbotService, AiChatbotService>(client =>
 {

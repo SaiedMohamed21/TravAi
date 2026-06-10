@@ -344,26 +344,6 @@ namespace TravAi.TourGuide.Controllers
             var bookings = await _bookingService.GetAssignedBookingsAsync(tourGuide.Id, status);
             return Ok(bookings);
         }
-
-        /// <summary>
-        /// Get details of a specific booking assigned to the logged-in tour guide
-        /// </summary>
-        [Authorize(Roles = "Tourguide")]
-        [HttpGet("/api/tourguide/my-assigned-bookings/{bookingId}")]
-        public async Task<IActionResult> GetMyAssignedBookingDetails(long bookingId)
-        {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
-                return Unauthorized("User ID not found in token.");
-
-            var tourGuide = await _service.GetTourGuideByUserIdAsync(userId);
-            if (tourGuide == null) return NotFound("Tour Guide profile not found.");
-
-            var booking = await _bookingService.GetAssignedBookingByIdAsync(tourGuide.Id, bookingId);
-            if (booking == null) return NotFound("Booking not found or not assigned to you.");
-
-            return Ok(booking);
-        }
     }
 }
 

@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravAi.DTOs.Common;
@@ -39,7 +39,7 @@ namespace TravAi.Airline.Controllers
 
             return Ok(new ApiResponse<BookingResponseDto>(
                 booking,
-                "Flight booked successfully."
+                "Flight reserved. Please complete payment within 10 minutes from Checkout."
             ));
         }
 

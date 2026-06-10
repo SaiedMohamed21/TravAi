@@ -1,4 +1,4 @@
-﻿using TravAi.Data;
+using TravAi.Data;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Airline.DTOs.Booking;
 using TravAi.Models;
@@ -35,8 +35,6 @@ namespace TravAi.Airline.Services.BookingService
             if (user == null) throw new Exception("User not found.");
 
             decimal totalCost = (flight.Price ?? 0) * dto.NumberOfSeats;
-            if (user.WalletBalance < totalCost)
-                throw new Exception("Insufficient funds.");
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -48,8 +46,8 @@ namespace TravAi.Airline.Services.BookingService
                     NumberOfSeats = dto.NumberOfSeats,
                     TotalPrice = totalCost,
                     BookingDate = DateTime.UtcNow,
-                    Status = "Confirmed",
-                    PaymentStatus = "Paid"
+                    Status = "Pending",
+                    PaymentStatus = "Pending"
                 };
 
                 foreach (var companion in companions)
@@ -62,7 +60,7 @@ namespace TravAi.Airline.Services.BookingService
                         PassportNumber = companion.PassportNumber,
                         Nationality = companion.Nationality,
                         Price = flight.Price ?? 0,
-                        Status = "Confirmed"
+                        Status = "Pending"
                     });
                 }
 
@@ -76,26 +74,13 @@ namespace TravAi.Airline.Services.BookingService
                         PassportNumber = user.PassportNumber,
                         Nationality = user.Nationality,
                         Price = flight.Price ?? 0,
-                        Status = "Confirmed"
+                        Status = "Pending"
                     });
                 }
 
                 flight.AvailableSeats = (flight.AvailableSeats ?? 0) - dto.NumberOfSeats;
-                user.WalletBalance -= totalCost;
 
                 _context.Bookings.Add(booking);
-                await _context.SaveChangesAsync();
-
-                _context.WalletTransactions.Add(new WalletTransaction
-                {
-                    UserId = user.Id,
-                    Amount = -totalCost,
-                    Type = "Booking Deduction",
-                    Description = $"Flight {flight.DepartureAirportCode} to {flight.ArrivalAirportCode}",
-                    ReferenceId = booking.Id.ToString(),
-                    CreatedAt = DateTime.UtcNow
-                });
-                
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -150,6 +135,7 @@ namespace TravAi.Airline.Services.BookingService
                 NumberOfSeats = b.NumberOfSeats,
                 TotalPrice = b.TotalPrice,
                 Status = b.Status,
+                PaymentStatus = b.PaymentStatus,
                 BookingDate = b.BookingDate,
                 FlightNumber = b.Flight?.FlightNumber ?? $"FL-{b.FlightId}",
                 RouteTitle = $"{b.Flight?.DepartureAirportCode} to {b.Flight?.ArrivalAirportCode}",

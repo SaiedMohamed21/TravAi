@@ -84,6 +84,11 @@ namespace TravAi.Data
         public DbSet<UrgentRequest> UrgentRequests { get; set; }
         public DbSet<WithdrawRequest> WithdrawRequests { get; set; }
 
+        public DbSet<CheckoutSession> CheckoutSessions { get; set; }
+        public DbSet<CheckoutSessionItem> CheckoutSessionItems { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+        public DbSet<StripeWebhookEvent> StripeWebhookEvents { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -579,6 +584,48 @@ namespace TravAi.Data
                 .HasIndex(c => c.IsActive)
                 .IsUnique()
                 .HasFilter("[IsActive] = 1");
+
+            // Simple Stripe Checkout Configuration
+            modelBuilder.Entity<CheckoutSession>().ToTable("CheckoutSessions");
+            modelBuilder.Entity<CheckoutSessionItem>().ToTable("CheckoutSessionItems");
+            modelBuilder.Entity<PaymentTransaction>().ToTable("PaymentTransactions");
+            modelBuilder.Entity<StripeWebhookEvent>().ToTable("StripeWebhookEvents");
+
+            modelBuilder.Entity<CheckoutSession>()
+                .Property(s => s.TotalAmount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<CheckoutSessionItem>()
+                .Property(i => i.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<PaymentTransaction>()
+                .Property(t => t.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<CheckoutSessionItem>()
+                .HasOne(i => i.CheckoutSession)
+                .WithMany(s => s.Items)
+                .HasForeignKey(i => i.CheckoutSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasOne(t => t.CheckoutSession)
+                .WithMany(s => s.Transactions)
+                .HasForeignKey(t => t.CheckoutSessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StripeWebhookEvent>()
+                .HasOne(e => e.CheckoutSession)
+                .WithMany()
+                .HasForeignKey(e => e.CheckoutSessionId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<StripeWebhookEvent>()
+                .HasOne(e => e.PaymentTransaction)
+                .WithMany()
+                .HasForeignKey(e => e.PaymentTransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

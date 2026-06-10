@@ -109,32 +109,6 @@ namespace TravAi.TourGuide.Controllers
         }
 
         /// <summary>
-        /// Repeat an existing tour to a new date
-        /// </summary>
-        [Authorize(Roles = "Tourguide")]
-        [HttpPost("{id}/repeat")]
-        public async Task<IActionResult> RepeatTour(long id, [FromBody] RepeatTourRequestDto request)
-        {
-            var userId = GetUserIdFromToken();
-            if (userId == 0) return Unauthorized("User ID not found in token.");
-
-            var tourGuideId = await GetTourGuideIdFromUserId(userId);
-            if (tourGuideId == 0) return Unauthorized("Tour Guide profile not found or not verified.");
-
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            try
-            {
-                var newTour = await _tourService.RepeatTourAsync(id, tourGuideId, request);
-                return Ok(new { id = newTour.Id, message = "Tour repeated successfully." });
-            }
-            catch (System.InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
         /// Delete a tour
         /// </summary>
         [Authorize(Roles = "Tourguide")]
