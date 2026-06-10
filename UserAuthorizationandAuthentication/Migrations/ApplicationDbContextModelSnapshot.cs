@@ -531,6 +531,55 @@ namespace TravAi.Migrations
                     b.ToTable("airline_WalletTransactions", (string)null);
                 });
 
+            modelBuilder.Entity("TravAi.Models.AI.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ChatSessionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChatSessionId");
+
+                    b.ToTable("ai_ChatMessages", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.AI.ChatSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastUpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ai_ChatSessions", (string)null);
+                });
+
             modelBuilder.Entity("TravAi.Models.Auth.RefreshToken", b =>
                 {
                     b.Property<string>("Id")
@@ -2909,6 +2958,28 @@ namespace TravAi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TravAi.Models.AI.ChatMessage", b =>
+                {
+                    b.HasOne("TravAi.Models.AI.ChatSession", "ChatSession")
+                        .WithMany("Messages")
+                        .HasForeignKey("ChatSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ChatSession");
+                });
+
+            modelBuilder.Entity("TravAi.Models.AI.ChatSession", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TravAi.Models.Auth.RefreshToken", b =>
                 {
                     b.HasOne("TravAi.Models.Auth.User", "User")
@@ -3621,6 +3692,11 @@ namespace TravAi.Migrations
                     b.Navigation("EmergencyContacts");
 
                     b.Navigation("Phones");
+                });
+
+            modelBuilder.Entity("TravAi.Models.AI.ChatSession", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("TravAi.Models.Auth.User", b =>

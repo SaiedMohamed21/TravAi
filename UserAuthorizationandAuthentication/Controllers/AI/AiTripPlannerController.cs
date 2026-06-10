@@ -182,14 +182,21 @@ namespace TravAi.Controllers.AI
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var response = await _aiService.RegenerateFlightAsync(req.SessionId, req.Adults, req.Children, req.Direction);
-            
-            if (response == null)
+            try
             {
-                return NotFound(new { Message = "No alternative flight found or API error." });
-            }
+                var response = await _aiService.RegenerateFlightAsync(req.SessionId, req.Adults, req.Children, req.Direction);
+                
+                if (response == null)
+                {
+                    return NotFound(new { Message = "No alternative flight found." });
+                }
 
-            return Ok(response);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
         }
     }
 }

@@ -370,6 +370,8 @@ namespace TravAi.TourGuide.Services
                 };
             }
 
+            var bookingCount = await _context.TourBookings.CountAsync(b => b.TourId == tour.Id);
+
             return new TourResponseDto
             {
                 Id = tour.Id,
@@ -407,6 +409,7 @@ namespace TravAi.TourGuide.Services
                 
                 ImageUrl = primaryImage?.ImageUrl,
                 ReviewsCount = reviewsCount,
+                BookingCount = bookingCount,
                 GuideName = tour.TourGuide?.Name ?? "Unknown",
                 Languages = langs,
                 StartTime = tour.AvailableDateTime,

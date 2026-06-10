@@ -419,6 +419,21 @@ function renderPlan() {
 function flightCard(f) {
   const el = document.createElement('div');
   el.className = 'flight-card';
+  
+  const formatTime = (d) => {
+    if (!d) return '';
+    const dt = new Date(d);
+    return dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  };
+  
+  const depTime = formatTime(f.departureTime);
+  const arrTime = formatTime(f.arrivalTime);
+  
+  let stopsText = '';
+  if (f.numberOfStops === 0) stopsText = 'Direct';
+  else if (f.numberOfStops === 1) stopsText = '1 Stop';
+  else if (f.numberOfStops > 1) stopsText = `${f.numberOfStops} Stops`;
+
   el.innerHTML = `
     <span class="flight-dir">${f.direction}</span>
     <div class="flight-route">
@@ -426,13 +441,22 @@ function flightCard(f) {
       <div class="route-line"></div>
       <div class="city-code">${f.arrivalAirportCode}</div>
     </div>
-    <div>
-      <div style="font-size:.8rem;color:var(--muted)">${f.airlineName} · ${f.flightClass}</div>
+    <div style="flex:1; padding: 0 15px;">
+      ${depTime && arrTime ? `
+      <div style="font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:4px; letter-spacing:0.5px;">
+        ${depTime} <span style="color:var(--muted);font-weight:400;margin:0 4px;">→</span> ${arrTime}
+      </div>` : ''}
+      <div style="font-size:.8rem;color:var(--muted); margin-bottom:2px;">${f.airlineName} · ${f.flightClass || 'Economy'}</div>
       <div style="font-size:.8rem;color:var(--muted)">${fmtDate(f.departureTime)}</div>
-      ${f.duration ? `<div style="font-size:.75rem;color:var(--muted)">${f.duration}</div>` : ''}
+      <div style="font-size:.75rem;color:var(--muted); margin-top:6px; display:flex; gap:8px;">
+        ${f.duration ? `<span style="background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:6px;border:1px solid var(--border)">⏱️ ${f.duration}</span>` : ''}
+        ${stopsText ? `<span style="background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:6px;border:1px solid var(--border)">✈️ ${stopsText}</span>` : ''}
+      </div>
     </div>
-    <div class="flight-price">$${fmt(f.totalPrice)}</div>
-    ${f.sessionId ? `<button onclick="regenerateFlight('${f.sessionId}', '${f.direction}', this)" class="btn btn-outline" style="margin-top:10px; width:100%; font-size:0.8rem; padding:8px">🔄 Regenerate Alternative</button>` : ''}
+    <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
+      <div class="flight-price">$${fmt(f.totalPrice)}</div>
+      ${f.sessionId ? `<button onclick="regenerateFlight('${f.sessionId}', '${f.direction}', this)" class="btn btn-outline" style="margin-top:12px; font-size:0.75rem; padding:6px 12px">🔄 Regenerate</button>` : ''}
+    </div>
     `;
   return el;
 }
