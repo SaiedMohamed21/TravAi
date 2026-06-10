@@ -14,5 +14,13 @@ namespace TravAi.DTOs.Checkout
         public DateTime ExpiresAt { get; set; }
         public DateTime ServerNowUtc { get; set; }
         public double RemainingSeconds { get; set; }
+        public long ReferenceId { get; set; }
+        public string PaymentStatus { get; set; } = null!;
+        public string Status { get; set; } = null!;
+        
+        public bool RequiresPassengerDetails { get; set; }
+        public string PassengerDetailsStatus { get; set; } = "Incomplete";
+        public bool IsReadyForPayment { get; set; }
+        public string ReadinessMessage { get; set; } = string.Empty;
     }
 }

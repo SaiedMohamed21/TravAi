@@ -1,4 +1,4 @@
-﻿namespace TravAi.Airline.DTOs.Passenger
+namespace TravAi.Airline.DTOs.Passenger
 {
     public class PassengerResponseDto
     {
@@ -15,6 +15,11 @@
         public string? RejectionReason { get; set; }
         public string? ProfilePic { get; set; }
         public string? PassportImage { get; set; }
+
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime? PassportExpiryDate { get; set; }
+        public string? Gender { get; set; }
+
         public List<string> PhoneNumbers { get; set; } = new();
         public List<EmergencyContactResponseDto> EmergencyContacts { get; set; } = new();
     }

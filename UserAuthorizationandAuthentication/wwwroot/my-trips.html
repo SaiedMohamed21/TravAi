@@ -342,15 +342,27 @@
         }
 
         function renderTourCard(trip) {
+            const statusVal = trip.status || 'Pending';
+            const paymentVal = trip.paymentStatus || 'Pending';
+            const tourTimeVal = trip.tourTime ? (trip.tourTime.includes(':') ? trip.tourTime.substring(0, 5) : trip.tourTime) : 'TBD';
+
             return `
                 <div class="trip-card">
                     <img src="${trip.primaryImageUrl || 'https://images.unsplash.com/photo-1503174971373-b1f69850bbd6?auto=format&fit=crop&w=500'}" class="trip-img" alt="Tour">
                     <div class="trip-content">
-                        <span class="badge badge-${currentTab}">${trip.uiBadge}</span>
-                        <h3 class="trip-title">${trip.tourTitle}</h3>
-                        <div class="info-row"><i class="fas fa-calendar-day"></i> ${formatDate(trip.tourDate)} at ${trip.tourTime}</div>
-                        <div class="info-row"><i class="fas fa-users"></i> ${trip.participantsCount} Participants</div>
-                        <div class="price-tag">$${trip.totalPrice}</div>
+                        <span class="badge badge-${currentTab}">${trip.uiBadge || 'TBD'}</span>
+                        <h3 class="trip-title">${trip.tourTitle || 'Unknown Tour'}</h3>
+                        <div class="info-row"><i class="fas fa-calendar-day"></i> ${formatDate(trip.tourDate)} at ${tourTimeVal}</div>
+                        <div class="info-row"><i class="fas fa-users"></i> ${trip.participantsCount || 0} Participants</div>
+                        <div class="info-row" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; background: rgba(99, 102, 241, 0.15); color: #a5b4fc; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-info-circle" style="color: #a5b4fc; width: auto; margin-right: 0;"></i> ${statusVal}
+                            </span>
+                            <span style="font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; background: ${paymentVal === 'Completed' || paymentVal === 'Paid' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)'}; color: ${paymentVal === 'Completed' || paymentVal === 'Paid' ? '#34d399' : '#f87171'}; font-weight: 600; display: inline-flex; align-items: center; gap: 5px;">
+                                <i class="fas fa-credit-card" style="color: inherit; width: auto; margin-right: 0;"></i> ${paymentVal}
+                            </span>
+                        </div>
+                        <div class="price-tag">$${trip.totalPrice || 0}</div>
                     </div>
                     <div class="card-actions">
                         <a href="tour/details.html?id=${trip.tourId}" class="btn btn-outline">Details</a>
@@ -359,6 +371,65 @@
                     </div>
                 </div>
             `;
+        }
+
+        async function cancelHotel(bookingId) {
+            if (!confirm('Are you sure you want to cancel this hotel booking?')) return;
+            try {
+                const response = await fetch('/api/HotelBookings/cancel', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ bookingId, reason: 'User requested cancellation' })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    alert('Hotel booking cancelled successfully.');
+                    fetchTrips();
+                } else {
+                    alert('Error: ' + (result.message || 'Could not cancel booking.'));
+                }
+            } catch (error) {
+                alert('Error cancelling hotel booking.');
+            }
+        }
+
+        async function cancelFlight(id) {
+            if (!confirm('Are you sure you want to cancel this flight booking?')) return;
+            try {
+                const response = await fetch(`/api/airline/bookings/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    alert('Flight booking cancelled successfully.');
+                    fetchTrips();
+                } else {
+                    alert('Error cancelling flight booking.');
+                }
+            } catch (error) {
+                alert('Error cancelling flight booking.');
+            }
+        }
+
+        async function cancelTour(id) {
+            if (!confirm('Are you sure you want to cancel this tour booking?')) return;
+            try {
+                const response = await fetch(`/api/tourguide/bookings/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    alert('Tour booking cancelled successfully.');
+                    fetchTrips();
+                } else {
+                    alert('Error cancelling tour booking.');
+                }
+            } catch (error) {
+                alert('Error cancelling tour booking.');
+            }
         }
 
         function switchTab(tab) {

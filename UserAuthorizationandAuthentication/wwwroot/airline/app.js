@@ -402,7 +402,10 @@ async function addCompanion() {
         passportNumber: document.getElementById('c-pass').value,
         nationality: document.getElementById('c-nat').value,
         profilePic: document.getElementById('c-profile').value,
-        passportImage: document.getElementById('c-p-image').value
+        passportImage: document.getElementById('c-p-image').value,
+        dateOfBirth: document.getElementById('c-dob').value || null,
+        passportExpireDate: document.getElementById('c-expiry').value || null,
+        gender: document.getElementById('c-gender').value
     };
     try {
         await apiFetch('/airline/companions', { method: 'POST', body: JSON.stringify(companionData) });
@@ -1174,10 +1177,23 @@ function showAddCompanionForm() {
             <option value="Infant">Infant</option>
         </select>
         <input type="text" id="c-pass" placeholder="Passport Number">
-        <input type="text" id="c-nat" placeholder="Nationality">
+        <input type="text" id="c-nat" placeholder="Nationality (Optional)">
         <input type="text" id="c-profile" placeholder="Profile Picture URL">
         <input type="text" id="c-p-image" placeholder="Passport Image URL">
-        <button class="btn" onclick="addCompanion()">Save Companion</button>
+        
+        <label style="font-size: 11px; color: var(--text-gray); display: block; margin-top: 10px; margin-bottom: 2px;">Date of Birth</label>
+        <input type="date" id="c-dob" style="color-scheme: dark; color: white;">
+        
+        <label style="font-size: 11px; color: var(--text-gray); display: block; margin-top: 10px; margin-bottom: 2px;">Gender</label>
+        <select id="c-gender" style="background:#1e293b; color:white; width: 100%;">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+        
+        <label style="font-size: 11px; color: var(--text-gray); display: block; margin-top: 10px; margin-bottom: 2px;">Passport Expiry Date</label>
+        <input type="date" id="c-expiry" style="color-scheme: dark; color: white;">
+        
+        <button class="btn" style="margin-top: 15px;" onclick="addCompanion()">Save Companion</button>
     `;
     showModal('Add Companion');
 }

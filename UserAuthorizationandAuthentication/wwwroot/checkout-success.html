@@ -222,7 +222,7 @@
 
                 const result = await response.json();
 
-                if (result.success) {
+                if (response.ok && result.success) {
                     document.getElementById('sessionId').innerText = `#${result.checkoutSessionId}`;
                     document.getElementById('txId').innerText = result.paymentTransactionId || 'Stripe PI';
                     document.getElementById('amountPaid').innerText = `$${result.amount.toFixed(2)}`;
@@ -232,7 +232,11 @@
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('successContent').style.display = 'block';
                 } else {
-                    showError(result.message || 'Payment confirmation failed.');
+                    let errMsg = result.message || 'Payment confirmation failed.';
+                    if (errMsg.toLowerCase().includes('expired')) {
+                        errMsg = 'Payment session expired. Please return to checkout.';
+                    }
+                    showError(errMsg);
                 }
             } catch (err) {
                 showError('Error communicating with payment verification service.');

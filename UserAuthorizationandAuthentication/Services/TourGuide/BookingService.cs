@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
 
@@ -357,17 +357,19 @@ namespace TravAi.TourGuide.Services
                 .Include(b => b.Tour)
                 .Include(b => b.TourGuide)
                 .Include(b => b.Participants)
-                .Where(b => b.UserId == userId)
+                .Where(b => b.UserId == userId && b.PaymentStatus == PaymentStatus.Completed)
                 .AsQueryable();
 
             if (tab == "upcoming")
-                query = query.Where(b => b.Status != BookingStatus.Cancelled && b.TourDate.HasValue && b.TourDate.Value > DateTime.UtcNow);
+                query = query.Where(b => b.Status != BookingStatus.Cancelled && ((b.TourDate ?? b.Tour.AvailableDateTime ?? b.BookingDate) > DateTime.UtcNow));
             else if (tab == "past")
-                query = query.Where(b => b.Status != BookingStatus.Cancelled && b.TourDate.HasValue && b.TourDate.Value <= DateTime.UtcNow);
+                query = query.Where(b => b.Status != BookingStatus.Cancelled && ((b.TourDate ?? b.Tour.AvailableDateTime ?? b.BookingDate) <= DateTime.UtcNow));
             else if (tab == "cancelled")
                 query = query.Where(b => b.Status == BookingStatus.Cancelled);
 
-            var bookings = await query.OrderByDescending(b => b.TourDate).ToListAsync();
+            var bookings = await query.ToListAsync();
+            bookings = bookings.OrderByDescending(b => b.TourDate ?? b.Tour.AvailableDateTime ?? b.BookingDate).ToList();
+
             var dtos = new List<BookingResponseDto>();
             foreach (var booking in bookings)
             {
@@ -387,7 +389,7 @@ namespace TravAi.TourGuide.Services
             if (!booking.Participants.Any())
                 await _context.Entry(booking).Collection(b => b.Participants).LoadAsync();
 
-            var tourDate = booking.TourDate ?? DateTime.Now;
+            var tourDate = booking.TourDate ?? booking.Tour?.AvailableDateTime ?? booking.BookingDate ?? DateTime.Now;
 
             return new BookingResponseDto
             {
@@ -399,8 +401,8 @@ namespace TravAi.TourGuide.Services
                 TourGuideId = booking.TourGuideId,
                 TourGuideName = booking.TourGuide?.Name ?? "Unknown",
                 BookingDate = booking.BookingDate,
-                TourDate = booking.TourDate,
-                TourTime = booking.TourTime,
+                TourDate = booking.TourDate ?? booking.Tour?.AvailableDateTime ?? booking.BookingDate,
+                TourTime = booking.TourTime ?? (booking.Tour?.AvailableDateTime.HasValue == true ? booking.Tour.AvailableDateTime.Value.TimeOfDay : (TimeSpan?)null),
                 ParticipantsCount = booking.ParticipantsCount,
                 TotalPrice = booking.TotalPrice,
                 Currency = booking.Currency,

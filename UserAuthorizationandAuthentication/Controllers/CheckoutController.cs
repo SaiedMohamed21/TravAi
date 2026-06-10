@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TravAi.DTOs.Checkout;
@@ -27,6 +29,23 @@ namespace TravAi.Controllers
         {
             try
             {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userIdStr))
+                {
+                    if (long.TryParse(userIdStr, out long parsedUserId))
+                    {
+                        userId = parsedUserId;
+                    }
+                    else
+                    {
+                        return Unauthorized(new ApiResponse<string>(false, "Invalid user ID in token."));
+                    }
+                }
+                else if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    return Unauthorized(new ApiResponse<string>(false, "Invalid or expired authorization token."));
+                }
+
                 var items = await _checkoutService.GetPendingBookingsAsync(userId);
                 return Ok(new ApiResponse<object>(items, "Pending bookings retrieved successfully."));
             }
@@ -37,14 +56,80 @@ namespace TravAi.Controllers
             }
         }
 
+        [HttpPost("create")]
+        public async Task<IActionResult> CreateCheckout([FromBody] CreateUnifiedCheckoutRequest request)
+        {
+            try
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userIdStr))
+                {
+                    if (long.TryParse(userIdStr, out long parsedUserId))
+                    {
+                        request.UserId = parsedUserId;
+                    }
+                    else
+                    {
+                        return Unauthorized(new ApiResponse<string>(false, "Invalid user ID in token."));
+                    }
+                }
+                else if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    return Unauthorized(new ApiResponse<string>(false, "Invalid or expired authorization token."));
+                }
+
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+                var response = await _checkoutService.CreateUnifiedCheckoutAsync(request, baseUrl);
+                return Ok(new ApiResponse<CheckoutResponse>(response, "Checkout session created successfully."));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string>(false, ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new ApiResponse<string>(false, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error creating checkout for user {UserId}", request?.UserId);
+                return BadRequest(new ApiResponse<string>(false, ex.Message));
+            }
+        }
+
         [HttpPost("airline")]
         public async Task<IActionResult> CreateAirlineCheckout([FromBody] CreateAirlineCheckoutRequest request)
         {
             try
             {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userIdStr))
+                {
+                    if (long.TryParse(userIdStr, out long parsedUserId))
+                    {
+                        request.UserId = parsedUserId;
+                    }
+                    else
+                    {
+                        return Unauthorized(new ApiResponse<string>(false, "Invalid user ID in token."));
+                    }
+                }
+                else if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    return Unauthorized(new ApiResponse<string>(false, "Invalid or expired authorization token."));
+                }
+
                 var baseUrl = $"{Request.Scheme}://{Request.Host}";
                 var response = await _checkoutService.CreateAirlineCheckoutAsync(request, baseUrl);
                 return Ok(new ApiResponse<CheckoutResponse>(response, "Airline checkout session created successfully."));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string>(false, ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new ApiResponse<string>(false, ex.Message));
             }
             catch (Exception ex)
             {
@@ -58,9 +143,34 @@ namespace TravAi.Controllers
         {
             try
             {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userIdStr))
+                {
+                    if (long.TryParse(userIdStr, out long parsedUserId))
+                    {
+                        request.UserId = parsedUserId;
+                    }
+                    else
+                    {
+                        return Unauthorized(new ApiResponse<string>(false, "Invalid user ID in token."));
+                    }
+                }
+                else if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    return Unauthorized(new ApiResponse<string>(false, "Invalid or expired authorization token."));
+                }
+
                 var baseUrl = $"{Request.Scheme}://{Request.Host}";
                 var response = await _checkoutService.CreateHotelTourCheckoutAsync(request, baseUrl);
                 return Ok(new ApiResponse<CheckoutResponse>(response, "Hotel and Tour checkout session created successfully."));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string>(false, ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new ApiResponse<string>(false, ex.Message));
             }
             catch (Exception ex)
             {

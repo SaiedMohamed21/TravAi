@@ -1,4 +1,4 @@
-﻿using TravAi;
+using TravAi;
 using TravAi.Data;
 using TravAi.Airline.DTOs.Booking;
 
@@ -18,6 +18,7 @@ namespace TravAi.Airline.Services.BookingService
         // Review Methods
         Task UpdateBookingStatusAsync(long bookingId, string status, string? reason = null);
         Task UpdatePassengerStatusAsync(long passengerId, string status, string? reason = null);
+        Task<bool> IsAirlineBookingPassengerDetailsCompleteAsync(long bookingId);
     }
 }
 

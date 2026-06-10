@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace TravAi.Airline.DTOs.Passenger
 {
@@ -18,6 +18,12 @@ namespace TravAi.Airline.DTOs.Passenger
 
         [MaxLength(50)]
         public string? Nationality { get; set; }
+
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime? PassportExpiryDate { get; set; }
+
+        [MaxLength(20)]
+        public string? Gender { get; set; }
 
         [Range(0, double.MaxValue)]
         public decimal? Price { get; set; }

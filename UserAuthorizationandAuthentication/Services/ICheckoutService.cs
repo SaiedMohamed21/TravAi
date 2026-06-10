@@ -10,6 +10,7 @@ namespace TravAi.Services
         Task<List<PendingCheckoutItemDto>> GetPendingBookingsAsync(long userId);
         Task<CheckoutResponse> CreateAirlineCheckoutAsync(CreateAirlineCheckoutRequest request, string baseUrl);
         Task<CheckoutResponse> CreateHotelTourCheckoutAsync(CreateHotelTourCheckoutRequest request, string baseUrl);
+        Task<CheckoutResponse> CreateUnifiedCheckoutAsync(CreateUnifiedCheckoutRequest request, string baseUrl);
         Task<object> GetCheckoutSessionDetailsAsync(long id);
         Task<object> ConfirmPaymentAsync(string stripeSessionId);
         Task<bool> HandleStripeWebhookAsync(string jsonPayload, string stripeSignature);

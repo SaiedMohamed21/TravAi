@@ -368,6 +368,48 @@
             from { transform: scale(0.9); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
+
+        .date-group {
+            position: relative;
+            min-width: 200px;
+        }
+
+        .date-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .date-group input {
+            width: 100%;
+            padding: 12px 12px 12px 45px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .date-group input:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -388,12 +430,19 @@
             <p class="subtitle">Book immersive guided tours led by certified local experts.</p>
         </header>
 
-        <!-- Search panel -->
-        <div class="filter-panel">
-            <div class="search-group">
+        <!-- Search & Filter panel -->
+        <div class="filter-panel" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <div class="search-group" style="flex: 1; min-width: 250px;">
                 <i class="fas fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Search tours by title or destination..." oninput="filterTours()">
             </div>
+            <div class="date-group">
+                <i class="far fa-calendar-alt"></i>
+                <input type="date" id="dateFilter" onchange="loadTours()">
+            </div>
+            <button class="btn btn-secondary" onclick="resetFilters()">
+                <i class="fas fa-undo"></i> Reset
+            </button>
             <button class="btn btn-primary" onclick="loadTours()">
                 <i class="fas fa-sync"></i> Refresh
             </button>
@@ -430,8 +479,14 @@
             document.getElementById('toursGrid').style.display = 'none';
 
             try {
+                const dateVal = document.getElementById('dateFilter').value;
+                let url = '/api/tours/cards?PageSize=50';
+                if (dateVal) {
+                    url += `&Date=${dateVal}`;
+                }
+
                 // Fetch tours using the public cards endpoint
-                const response = await fetch('/api/tours/cards?PageSize=50', {
+                const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
 
@@ -470,6 +525,15 @@
                 const rating = t.rating || 5.0;
                 const price = t.basePriceUsd || t.price || 0;
                 const currency = t.currency || 'USD';
+
+                // Format date cleanly
+                let dateDisplay = 'Flexible Date';
+                if (t.date) {
+                    const d = new Date(t.date);
+                    if (!isNaN(d)) {
+                        dateDisplay = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                    }
+                }
                 
                 return `
                     <div class="tour-card">
@@ -485,7 +549,8 @@
                             </div>
                             <div class="tour-meta">
                                 <div class="meta-item"><i class="fas fa-map-marker-alt"></i> ${t.city || 'Scenic Location'}</div>
-                                <div class="meta-item"><i class="fas fa-star" style="color: #fbbf24;"></i> ${rating.toFixed(1)} (${t.reviewsCount || t.numberOfReviews || 0})</div>
+                                <div class="meta-item"><i class="far fa-calendar-alt"></i> ${dateDisplay}</div>
+                                <div class="meta-item" style="grid-column: span 2;"><i class="fas fa-star" style="color: #fbbf24;"></i> ${rating.toFixed(1)} (${t.reviewsCount || t.numberOfReviews || 0}) reviews</div>
                             </div>
                             <div class="tour-footer">
                                 <div class="tour-price">
@@ -509,6 +574,12 @@
                 return title.includes(query) || city.includes(query) || desc.includes(query);
             });
             renderTours(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('dateFilter').value = '';
+            loadTours();
         }
 
         async function bookTour(tourId) {
@@ -544,7 +615,14 @@
             document.getElementById('successModal').style.display = 'none';
         }
 
-        window.onload = loadTours;
+        window.onload = () => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('dateFilter');
+            if (dateInput) {
+                dateInput.min = todayStr;
+            }
+            loadTours();
+        };
     </script>
 </body>
 </html>

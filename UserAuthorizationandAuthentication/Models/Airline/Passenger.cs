@@ -1,4 +1,4 @@
-﻿using TravAi.Models.Enums;
+using TravAi.Models.Enums;
 using TravAi.Models;
 using TravAi.Models.Auth;
 using System.ComponentModel.DataAnnotations;
@@ -42,6 +42,12 @@ namespace TravAi.Airline.Models
         public string? RejectionReason { get; set; }
         public string? ProfilePic { get; set; }
         public string? PassportImage { get; set; }
+
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime? PassportExpiryDate { get; set; }
+
+        [MaxLength(20)]
+        public string? Gender { get; set; }
 
         public ICollection<PassengerPhone> Phones { get; set; } = new List<PassengerPhone>();
         public ICollection<PassengerEmergencyContact> EmergencyContacts { get; set; } = new List<PassengerEmergencyContact>();

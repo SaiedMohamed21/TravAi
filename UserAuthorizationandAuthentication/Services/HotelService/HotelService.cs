@@ -2268,7 +2268,8 @@ namespace TravAi.Services.HotelService
                 .Include(b => b.BookingRooms)
                 .Where(b => b.UserId == userId &&
                             b.Hotel.Verified &&
-                            (b.Hotel.VerificationStatus == VerificationStatus.Verified || b.Hotel.VerificationStatus == VerificationStatus.Approved));
+                            (b.Hotel.VerificationStatus == VerificationStatus.Verified || b.Hotel.VerificationStatus == VerificationStatus.Approved) &&
+                            b.PaymentStatus == PaymentStatus.Paid);
 
             DateTime today = DateTime.UtcNow.Date;
 

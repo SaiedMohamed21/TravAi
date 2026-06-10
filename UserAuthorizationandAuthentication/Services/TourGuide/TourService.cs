@@ -200,6 +200,13 @@ namespace TravAi.TourGuide.Services
                 .Where(t => t.Active)
                 .AsQueryable();
 
+            // Default date filter: only show tours from today onwards
+            var today = DateTime.UtcNow.Date;
+            if (!filters.Date.HasValue && !filters.StartDate.HasValue)
+            {
+                query = query.Where(t => t.AvailableDateTime == null || t.AvailableDateTime >= today);
+            }
+
             // Search filter
             if (!string.IsNullOrEmpty(filters.Search))
             {
@@ -428,6 +435,13 @@ namespace TravAi.TourGuide.Services
                     .ThenInclude(tg => tg.TourGuideLanguages)
                 .Where(t => t.Active)
                 .AsQueryable();
+
+            // Default date filter: only show tours from today onwards
+            var today = DateTime.UtcNow.Date;
+            if (!filters.Date.HasValue && !filters.StartDate.HasValue)
+            {
+                query = query.Where(t => t.AvailableDateTime == null || t.AvailableDateTime >= today);
+            }
 
             if (!string.IsNullOrEmpty(filters.Search))
             {

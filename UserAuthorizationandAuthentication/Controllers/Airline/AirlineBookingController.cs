@@ -5,6 +5,8 @@ using TravAi.DTOs.Common;
 using TravAi.DTOs.Auth;
 using TravAi.Airline.DTOs.Booking;
 using TravAi.Airline.Services.BookingService;
+using TravAi.Airline.Services.PassengerService;
+using TravAi.Airline.DTOs.Passenger;
 
 namespace TravAi.Airline.Controllers
 {
@@ -15,10 +17,12 @@ namespace TravAi.Airline.Controllers
     public class AirlineBookingController : ControllerBase
     {
         private readonly IBookingService _bookingService;
+        private readonly IPassengerService _passengerService;
 
-        public AirlineBookingController(IBookingService bookingService)
+        public AirlineBookingController(IBookingService bookingService, IPassengerService passengerService)
         {
             _bookingService = bookingService;
+            _passengerService = passengerService;
         }
 
         // =============================
@@ -39,7 +43,7 @@ namespace TravAi.Airline.Controllers
 
             return Ok(new ApiResponse<BookingResponseDto>(
                 booking,
-                "Flight reserved. Please complete payment within 10 minutes from Checkout."
+                "Flight reserved. Please complete passenger details before payment."
             ));
         }
 
@@ -159,6 +163,34 @@ namespace TravAi.Airline.Controllers
             {
                 var eticket = await _bookingService.GetETicketAsync(id);
                 return Ok(new ApiResponse<ETicketDto>(eticket, "E-Ticket retrieved successfully."));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<string>(success: false, message: ex.Message));
+            }
+        }
+
+        [HttpPost("{bookingId}/passenger-details")]
+        public async Task<IActionResult> SavePassengerDetails(long bookingId, [FromBody] SaveBookingPassengersRequest request)
+        {
+            try
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                {
+                    return Unauthorized(new ApiResponse<string>(false, "User ID not found in token."));
+                }
+
+                await _passengerService.SavePassengerDetailsAsync(bookingId, request, userId);
+                return Ok(new ApiResponse<string>("Passenger details saved successfully."));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string>(false, ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new ApiResponse<string>(false, ex.Message));
             }
             catch (Exception ex)
             {
