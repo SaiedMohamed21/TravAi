@@ -66,9 +66,11 @@ namespace TravAi.Services
                 var expiresAt = b.BookingDate.AddMinutes(AirlineExpirationMinutes);
                 if (expiresAt > now)
                 {
+                    bool isReady = b.PassengerDetailsStatus == "Complete";
                     list.Add(new PendingCheckoutItemDto
                     {
                         Id = b.Id,
+                        ReferenceId = b.Id,
                         ItemType = "AirlineBooking",
                         DisplayName = b.Flight != null 
                             ? $"Flight {b.Flight.FlightNumber} ({b.Flight.DepartureAirportCode} -> {b.Flight.ArrivalAirportCode})"
@@ -78,7 +80,13 @@ namespace TravAi.Services
                         CreatedAt = b.BookingDate,
                         ExpiresAt = expiresAt,
                         ServerNowUtc = now,
-                        RemainingSeconds = (expiresAt - now).TotalSeconds
+                        RemainingSeconds = (expiresAt - now).TotalSeconds,
+                        PaymentStatus = b.PaymentStatus,
+                        Status = b.Status,
+                        RequiresPassengerDetails = true,
+                        PassengerDetailsStatus = b.PassengerDetailsStatus ?? "Incomplete",
+                        IsReadyForPayment = isReady,
+                        ReadinessMessage = isReady ? "Ready for payment." : "Complete passenger/passport details before payment."
                     });
                 }
             }
@@ -100,6 +108,7 @@ namespace TravAi.Services
                     list.Add(new PendingCheckoutItemDto
                     {
                         Id = b.Id,
+                        ReferenceId = b.Id,
                         ItemType = "HotelBooking",
                         DisplayName = b.Hotel != null 
                             ? $"Hotel: {b.Hotel.HotelName}" 
@@ -109,7 +118,13 @@ namespace TravAi.Services
                         CreatedAt = b.CreatedAt,
                         ExpiresAt = expiresAt,
                         ServerNowUtc = now,
-                        RemainingSeconds = (expiresAt - now).TotalSeconds
+                        RemainingSeconds = (expiresAt - now).TotalSeconds,
+                        PaymentStatus = b.PaymentStatus.ToString(),
+                        Status = b.Status.ToString(),
+                        RequiresPassengerDetails = false,
+                        PassengerDetailsStatus = "Complete",
+                        IsReadyForPayment = true,
+                        ReadinessMessage = "Ready for payment."
                     });
                 }
             }
@@ -131,6 +146,7 @@ namespace TravAi.Services
                     list.Add(new PendingCheckoutItemDto
                     {
                         Id = b.Id,
+                        ReferenceId = b.Id,
                         ItemType = "TourBooking",
                         DisplayName = b.Tour != null 
                             ? $"Tour: {b.Tour.TourTitle}" 
@@ -140,7 +156,13 @@ namespace TravAi.Services
                         CreatedAt = b.CreatedAt,
                         ExpiresAt = expiresAt,
                         ServerNowUtc = now,
-                        RemainingSeconds = (expiresAt - now).TotalSeconds
+                        RemainingSeconds = (expiresAt - now).TotalSeconds,
+                        PaymentStatus = b.PaymentStatus.ToString(),
+                        Status = b.Status.ToString(),
+                        RequiresPassengerDetails = false,
+                        PassengerDetailsStatus = "Complete",
+                        IsReadyForPayment = true,
+                        ReadinessMessage = "Ready for payment."
                     });
                 }
             }
@@ -155,10 +177,13 @@ namespace TravAi.Services
             // Validate booking exists and belongs to user
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
-                .FirstOrDefaultAsync(b => b.Id == request.AirlineBookingId && b.UserId == request.UserId);
+                .FirstOrDefaultAsync(b => b.Id == request.AirlineBookingId);
 
             if (booking == null)
-                throw new KeyNotFoundException("Airline booking not found or doesn't belong to the user.");
+                throw new KeyNotFoundException("Airline booking not found.");
+
+            if (booking.UserId != request.UserId)
+                throw new UnauthorizedAccessException("You are not allowed to pay this booking.");
 
             if (booking.PaymentStatus == "Paid")
                 throw new InvalidOperationException("This booking has already been paid.");
@@ -270,25 +295,35 @@ namespace TravAi.Services
             var hotelBookings = new List<HotelBooking>();
             if (request.HotelBookingIds != null && request.HotelBookingIds.Any())
             {
-                hotelBookings = await _context.HotelBookings
+                var existingHotels = await _context.HotelBookings
                     .Include(b => b.Hotel)
-                    .Where(b => request.HotelBookingIds.Contains(b.Id) && b.UserId == request.UserId)
+                    .Where(b => request.HotelBookingIds.Contains(b.Id))
                     .ToListAsync();
 
-                if (hotelBookings.Count != request.HotelBookingIds.Count)
-                    throw new KeyNotFoundException("One or more hotel bookings were not found or do not belong to the user.");
+                if (existingHotels.Count != request.HotelBookingIds.Count)
+                    throw new KeyNotFoundException("One or more hotel bookings were not found.");
+
+                if (existingHotels.Any(b => b.UserId != request.UserId))
+                    throw new UnauthorizedAccessException("You are not allowed to pay this booking.");
+
+                hotelBookings = existingHotels;
             }
 
             var tourBookings = new List<TourBooking>();
             if (request.TourBookingIds != null && request.TourBookingIds.Any())
             {
-                tourBookings = await _context.TourBookings
+                var existingTours = await _context.TourBookings
                     .Include(b => b.Tour)
-                    .Where(b => request.TourBookingIds.Contains(b.Id) && b.UserId == request.UserId)
+                    .Where(b => request.TourBookingIds.Contains(b.Id))
                     .ToListAsync();
 
-                if (tourBookings.Count != request.TourBookingIds.Count)
-                    throw new KeyNotFoundException("One or more tour bookings were not found or do not belong to the user.");
+                if (existingTours.Count != request.TourBookingIds.Count)
+                    throw new KeyNotFoundException("One or more tour bookings were not found.");
+
+                if (existingTours.Any(b => b.UserId != request.UserId))
+                    throw new UnauthorizedAccessException("You are not allowed to pay this booking.");
+
+                tourBookings = existingTours;
             }
 
             // Validations
@@ -445,6 +480,281 @@ namespace TravAi.Services
             }
         }
 
+        public async Task<CheckoutResponse> CreateUnifiedCheckoutAsync(CreateUnifiedCheckoutRequest request, string baseUrl)
+        {
+            var now = DateTime.UtcNow;
+
+            if (request.Items == null || !request.Items.Any())
+            {
+                throw new ArgumentException("Must select at least one booking.");
+            }
+
+            // Run cleanup first
+            await ExpireAndDeleteUnpaidBookingsAsync(request.UserId);
+
+            // Re-check selected items after cleanup
+            var airlineBookings = new List<Booking>();
+            var hotelBookings = new List<HotelBooking>();
+            var tourBookings = new List<TourBooking>();
+
+            foreach (var item in request.Items)
+            {
+                if (item.ItemType == "AirlineBooking")
+                {
+                    var b = await _context.Bookings.Include(x => x.Flight).Include(x => x.Passengers)
+                        .FirstOrDefaultAsync(x => x.Id == item.ReferenceId);
+                    if (b == null)
+                    {
+                        throw new KeyNotFoundException("One or more selected reservations were not found.");
+                    }
+                    if (b.UserId != request.UserId)
+                    {
+                        throw new UnauthorizedAccessException("You are not allowed to pay this booking.");
+                    }
+                    if (b.PaymentStatus == "Paid" || b.Status == "Confirmed")
+                    {
+                        throw new InvalidOperationException("One or more selected reservations are already paid/confirmed.");
+                    }
+                    
+                    // Validate passenger details completeness (must match RecalculateBookingStatusAsync logic)
+                    bool isPassengerDetailsComplete = b.Passengers.Count == b.NumberOfSeats &&
+                                                      b.Passengers.All(p => !string.IsNullOrWhiteSpace(p.FirstName) &&
+                                                                                  !string.IsNullOrWhiteSpace(p.LastName) &&
+                                                                                  !string.IsNullOrWhiteSpace(p.PassportNumber) &&
+                                                                                  p.DateOfBirth.HasValue &&
+                                                                                  !string.IsNullOrWhiteSpace(p.Gender) &&
+                                                                                  p.PassportExpiryDate.HasValue &&
+                                                                                  p.LastName != "(Account Holder)");
+                    if (!isPassengerDetailsComplete)
+                    {
+                        throw new InvalidOperationException("Complete passenger/passport details for all selected flight tickets before payment.");
+                    }
+                    
+                    airlineBookings.Add(b);
+                }
+                else if (item.ItemType == "HotelBooking")
+                {
+                    var h = await _context.HotelBookings.Include(x => x.Hotel)
+                        .FirstOrDefaultAsync(x => x.Id == item.ReferenceId);
+                    if (h == null)
+                    {
+                        throw new KeyNotFoundException("One or more selected reservations were not found.");
+                    }
+                    if (h.UserId != request.UserId)
+                    {
+                        throw new UnauthorizedAccessException("You are not allowed to pay this booking.");
+                    }
+                    if (h.PaymentStatus == PaymentStatus.Paid || h.Status == BookingStatus.Confirmed)
+                    {
+                        throw new InvalidOperationException("One or more selected reservations are already paid/confirmed.");
+                    }
+                    hotelBookings.Add(h);
+                }
+                else if (item.ItemType == "TourBooking")
+                {
+                    var t = await _context.TourBookings.Include(x => x.Tour)
+                        .FirstOrDefaultAsync(x => x.Id == item.ReferenceId);
+                    if (t == null)
+                    {
+                        throw new KeyNotFoundException("One or more selected reservations were not found.");
+                    }
+                    if (t.UserId != request.UserId)
+                    {
+                        throw new UnauthorizedAccessException("You are not allowed to pay this booking.");
+                    }
+                    if (t.PaymentStatus == TourGuidePaymentStatus.Completed || t.Status == TourGuideBookingStatus.Confirmed)
+                    {
+                        throw new InvalidOperationException("One or more selected reservations are already paid/confirmed.");
+                    }
+                    tourBookings.Add(t);
+                }
+                else
+                {
+                    throw new ArgumentException($"Unknown item type: {item.ItemType}");
+                }
+            }
+
+            // Sum total amount
+            decimal totalAmount = airlineBookings.Sum(b => b.TotalPrice) +
+                                  hotelBookings.Sum(h => h.TotalPrice) +
+                                  tourBookings.Sum(t => t.TotalPrice);
+
+            // Determine earliest expiry time
+            DateTime expiresAt = DateTime.MaxValue;
+            foreach (var b in airlineBookings)
+            {
+                var bExpiry = b.BookingDate.AddMinutes(AirlineExpirationMinutes);
+                if (bExpiry < expiresAt) expiresAt = bExpiry;
+            }
+            foreach (var h in hotelBookings)
+            {
+                var hExpiry = h.CreatedAt.AddMinutes(HotelTourExpirationMinutes);
+                if (hExpiry < expiresAt) expiresAt = hExpiry;
+            }
+            foreach (var t in tourBookings)
+            {
+                var tExpiry = t.CreatedAt.AddMinutes(HotelTourExpirationMinutes);
+                if (tExpiry < expiresAt) expiresAt = tExpiry;
+            }
+
+            double remainingSeconds = (expiresAt - now).TotalSeconds;
+
+            if (remainingSeconds <= 0)
+            {
+                // Delete expired unpaid selected bookings only
+                foreach (var b in airlineBookings)
+                {
+                    if (b.BookingDate.AddMinutes(AirlineExpirationMinutes) <= now)
+                        await DeleteAirlineBookingInternalAsync(b);
+                }
+                foreach (var h in hotelBookings)
+                {
+                    if (h.CreatedAt.AddMinutes(HotelTourExpirationMinutes) <= now)
+                        await DeleteHotelBookingInternalAsync(h);
+                }
+                foreach (var t in tourBookings)
+                {
+                    if (t.CreatedAt.AddMinutes(HotelTourExpirationMinutes) <= now)
+                        await DeleteTourBookingInternalAsync(t);
+                }
+                await _context.SaveChangesAsync();
+                throw new InvalidOperationException("One or more selected reservations expired. Please refresh checkout.");
+            }
+
+            // Default currency
+            string currency = _stripeOptions.Currency.ToLower();
+            if (tourBookings.Any())
+            {
+                currency = tourBookings.First().Currency?.ToLower() ?? currency;
+            }
+
+            using (var dbTransaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    // Create CheckoutSession
+                    var checkoutSession = new CheckoutSession
+                    {
+                        UserId = request.UserId,
+                        CheckoutType = "Selected",
+                        Status = "Pending",
+                        TotalAmount = totalAmount,
+                        Currency = currency,
+                        CreatedAt = now,
+                        ExpiresAt = expiresAt
+                    };
+
+                    _context.CheckoutSessions.Add(checkoutSession);
+                    await _context.SaveChangesAsync();
+
+                    var sessionItems = new List<CheckoutSessionItem>();
+
+                    // Airline
+                    foreach (var b in airlineBookings)
+                    {
+                        var displayName = b.Flight != null
+                            ? $"Flight {b.Flight.FlightNumber} ({b.Flight.DepartureAirportCode} -> {b.Flight.ArrivalAirportCode})"
+                            : $"Flight Booking #{b.Id}";
+                        var item = new CheckoutSessionItem
+                        {
+                            CheckoutSessionId = checkoutSession.Id,
+                            ItemType = "AirlineBooking",
+                            ReferenceId = b.Id,
+                            DisplayName = displayName,
+                            Amount = b.TotalPrice,
+                            CreatedAt = now
+                        };
+                        _context.CheckoutSessionItems.Add(item);
+                        sessionItems.Add(item);
+                    }
+
+                    // Hotel
+                    foreach (var h in hotelBookings)
+                    {
+                        var displayName = h.Hotel != null ? $"Hotel: {h.Hotel.HotelName}" : $"Hotel Booking #{h.Id}";
+                        var item = new CheckoutSessionItem
+                        {
+                            CheckoutSessionId = checkoutSession.Id,
+                            ItemType = "HotelBooking",
+                            ReferenceId = h.Id,
+                            DisplayName = displayName,
+                            Amount = h.TotalPrice,
+                            CreatedAt = now
+                        };
+                        _context.CheckoutSessionItems.Add(item);
+                        sessionItems.Add(item);
+                    }
+
+                    // Tour
+                    foreach (var t in tourBookings)
+                    {
+                        var displayName = t.Tour != null ? $"Tour: {t.Tour.TourTitle}" : $"Tour Booking #{t.Id}";
+                        var item = new CheckoutSessionItem
+                        {
+                            CheckoutSessionId = checkoutSession.Id,
+                            ItemType = "TourBooking",
+                            ReferenceId = t.Id,
+                            DisplayName = displayName,
+                            Amount = t.TotalPrice,
+                            CreatedAt = now
+                        };
+                        _context.CheckoutSessionItems.Add(item);
+                        sessionItems.Add(item);
+                    }
+
+                    // Create PaymentTransaction
+                    var paymentTransaction = new PaymentTransaction
+                    {
+                        CheckoutSessionId = checkoutSession.Id,
+                        Provider = "Stripe",
+                        Amount = totalAmount,
+                        Currency = currency,
+                        Status = "Pending",
+                        CreatedAt = now
+                    };
+
+                    _context.PaymentTransactions.Add(paymentTransaction);
+                    await _context.SaveChangesAsync();
+
+                    // Create Stripe session with expiration
+                    DateTime? stripeExpiresAt = null;
+                    if (remainingSeconds >= 1800 && remainingSeconds <= 86400)
+                    {
+                        stripeExpiresAt = expiresAt;
+                    }
+
+                    var stripeSessionId = await CreateStripeSessionAsync(
+                        checkoutSession.Id,
+                        sessionItems,
+                        currency,
+                        baseUrl,
+                        stripeExpiresAt
+                    );
+
+                    checkoutSession.StripeCheckoutSessionId = stripeSessionId;
+                    paymentTransaction.ProviderCheckoutSessionId = stripeSessionId;
+
+                    await _context.SaveChangesAsync();
+                    await dbTransaction.CommitAsync();
+
+                    var service = new SessionService();
+                    var stripeSession = await service.GetAsync(stripeSessionId);
+
+                    return new CheckoutResponse
+                    {
+                        CheckoutUrl = stripeSession.Url,
+                        CheckoutSessionId = stripeSession.Id
+                    };
+                }
+                catch (Exception ex)
+                {
+                    await dbTransaction.RollbackAsync();
+                    _logger.LogError(ex, "Error creating unified checkout session");
+                    throw;
+                }
+            }
+        }
+
         public async Task<object> GetCheckoutSessionDetailsAsync(long id)
         {
             var session = await _context.CheckoutSessions
@@ -481,6 +791,96 @@ namespace TravAi.Services
 
         public async Task<object> ConfirmPaymentAsync(string stripeSessionId)
         {
+            var session = await _context.CheckoutSessions
+                .Include(s => s.Items)
+                .Include(s => s.Transactions)
+                .FirstOrDefaultAsync(s => s.StripeCheckoutSessionId == stripeSessionId);
+
+            if (session == null)
+            {
+                var stripeService = new SessionService();
+                var stripeSessionObj = await stripeService.GetAsync(stripeSessionId);
+                if (stripeSessionObj != null && long.TryParse(stripeSessionObj.ClientReferenceId, out long dbId))
+                {
+                    session = await _context.CheckoutSessions
+                        .Include(s => s.Items)
+                        .Include(s => s.Transactions)
+                        .FirstOrDefaultAsync(s => s.Id == dbId);
+                }
+            }
+
+            if (session == null)
+                throw new KeyNotFoundException("Checkout session not found.");
+
+            if (session.Status == "Paid")
+            {
+                var transactionObj = session.Transactions.OrderByDescending(t => t.CreatedAt).FirstOrDefault();
+                return new
+                {
+                    success = true,
+                    checkoutSessionId = session.Id,
+                    paymentTransactionId = transactionObj?.Id,
+                    amount = session.TotalAmount,
+                    status = session.Status,
+                    paidAt = session.PaidAt
+                };
+            }
+
+            if (session.Status == "Pending" && DateTime.UtcNow > session.ExpiresAt)
+            {
+                using (var dbTransaction = await _context.Database.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        session.Status = "Expired";
+                        var transactionObj = session.Transactions.OrderByDescending(t => t.CreatedAt).FirstOrDefault();
+                        if (transactionObj != null && transactionObj.Status == "Pending")
+                        {
+                            transactionObj.Status = "Expired";
+                        }
+
+                        // Delete only expired unpaid bookings in the session
+                        var now = DateTime.UtcNow;
+                        foreach (var item in session.Items)
+                        {
+                            if (item.ItemType == "AirlineBooking")
+                            {
+                                var b = await _context.Bookings.FindAsync(item.ReferenceId);
+                                if (b != null && b.PaymentStatus != "Paid" && b.BookingDate.AddMinutes(AirlineExpirationMinutes) < now)
+                                {
+                                    await DeleteAirlineBookingInternalAsync(b);
+                                }
+                            }
+                            else if (item.ItemType == "HotelBooking")
+                            {
+                                var h = await _context.HotelBookings.FindAsync(item.ReferenceId);
+                                if (h != null && h.PaymentStatus != PaymentStatus.Paid && h.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
+                                {
+                                    await DeleteHotelBookingInternalAsync(h);
+                                }
+                            }
+                            else if (item.ItemType == "TourBooking")
+                            {
+                                var t = await _context.TourBookings.FindAsync(item.ReferenceId);
+                                if (t != null && t.PaymentStatus != TourGuidePaymentStatus.Completed && t.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
+                                {
+                                    await DeleteTourBookingInternalAsync(t);
+                                }
+                            }
+                        }
+
+                        await _context.SaveChangesAsync();
+                        await dbTransaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await dbTransaction.RollbackAsync();
+                        _logger.LogError(ex, "Error handling expired checkout session during confirmation");
+                    }
+                }
+                throw new InvalidOperationException("Payment session expired. Please return to checkout.");
+            }
+
             var service = new SessionService();
             var stripeSession = await service.GetAsync(stripeSessionId);
 
@@ -492,16 +892,17 @@ namespace TravAi.Services
                 var paymentIntentId = stripeSession.PaymentIntentId;
                 var rawJson = JsonSerializer.Serialize(stripeSession);
                 
-                var (session, tx) = await CompleteCheckoutSessionAsync(stripeSessionId, paymentIntentId, rawJson);
+                var (updatedSession, tx, partialMessage) = await CompleteCheckoutSessionAsync(stripeSessionId, paymentIntentId, rawJson);
 
                 return new
                 {
                     success = true,
-                    checkoutSessionId = session.Id,
+                    checkoutSessionId = updatedSession.Id,
                     paymentTransactionId = tx.Id,
-                    amount = session.TotalAmount,
-                    status = session.Status,
-                    paidAt = session.PaidAt
+                    amount = updatedSession.TotalAmount,
+                    status = updatedSession.Status,
+                    paidAt = updatedSession.PaidAt,
+                    message = partialMessage
                 };
             }
 
@@ -561,7 +962,8 @@ namespace TravAi.Services
             long checkoutSessionId,
             List<CheckoutSessionItem> items,
             string currency,
-            string baseUrl)
+            string baseUrl,
+            DateTime? expiresAt = null)
         {
             var lineItems = new List<SessionLineItemOptions>();
 
@@ -589,7 +991,8 @@ namespace TravAi.Services
                 Mode = "payment",
                 ClientReferenceId = checkoutSessionId.ToString(),
                 SuccessUrl = $"{baseUrl}/checkout-success.html?session_id={{CHECKOUT_SESSION_ID}}",
-                CancelUrl = $"{baseUrl}/checkout-cancel.html"
+                CancelUrl = $"{baseUrl}/checkout-cancel.html",
+                ExpiresAt = expiresAt
             };
 
             var service = new SessionService();
@@ -597,7 +1000,7 @@ namespace TravAi.Services
             return session.Id;
         }
 
-        private async Task<(CheckoutSession, PaymentTransaction)> CompleteCheckoutSessionAsync(
+        private async Task<(CheckoutSession session, PaymentTransaction tx, string? partialMessage)> CompleteCheckoutSessionAsync(
             string stripeSessionId,
             string paymentIntentId,
             string rawResponse)
@@ -641,6 +1044,61 @@ namespace TravAi.Services
                 _context.PaymentTransactions.Add(transaction);
             }
 
+            if (session.Status == "Pending" && DateTime.UtcNow > session.ExpiresAt)
+            {
+                using (var dbTransaction = await _context.Database.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        session.Status = "Expired";
+                        if (transaction != null && transaction.Status == "Pending")
+                        {
+                            transaction.Status = "Expired";
+                            transaction.RawProviderResponse = rawResponse;
+                        }
+
+                        // Delete only expired unpaid bookings in the session
+                        var now = DateTime.UtcNow;
+                        foreach (var item in session.Items)
+                        {
+                            if (item.ItemType == "AirlineBooking")
+                            {
+                                var b = await _context.Bookings.FindAsync(item.ReferenceId);
+                                if (b != null && b.PaymentStatus != "Paid" && b.BookingDate.AddMinutes(AirlineExpirationMinutes) < now)
+                                {
+                                    await DeleteAirlineBookingInternalAsync(b);
+                                }
+                            }
+                            else if (item.ItemType == "HotelBooking")
+                            {
+                                var h = await _context.HotelBookings.FindAsync(item.ReferenceId);
+                                if (h != null && h.PaymentStatus != PaymentStatus.Paid && h.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
+                                {
+                                    await DeleteHotelBookingInternalAsync(h);
+                                }
+                            }
+                            else if (item.ItemType == "TourBooking")
+                            {
+                                var t = await _context.TourBookings.FindAsync(item.ReferenceId);
+                                if (t != null && t.PaymentStatus != TourGuidePaymentStatus.Completed && t.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
+                                {
+                                    await DeleteTourBookingInternalAsync(t);
+                                }
+                            }
+                        }
+
+                        await _context.SaveChangesAsync();
+                        await dbTransaction.CommitAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await dbTransaction.RollbackAsync();
+                        _logger.LogError(ex, "Error expiring checkout session in DB transaction");
+                    }
+                }
+                throw new InvalidOperationException("One or more selected reservations expired. Please refresh checkout.");
+            }
+
             using (var dbTransaction = await _context.Database.BeginTransactionAsync())
             {
                 try
@@ -663,6 +1121,9 @@ namespace TravAi.Services
                         transaction.RawProviderResponse = rawResponse;
                     }
 
+                    bool hasMissing = false;
+                    var missingItems = new List<string>();
+
                     // 3. Update Bookings statuses
                     foreach (var item in session.Items)
                     {
@@ -674,6 +1135,11 @@ namespace TravAi.Services
                                 b.PaymentStatus = "Paid";
                                 b.Status = "Confirmed";
                             }
+                            else
+                            {
+                                hasMissing = true;
+                                missingItems.Add($"Flight Booking #{item.ReferenceId}");
+                            }
                         }
                         else if (item.ItemType == "HotelBooking")
                         {
@@ -683,6 +1149,11 @@ namespace TravAi.Services
                                 h.PaymentStatus = PaymentStatus.Paid;
                                 h.Status = BookingStatus.Confirmed;
                                 h.UpdatedAt = DateTime.UtcNow;
+                            }
+                            else
+                            {
+                                hasMissing = true;
+                                missingItems.Add($"Hotel Booking #{item.ReferenceId}");
                             }
                         }
                         else if (item.ItemType == "TourBooking")
@@ -694,7 +1165,18 @@ namespace TravAi.Services
                                 t.Status = TourGuideBookingStatus.Confirmed;
                                 t.UpdatedAt = DateTime.UtcNow;
                             }
+                            else
+                            {
+                                hasMissing = true;
+                                missingItems.Add($"Tour Booking #{item.ReferenceId}");
+                            }
                         }
+                    }
+
+                    string? partialMessage = null;
+                    if (hasMissing)
+                    {
+                        partialMessage = "Payment completed, but one or more items (" + string.Join(", ", missingItems) + ") were already released due to expiration.";
                     }
 
                     // 4. Save Webhook Event log to DB
@@ -711,6 +1193,8 @@ namespace TravAi.Services
 
                     await _context.SaveChangesAsync();
                     await dbTransaction.CommitAsync();
+
+                    return (session, transaction, partialMessage);
                 }
                 catch (Exception ex)
                 {
@@ -719,8 +1203,6 @@ namespace TravAi.Services
                     throw;
                 }
             }
-
-            return (session, transaction);
         }
 
         private async Task ExpireCheckoutSessionAsync(string stripeSessionId, string rawResponse)
@@ -764,33 +1246,32 @@ namespace TravAi.Services
                         transaction.RawProviderResponse = rawResponse;
                     }
 
-                    // For each item still unpaid, update status to Expired or Cancelled
+                    // Delete only expired unpaid bookings in the session
+                    var now = DateTime.UtcNow;
                     foreach (var item in session.Items)
                     {
                         if (item.ItemType == "AirlineBooking")
                         {
                             var b = await _context.Bookings.FindAsync(item.ReferenceId);
-                            if (b != null && b.PaymentStatus != "Paid")
+                            if (b != null && b.PaymentStatus != "Paid" && b.BookingDate.AddMinutes(AirlineExpirationMinutes) < now)
                             {
-                                b.Status = "Expired";
+                                await DeleteAirlineBookingInternalAsync(b);
                             }
                         }
                         else if (item.ItemType == "HotelBooking")
                         {
                             var h = await _context.HotelBookings.FindAsync(item.ReferenceId);
-                            if (h != null && h.PaymentStatus != PaymentStatus.Paid)
+                            if (h != null && h.PaymentStatus != PaymentStatus.Paid && h.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
                             {
-                                h.Status = BookingStatus.Cancelled; // Closest existing enum/status for cancelled/expired
-                                h.UpdatedAt = DateTime.UtcNow;
+                                await DeleteHotelBookingInternalAsync(h);
                             }
                         }
                         else if (item.ItemType == "TourBooking")
                         {
                             var t = await _context.TourBookings.FindAsync(item.ReferenceId);
-                            if (t != null && t.PaymentStatus != TourGuidePaymentStatus.Completed)
+                            if (t != null && t.PaymentStatus != TourGuidePaymentStatus.Completed && t.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now)
                             {
-                                t.Status = TourGuideBookingStatus.Cancelled; // Closest existing enum/status for cancelled/expired
-                                t.UpdatedAt = DateTime.UtcNow;
+                                await DeleteTourBookingInternalAsync(t);
                             }
                         }
                     }

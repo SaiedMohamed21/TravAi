@@ -59,6 +59,9 @@ namespace TravAi.Airline.Services.BookingService
                         AgeType = companion.AgeType,
                         PassportNumber = companion.PassportNumber,
                         Nationality = companion.Nationality,
+                        DateOfBirth = companion.DateOfBirth,
+                        PassportExpiryDate = companion.PassportExpireDate,
+                        Gender = companion.Gender.ToString(),
                         Price = flight.Price ?? 0,
                         Status = "Pending"
                     });
@@ -77,6 +80,35 @@ namespace TravAi.Airline.Services.BookingService
                         Status = "Pending"
                     });
                 }
+
+                // Add empty placeholders for any remaining seats to ensure we always have NumberOfSeats passenger records
+                while (booking.Passengers.Count < dto.NumberOfSeats)
+                {
+                    booking.Passengers.Add(new Passenger
+                    {
+                        FirstName = string.Empty,
+                        LastName = string.Empty,
+                        AgeType = "Adult",
+                        PassengerType = "Adult",
+                        PassportNumber = null,
+                        Nationality = null,
+                        Price = flight.Price ?? 0,
+                        Status = "Pending"
+                    });
+                }
+
+                // Determine initial passenger details status
+                bool isComplete = booking.Passengers.Count == booking.NumberOfSeats &&
+                                  booking.Passengers.All(p => !string.IsNullOrWhiteSpace(p.FirstName) &&
+                                                              !string.IsNullOrWhiteSpace(p.LastName) &&
+                                                              !string.IsNullOrWhiteSpace(p.PassportNumber) &&
+                                                              p.DateOfBirth.HasValue &&
+                                                              !string.IsNullOrWhiteSpace(p.Gender) &&
+                                                              p.PassportExpiryDate.HasValue &&
+                                                              p.LastName != "(Account Holder)"); // placeholder check
+
+                booking.PassengerDetailsStatus = isComplete ? "Complete" : "Incomplete";
+                booking.PassengerDetailsCompletedAt = isComplete ? DateTime.UtcNow : null;
 
                 flight.AvailableSeats = (flight.AvailableSeats ?? 0) - dto.NumberOfSeats;
 
@@ -105,7 +137,7 @@ namespace TravAi.Airline.Services.BookingService
             var query = _context.Bookings
                 .Include(b => b.Flight).ThenInclude(f => f.Airline)
                 .Include(b => b.Passengers)
-                .Where(b => b.UserId == userId)
+                .Where(b => b.UserId == userId && b.PaymentStatus == "Paid")
                 .AsQueryable();
 
             if (tab == "upcoming")
@@ -121,7 +153,7 @@ namespace TravAi.Airline.Services.BookingService
 
         private BookingResponseDto MapToResponse(Booking b)
         {
-            var departureTime = b.Flight?.DepartureTime ?? DateTime.Now;
+            var departureTime = b.Flight?.DepartureTime ?? b.BookingDate;
             return new BookingResponseDto
             {
                 Id = b.Id,
@@ -274,6 +306,23 @@ namespace TravAi.Airline.Services.BookingService
                     QrCodeBase64 = "" // Placeholder for UI
                 }).ToList()
             };
+        }
+        public async Task<bool> IsAirlineBookingPassengerDetailsCompleteAsync(long bookingId)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Passengers)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null) return false;
+
+            return booking.Passengers.Count == booking.NumberOfSeats &&
+                   booking.Passengers.All(p => !string.IsNullOrWhiteSpace(p.FirstName) &&
+                                               !string.IsNullOrWhiteSpace(p.LastName) &&
+                                               !string.IsNullOrWhiteSpace(p.PassportNumber) &&
+                                               p.DateOfBirth.HasValue &&
+                                               !string.IsNullOrWhiteSpace(p.Gender) &&
+                                               p.PassportExpiryDate.HasValue &&
+                                               p.LastName != "(Account Holder)"); // placeholder check
         }
     }
 }

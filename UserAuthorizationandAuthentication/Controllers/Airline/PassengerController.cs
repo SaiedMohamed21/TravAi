@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravAi.DTOs.Common;
 using TravAi.DTOs.Auth;
@@ -26,7 +26,11 @@ namespace TravAi.Airline.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreatePassengerDto dto)
         {
-            var passenger = await _passengerService.CreateAsync(dto);
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized user."));
+
+            var passenger = await _passengerService.CreateAsync(dto, userId);
 
             return Ok(new ApiResponse<PassengerResponseDto>(
                 passenger,
@@ -54,9 +58,9 @@ namespace TravAi.Airline.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(long id)
         {
-            var passenger = await _passengerService.GetByIdAsync(id);
+            var passengerDto = await _passengerService.GetByIdAsync(id);
 
-            if (passenger == null)
+            if (passengerDto == null)
             {
                 return NotFound(new ApiResponse<string>(
                     success: false,
@@ -65,7 +69,7 @@ namespace TravAi.Airline.Controllers
             }
 
             return Ok(new ApiResponse<PassengerResponseDto>(
-                passenger,
+                passengerDto,
                 "Retrieved passenger successfully."
             ));
         }
@@ -76,7 +80,11 @@ namespace TravAi.Airline.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(long id, [FromBody] UpdatePassengerDto dto)
         {
-            await _passengerService.UpdateAsync(id, dto);
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized user."));
+
+            await _passengerService.UpdateAsync(id, dto, userId);
 
             return Ok(new ApiResponse<string>(
                 "Passenger updated successfully."
@@ -89,7 +97,11 @@ namespace TravAi.Airline.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
-            await _passengerService.DeleteAsync(id);
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdStr) || !long.TryParse(userIdStr, out long userId))
+                return Unauthorized(new ApiResponse<string>(false, "Unauthorized user."));
+
+            await _passengerService.DeleteAsync(id, userId);
 
             return Ok(new ApiResponse<string>(
                 "Passenger deleted successfully."
