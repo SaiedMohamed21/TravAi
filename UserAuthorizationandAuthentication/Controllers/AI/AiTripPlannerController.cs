@@ -131,7 +131,7 @@ namespace TravAi.Controllers.AI
         /// Applies budget_divider algorithm then selects the best flight/hotel/tour per city.
         /// </summary>
         [HttpPost("generate-plan")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<IActionResult> GeneratePlan([FromBody] TripPlanRequestDto request)
         {
             try
@@ -170,6 +170,26 @@ namespace TravAi.Controllers.AI
             {
                 return BadRequest(new ApiResponse<string>(false, ex.Message, new List<string> { ex.Message }));
             }
+        }
+
+        /// <summary>
+        /// Regenerates a flight alternative using the AI session ID.
+        /// </summary>
+        [HttpPost("regenerate-flight")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegenerateFlight([FromBody] RegenerateFlightApiRequestDto req)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var response = await _aiService.RegenerateFlightAsync(req.SessionId, req.Adults, req.Children, req.Direction);
+            
+            if (response == null)
+            {
+                return NotFound(new { Message = "No alternative flight found or API error." });
+            }
+
+            return Ok(response);
         }
     }
 }

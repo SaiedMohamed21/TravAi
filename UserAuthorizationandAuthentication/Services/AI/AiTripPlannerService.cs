@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
 using TravAi.DTOs.AI;
 using TravAi.Models.Enums;
+using System.Text.Json;
+using System.Text;
+using System.Net.Http;
 using static TravAi.Services.AI.AiTripPlannerHelpers;
 
 namespace TravAi.Services.AI
@@ -9,7 +12,15 @@ namespace TravAi.Services.AI
     public class AiTripPlannerService : IAiTripPlannerService
     {
         private readonly ApplicationDbContext _db;
-        public AiTripPlannerService(ApplicationDbContext db) => _db = db;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IConfiguration _config;
+
+        public AiTripPlannerService(ApplicationDbContext db, IHttpClientFactory httpClientFactory, IConfiguration config)
+        {
+            _db = db;
+            _httpClientFactory = httpClientFactory;
+            _config = config;
+        }
 
         // ─────────────────────────────────────────────────────────────────────
         //  STEP 1 ─ Estimate budget ranges from actual DB data
@@ -163,13 +174,13 @@ namespace TravAi.Services.AI
 
                 if (goPrices.Any())
                 {
-                    flightMin += FlightTotalPrice(goPrices.Min(), req.Adults, req.Children);
-                    flightMax += FlightTotalPrice(goPrices.Max(), req.Adults, req.Children);
+                    flightMin += FlightTotalPrice(AiTripPlannerHelpers.GetPercentile(goPrices, 0.25), req.Adults, req.Children);
+                    flightMax += FlightTotalPrice(AiTripPlannerHelpers.GetPercentile(goPrices, 0.75), req.Adults, req.Children);
                 }
                 if (retPrices.Any())
                 {
-                    flightMin += FlightTotalPrice(retPrices.Min(), req.Adults, req.Children);
-                    flightMax += FlightTotalPrice(retPrices.Max(), req.Adults, req.Children);
+                    flightMin += FlightTotalPrice(AiTripPlannerHelpers.GetPercentile(retPrices, 0.25), req.Adults, req.Children);
+                    flightMax += FlightTotalPrice(AiTripPlannerHelpers.GetPercentile(retPrices, 0.75), req.Adults, req.Children);
                 }
             }
 
@@ -184,7 +195,8 @@ namespace TravAi.Services.AI
                         .Where(r => r.Hotel.Verified && r.Hotel.Active
                             && r.State == RoomState.Active && r.FBPrice.HasValue
                             && (r.Hotel.Governorate != null && r.Hotel.Governorate.ToLower() == cityLower
-                             || r.Hotel.CityArea    != null && r.Hotel.CityArea.ToLower()    == cityLower))
+                             || r.Hotel.CityArea    != null && r.Hotel.CityArea.ToLower()    == cityLower)
+                            && r.Hotel.ClusterSegment != null && r.Hotel.ClusterSegment.ToLower() == targetCluster)
                         .ToListAsync();
 
                     var singles = rooms.Where(r => r.BedType == BedType.Single)
@@ -194,13 +206,13 @@ namespace TravAi.Services.AI
 
                     if (singles.Any() && req.SingleRooms > 0)
                     {
-                        hotelMin += singles.Min() * req.SingleRooms * city.Days;
-                        hotelMax += singles.Max() * req.SingleRooms * city.Days;
+                        hotelMin += AiTripPlannerHelpers.GetPercentile(singles, 0.25) * req.SingleRooms * city.Days;
+                        hotelMax += AiTripPlannerHelpers.GetPercentile(singles, 0.75) * req.SingleRooms * city.Days;
                     }
                     if (doubles.Any() && req.DoubleRooms > 0)
                     {
-                        hotelMin += doubles.Min() * req.DoubleRooms * city.Days;
-                        hotelMax += doubles.Max() * req.DoubleRooms * city.Days;
+                        hotelMin += AiTripPlannerHelpers.GetPercentile(doubles, 0.25) * req.DoubleRooms * city.Days;
+                        hotelMax += AiTripPlannerHelpers.GetPercentile(doubles, 0.75) * req.DoubleRooms * city.Days;
                     }
                 }
             }
@@ -229,8 +241,8 @@ namespace TravAi.Services.AI
 
                     if (prices.Any())
                     {
-                        toursMin += prices.Min() * totalPeople;
-                        toursMax += prices.Max() * totalPeople;
+                        toursMin += AiTripPlannerHelpers.GetPercentile(prices, 0.25) * totalPeople * city.Days;
+                        toursMax += AiTripPlannerHelpers.GetPercentile(prices, 0.75) * totalPeople * city.Days;
                     }
                 }
             }
@@ -352,7 +364,8 @@ namespace TravAi.Services.AI
                         .Where(r => r.Hotel.Verified && r.Hotel.Active
                             && r.State == RoomState.Active && r.FBPrice.HasValue
                             && (r.Hotel.Governorate != null && r.Hotel.Governorate.ToLower() == cityLowerP
-                             || r.Hotel.CityArea    != null && r.Hotel.CityArea.ToLower()    == cityLowerP))
+                             || r.Hotel.CityArea    != null && r.Hotel.CityArea.ToLower()    == cityLowerP)
+                            && r.Hotel.ClusterSegment != null && r.Hotel.ClusterSegment.ToLower() == targetCluster)
                         .ToListAsync();
 
                     var sm = rooms.Where(r => r.BedType == BedType.Single)
@@ -484,8 +497,14 @@ namespace TravAi.Services.AI
                 });
             }
 
-            PlannedFlightDto? goFlight = null;  // Selection stopped
-            PlannedFlightDto? retFlight = null; // Selection stopped
+            PlannedFlightDto? goFlight = null;
+            PlannedFlightDto? retFlight = null;
+
+            if (!req.ExcludeFlights)
+            {
+                goFlight = await GetAiRecommendedFlightAsync(fromCodesP, toCodesP, req.DepartureDate, flightClass, goBudget, req.Adults, req.Children, "Outbound");
+                retFlight = await GetAiRecommendedFlightAsync(lastCodesP, fromCodesP, req.ReturnDate, flightClass, retBudget, req.Adults, req.Children, "Return");
+            }
 
             return new TripPlanResponseDto
             {
@@ -496,6 +515,8 @@ namespace TravAi.Services.AI
                 Adults             = req.Adults,
                 Children           = req.Children,
                 FlightBudget       = Math.Round(flightBudget, 2),
+                GoFlightBudget     = Math.Round(goBudget, 2),
+                ReturnFlightBudget = Math.Round(retBudget, 2),
                 HotelBudget        = Math.Round(hotelBudget,  2),
                 ToursBudget        = Math.Round(toursBudget,  2),
                 GoFlight           = goFlight,
@@ -518,65 +539,181 @@ namespace TravAi.Services.AI
         }
 
         // ─────────────────────────────────────────────────────────────────────
-        //  Selection: Best Flight within budget
+        //  Selection: AI-Powered Best Flight within budget
         // ─────────────────────────────────────────────────────────────────────
-        private async Task<PlannedFlightDto?> SelectBestFlight(
+        private async Task<PlannedFlightDto?> GetAiRecommendedFlightAsync(
             List<string> fromCodes, List<string> toCodes, DateTime date, string flightClass,
             decimal budget, int adults, int children, string direction)
         {
-            // Search ±7 days; pick closest to requested date within budget
             var dateFrom = date.Date.AddDays(-7);
             if (dateFrom < DateTime.Today) dateFrom = DateTime.Today;
             var dateTo   = date.Date.AddDays(7);
 
-            var flights = await _db.Flights
+            var dbFlights = await _db.Flights
                 .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport)
                 .Include(f => f.Airline)
+                .Include(f => f.Segments)
+                .Include(f => f.Layovers)
                 .Where(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
                     && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
                     && f.DepartureTime!.Value.Date >= dateFrom
                     && f.DepartureTime!.Value.Date <= dateTo
                     && fromCodes.Contains(f.DepartureAirportCode!)
-                    && toCodes.Contains(f.ArrivalAirportCode!)
-                    && f.Price <= budget)
+                    && toCodes.Contains(f.ArrivalAirportCode!))
                 .ToListAsync();
 
-            if (!flights.Any()) return null;
+            // Filter out flights that exceed the calculated group budget
+            var validFlights = dbFlights
+                .Where(f => FlightTotalPrice(f.Price!.Value, adults, children) <= budget)
+                .ToList();
 
-            // Pick cheapest flight that's closest to the target date
-            var best = flights
-                .Select(f => new
+            if (!validFlights.Any() && dbFlights.Any())
+            {
+                // Fallback: If the allocated budget is too strict, take the absolute cheapest available 
+                // flights so the user at least gets a recommendation (even if it exceeds the budget).
+                validFlights = dbFlights.OrderBy(f => f.Price).Take(5).ToList();
+            }
+
+            if (!validFlights.Any()) return null;
+
+            // IMPORTANT: Limit to top 10 flights to prevent exceeding LLM token limits (which causes 400 Bad Request)
+            validFlights = validFlights.OrderBy(f => f.Price).Take(10).ToList();
+
+            var requestDto = new FlightRecommendationRequestDto();
+            foreach (var f in validFlights)
+            {
+                var segments = f.Segments?.OrderBy(s => s.SegmentNumber).ToList() ?? new List<TravAi.Airline.Models.Airlines.FlightSegment>();
+                var layovers = f.Layovers?.OrderBy(l => l.LayoverOrder).ToList() ?? new List<TravAi.Airline.Models.Airlines.FlightLayover>();
+
+                var model = new FlightRecommendationModelDto
                 {
-                    Flight   = f,
-                    Total    = FlightTotalPrice(f.Price!.Value, adults, children),
-                    DaysDiff = Math.Abs((f.DepartureTime!.Value.Date - date.Date).Days)
-                })
-                .Where(x => x.Total <= budget)
-                .OrderBy(x => x.DaysDiff)   // closest date first
-                .ThenBy(x => x.Total)        // then cheapest
-                .FirstOrDefault();
+                    DepartureCity = f.DepartureAirport?.City,
+                    ArrivalCity = f.ArrivalAirport?.City,
+                    FlightClass = f.FlightClass,
+                    Airline = f.Airline?.Name,
+                    Duration = f.Duration,
+                    Stops = f.NumberOfStops ?? 0,
+                    PriceUsd = (double)f.Price!.Value,
+                    Route = $"{f.DepartureAirport?.City}_{f.ArrivalAirport?.City}",
+                    DepartureDatetime = f.DepartureTime?.ToString("M/d/yyyy H:mm"),
+                    ArrivalDatetime = f.ArrivalTime?.ToString("M/d/yyyy H:mm"),
+                    DurationMinutes = f.DurationMinutes ?? 0
+                };
 
-            if (best == null) return null;
-            var f2 = best.Flight;
+                if (segments.Count > 0)
+                {
+                    model.AmenitiesSegment1 = segments[0].Amenities;
+                    model.LegroomSegment1 = segments[0].LegroomInches;
+                }
+                if (segments.Count > 1)
+                {
+                    model.AmenitiesSegment2 = segments[1].Amenities;
+                    model.LegroomSegment2 = segments[1].LegroomInches;
+                }
+                if (segments.Count > 2)
+                {
+                    model.AmenitiesSegment3 = segments[2].Amenities;
+                    model.LegroomSegment3 = segments[2].LegroomInches;
+                }
 
+                if (layovers.Count > 0) model.Stop1Airline = layovers[0].AirportName;
+                if (layovers.Count > 1) model.Stop2Airline = layovers[1].AirportName;
+                if (layovers.Count > 2) model.Stop3Airline = layovers[2].AirportName;
+
+                requestDto.Flights.Add(model);
+            }
+
+            var baseUrl = _config["FlightRecommendationApi:BaseUrl"];
+            if (string.IsNullOrEmpty(baseUrl)) return null;
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                client.Timeout = TimeSpan.FromMinutes(2); // Increase timeout
+                var jsonRequest = JsonSerializer.Serialize(requestDto);
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+                LogDebug($" [AI FLIGHT API REQUEST: {direction}]");
+                LogDebug($"   - Sending {requestDto.Flights.Count} valid flights to API...");
+                LogDebug($"   - API JSON Request Payload: {jsonRequest}");
+                
+                var response = await client.PostAsync($"{baseUrl.TrimEnd('/')}/recommend-flight", content);
+                
+                LogDebug($"   - API Response Status: {response.StatusCode}");
+
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                LogDebug($"   - API JSON Response: {jsonResponse}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var apiResponse = JsonSerializer.Deserialize<FlightRecommendationResponseDto>(jsonResponse);
+                    var bestFlightModel = apiResponse?.Flight;
+
+                    if (bestFlightModel != null)
+                    {
+                        // Match the best flight back to our db flights (relaxed matching)
+                        var bestDbFlight = validFlights.FirstOrDefault(f => 
+                            Math.Abs((double)f.Price!.Value - bestFlightModel.PriceUsd) < 0.01 &&
+                            f.Airline?.Name == bestFlightModel.Airline);
+
+                        if (bestDbFlight == null) 
+                        {
+                            LogDebug("   - ERROR: Could not match the returned flight to any local DB flight!");
+                        }
+                        else
+                        {
+                            LogDebug($"   - SUCCESS: Matched DB Flight {bestDbFlight.Id} for {direction}");
+                            return new PlannedFlightDto
+                            {
+                                SessionId            = apiResponse?.SessionId,
+                                Id                   = bestDbFlight.Id,
+                                FlightNumber         = bestDbFlight.FlightNumber ?? "",
+                                AirlineName          = bestDbFlight.Airline?.Name ?? "",
+                                DepartureAirportCode = bestDbFlight.DepartureAirportCode ?? "",
+                                DepartureCity        = bestDbFlight.DepartureAirport?.City ?? "",
+                                ArrivalAirportCode   = bestDbFlight.ArrivalAirportCode ?? "",
+                                ArrivalCity          = bestDbFlight.ArrivalAirport?.City ?? "",
+                                DepartureTime        = bestDbFlight.DepartureTime,
+                                ArrivalTime          = bestDbFlight.ArrivalTime,
+                                FlightClass          = bestDbFlight.FlightClass,
+                                Duration             = bestDbFlight.Duration,
+                                NumberOfStops        = bestDbFlight.NumberOfStops,
+                                DestinationImageUrl  = bestDbFlight.DestinationImageUrl,
+                                PricePerAdult        = bestDbFlight.Price!.Value,
+                                PricePerChild        = bestDbFlight.Price!.Value * 0.75m,
+                                TotalPrice           = Math.Round(FlightTotalPrice(bestDbFlight.Price!.Value, adults, children), 2),
+                                Direction            = direction
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calling AI Flight API: {ex.Message}");
+            }
+
+            LogDebug($"   - API failed or didn't match. Using local fallback for {direction}!");
+            var fallback = validFlights.OrderBy(f => f.Price).ThenBy(f => f.DurationMinutes).First();
             return new PlannedFlightDto
             {
-                Id                   = f2.Id,
-                FlightNumber         = f2.FlightNumber ?? "",
-                AirlineName          = f2.Airline?.Name ?? "",
-                DepartureAirportCode = f2.DepartureAirportCode ?? "",
-                DepartureCity        = f2.DepartureAirport?.City ?? "",
-                ArrivalAirportCode   = f2.ArrivalAirportCode ?? "",
-                ArrivalCity          = f2.ArrivalAirport?.City ?? "",
-                DepartureTime        = f2.DepartureTime,
-                ArrivalTime          = f2.ArrivalTime,
-                FlightClass          = f2.FlightClass,
-                Duration             = f2.Duration,
-                NumberOfStops        = f2.NumberOfStops,
-                DestinationImageUrl  = f2.DestinationImageUrl,
-                PricePerAdult        = f2.Price!.Value,
-                PricePerChild        = f2.Price!.Value * 0.75m,
-                TotalPrice           = Math.Round(best.Total, 2),
+                SessionId            = $"FALLBACK_{fallback.Id}",
+                Id                   = fallback.Id,
+                FlightNumber         = fallback.FlightNumber ?? "",
+                AirlineName          = fallback.Airline?.Name ?? "",
+                DepartureAirportCode = fallback.DepartureAirportCode ?? "",
+                DepartureCity        = fallback.DepartureAirport?.City ?? "",
+                ArrivalAirportCode   = fallback.ArrivalAirportCode ?? "",
+                ArrivalCity          = fallback.ArrivalAirport?.City ?? "",
+                DepartureTime        = fallback.DepartureTime,
+                ArrivalTime          = fallback.ArrivalTime,
+                FlightClass          = fallback.FlightClass,
+                Duration             = fallback.Duration,
+                NumberOfStops        = fallback.NumberOfStops,
+                DestinationImageUrl  = fallback.DestinationImageUrl,
+                PricePerAdult        = fallback.Price!.Value,
+                PricePerChild        = fallback.Price!.Value * 0.75m,
+                TotalPrice           = Math.Round(FlightTotalPrice(fallback.Price!.Value, adults, children), 2),
                 Direction            = direction
             };
         }
@@ -698,6 +835,136 @@ namespace TravAi.Services.AI
                 PricePerPerson  = t2.BasePriceUsd!.Value,
                 TotalPrice      = Math.Round(best.Total, 2)
             };
+        }
+        // ─────────────────────────────────────────────────────────────────────
+        //  Regenerate Flight Alternative
+        // ─────────────────────────────────────────────────────────────────────
+        public async Task<PlannedFlightDto?> RegenerateFlightAsync(string sessionId, int adults, int children, string direction)
+        {
+            if (sessionId.StartsWith("FALLBACK_"))
+            {
+                if (long.TryParse(sessionId.Replace("FALLBACK_", ""), out long originalId))
+                {
+                    var originalFlight = await _db.Flights.FindAsync(originalId);
+                    if (originalFlight != null)
+                    {
+                        var altFlight = await _db.Flights
+                            .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport).Include(f => f.Airline)
+                            .Where(f => f.DepartureAirportCode == originalFlight.DepartureAirportCode &&
+                                        f.ArrivalAirportCode == originalFlight.ArrivalAirportCode &&
+                                        f.FlightClass == originalFlight.FlightClass &&
+                                        f.DepartureTime.HasValue && originalFlight.DepartureTime.HasValue &&
+                                        f.DepartureTime.Value.Date == originalFlight.DepartureTime.Value.Date &&
+                                        f.Id != originalId)
+                            .OrderBy(x => Guid.NewGuid()) // Pick a random alternative
+                            .FirstOrDefaultAsync();
+
+                        if (altFlight != null)
+                        {
+                            return new PlannedFlightDto
+                            {
+                                SessionId            = $"FALLBACK_{altFlight.Id}",
+                                Id                   = altFlight.Id,
+                                FlightNumber         = altFlight.FlightNumber ?? "",
+                                AirlineName          = altFlight.Airline?.Name ?? "",
+                                DepartureAirportCode = altFlight.DepartureAirportCode ?? "",
+                                DepartureCity        = altFlight.DepartureAirport?.City ?? "",
+                                ArrivalAirportCode   = altFlight.ArrivalAirportCode ?? "",
+                                ArrivalCity          = altFlight.ArrivalAirport?.City ?? "",
+                                DepartureTime        = altFlight.DepartureTime,
+                                ArrivalTime          = altFlight.ArrivalTime,
+                                FlightClass          = altFlight.FlightClass,
+                                Duration             = altFlight.Duration,
+                                NumberOfStops        = altFlight.NumberOfStops,
+                                DestinationImageUrl  = altFlight.DestinationImageUrl,
+                                PricePerAdult        = altFlight.Price!.Value,
+                                PricePerChild        = altFlight.Price!.Value * 0.75m,
+                                TotalPrice           = Math.Round(FlightTotalPrice(altFlight.Price!.Value, adults, children), 2),
+                                Direction            = direction
+                            };
+                        }
+                    }
+                }
+                return null;
+            }
+
+            var baseUrl = _config["FlightRecommendationApi:BaseUrl"];
+            if (string.IsNullOrEmpty(baseUrl)) return null;
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var requestObj = new FlightRegenerateRequestDto { SessionId = sessionId };
+                var jsonRequest = JsonSerializer.Serialize(requestObj);
+                var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync($"{baseUrl.TrimEnd('/')}/regenerate-flight", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    var jsonResponse = await response.Content.ReadAsStringAsync();
+                    var apiResponse = JsonSerializer.Deserialize<FlightRegenerateResponseDto>(jsonResponse);
+                    var altFlightModel = apiResponse?.Flight;
+
+                    if (altFlightModel != null)
+                    {
+                        // Match the alternative flight back to our db flights
+                        // In this case, we search the entire DB based on departure time, price, and airline since we don't have the original validFlights list
+                        
+                        var altDbFlight = await _db.Flights
+                            .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport)
+                            .Include(f => f.Airline)
+                            .FirstOrDefaultAsync(f =>
+                                Math.Abs((double)f.Price!.Value - altFlightModel.PriceUsd) < 0.01 &&
+                                f.Airline != null && f.Airline.Name == altFlightModel.Airline);
+
+                        // If FirstOrDefaultAsync is too slow without date, we might need a broader search or memory load
+                        if (altDbFlight == null)
+                        {
+                            // fallback logic if Exact match fails
+                            var allMatchingAirline = await _db.Flights
+                                .Include(f => f.DepartureAirport).Include(f => f.ArrivalAirport)
+                                .Include(f => f.Airline)
+                                .Where(f => f.Airline != null && f.Airline.Name == altFlightModel.Airline)
+                                .ToListAsync();
+
+                            altDbFlight = allMatchingAirline.FirstOrDefault(f => 
+                                Math.Abs((double)f.Price!.Value - altFlightModel.PriceUsd) < 0.01 &&
+                                f.DepartureTime?.ToString("M/d/yyyy H:mm") == altFlightModel.DepartureDatetime);
+                        }
+
+                        if (altDbFlight != null)
+                        {
+                            return new PlannedFlightDto
+                            {
+                                SessionId            = sessionId, // keep session id so they can regenerate again!
+                                Id                   = altDbFlight.Id,
+                                FlightNumber         = altDbFlight.FlightNumber ?? "",
+                                AirlineName          = altDbFlight.Airline?.Name ?? "",
+                                DepartureAirportCode = altDbFlight.DepartureAirportCode ?? "",
+                                DepartureCity        = altDbFlight.DepartureAirport?.City ?? "",
+                                ArrivalAirportCode   = altDbFlight.ArrivalAirportCode ?? "",
+                                ArrivalCity          = altDbFlight.ArrivalAirport?.City ?? "",
+                                DepartureTime        = altDbFlight.DepartureTime,
+                                ArrivalTime          = altDbFlight.ArrivalTime,
+                                FlightClass          = altDbFlight.FlightClass,
+                                Duration             = altDbFlight.Duration,
+                                NumberOfStops        = altDbFlight.NumberOfStops,
+                                DestinationImageUrl  = altDbFlight.DestinationImageUrl,
+                                PricePerAdult        = altDbFlight.Price!.Value,
+                                PricePerChild        = altDbFlight.Price!.Value * 0.75m,
+                                TotalPrice           = Math.Round(FlightTotalPrice(altDbFlight.Price!.Value, adults, children), 2),
+                                Direction            = direction
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error calling AI Flight Regenerate API: {ex.Message}");
+            }
+
+            return null;
         }
     }
 }

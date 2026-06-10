@@ -25,5 +25,8 @@ namespace TravAi.DTOs.AI
 
         /// <summary>Go | Return</summary>
         public string Direction { get; set; } = null!;
+
+        // Used for AI Regenerate requests
+        public string? SessionId { get; set; }
     }
 }

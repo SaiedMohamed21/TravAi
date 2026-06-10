@@ -12,6 +12,8 @@ namespace TravAi.DTOs.AI
 
         // --- Budget Allocation (from budget_divider) ---
         public decimal FlightBudget { get; set; }
+        public decimal GoFlightBudget { get; set; }
+        public decimal ReturnFlightBudget { get; set; }
         public decimal HotelBudget  { get; set; }
         public decimal ToursBudget  { get; set; }
 

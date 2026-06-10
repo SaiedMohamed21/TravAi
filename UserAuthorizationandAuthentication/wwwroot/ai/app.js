@@ -344,8 +344,18 @@ function renderPlan() {
   fb.innerHTML = '';
   if (p.goFlight) fb.appendChild(flightCard(p.goFlight));
   if (p.returnFlight) fb.appendChild(flightCard(p.returnFlight));
-  if (!p.goFlight && !p.returnFlight)
-    fb.innerHTML = `<div class="none-badge" style="background:rgba(138,92,246,0.1);border:1px dashed var(--border);color:var(--text);font-size:1rem;text-align:center;padding:14px;border-radius:12px">✈️ Allocated Flight Budget: <strong style="color:var(--accent);font-size:1.1rem">$${fmt(p.flightBudget)}</strong></div>`;
+  // Flight budget split directly from backend
+  const goB = p.goFlightBudget || 0;
+  const retB = p.returnFlightBudget || 0;
+
+  if (!p.goFlight && !p.returnFlight) {
+    fb.innerHTML = `<div class="none-badge" style="background:rgba(138,92,246,0.1);border:1px dashed var(--border);color:var(--text);font-size:1rem;text-align:center;padding:14px;border-radius:12px">
+      ✈️ Allocated Flight Budget: <strong style="color:var(--accent);font-size:1.1rem">$${fmt(p.flightBudget)}</strong>
+      <div style="font-size:0.85rem; margin-top:8px; color:var(--text-muted)">
+         GO: <strong>$${fmt(goB)}</strong> &nbsp;·&nbsp; RETURN: <strong>$${fmt(retB)}</strong>
+      </div>
+    </div>`;
+  }
 
   // Flight budget summary
   const goPrice  = p.goFlight     ? (p.goFlight.totalPrice     || 0) : 0;
@@ -356,6 +366,8 @@ function renderPlan() {
     if (p.flightBudget > 0) {
       flightBudgetEl.innerHTML =
         `<span style="font-size:.85rem;color:var(--muted)">Allocated Budget: $${fmt(p.flightBudget)}</span>
+         <span style="font-size:.75rem;color:var(--muted);margin-left:8px">GO $${fmt(goB)}</span>
+         <span style="font-size:.75rem;color:var(--muted);margin-left:4px">· RETURN $${fmt(retB)}</span>
          ${totalFlightCost > 0 ? `<br><span style="font-size:.85rem;color:var(--muted)">Actual Cost:</span>
          <strong style="color:var(--accent);font-size:.95rem"> $${fmt(totalFlightCost)}</strong>
          ${goPrice  > 0 ? `<span style="font-size:.75rem;color:var(--muted);margin-left:8px">GO $${fmt(goPrice)}</span>` : ''}
@@ -419,8 +431,49 @@ function flightCard(f) {
       <div style="font-size:.8rem;color:var(--muted)">${fmtDate(f.departureTime)}</div>
       ${f.duration ? `<div style="font-size:.75rem;color:var(--muted)">${f.duration}</div>` : ''}
     </div>
-    <div class="flight-price">$${fmt(f.totalPrice)}</div>`;
+    <div class="flight-price">$${fmt(f.totalPrice)}</div>
+    ${f.sessionId ? `<button onclick="regenerateFlight('${f.sessionId}', '${f.direction}', this)" class="btn btn-outline" style="margin-top:10px; width:100%; font-size:0.8rem; padding:8px">🔄 Regenerate Alternative</button>` : ''}
+    `;
   return el;
+}
+
+async function regenerateFlight(sessionId, direction, btnElement) {
+  const originalText = btnElement.innerHTML;
+  btnElement.innerHTML = '🔄 Regenerating...';
+  btnElement.disabled = true;
+
+  try {
+    const req = {
+      sessionId: sessionId,
+      adults: planResult.adults || 1,
+      children: planResult.children || 0,
+      direction: direction
+    };
+
+    const res = await fetch(`${API}/api/ai/regenerate-flight`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+      body: JSON.stringify(req)
+    });
+
+    const newFlight = await res.json();
+    if (!res.ok) throw new Error(newFlight.message || 'Failed to regenerate flight');
+
+    // Replace the specific flight in planResult
+    if (direction.toLowerCase() === 'outbound') {
+      planResult.goFlight = newFlight;
+    } else {
+      planResult.returnFlight = newFlight;
+    }
+    
+    // Re-render the UI
+    renderPlan();
+
+  } catch (e) {
+    alert('Error regenerating flight: ' + e.message);
+    btnElement.innerHTML = originalText;
+    btnElement.disabled = false;
+  }
 }
 
 function cityCard(city) {
