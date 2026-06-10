@@ -63,6 +63,19 @@ namespace TravAi.Services.AI
             return s.Count % 2 == 0 ? (s[m - 1] + s[m]) / 2m : s[m];
         }
 
+        // Get specific Percentile (e.g. 0.25 for Q1, 0.75 for Q3)
+        public static decimal GetPercentile(List<decimal> values, double percentile)
+        {
+            if (!values.Any()) return 0;
+            if (values.Count == 1) return values.First();
+            var sorted = values.OrderBy(v => v).ToList();
+            double n = (sorted.Count - 1) * percentile;
+            int i = (int)Math.Floor(n);
+            double fraction = n - i;
+            if (i >= sorted.Count - 1) return sorted.Last();
+            return sorted[i] + (decimal)fraction * (sorted[i + 1] - sorted[i]);
+        }
+
         // Parse tourist language string to Language enum
         public static Language? ParseLanguage(string lang)
         {

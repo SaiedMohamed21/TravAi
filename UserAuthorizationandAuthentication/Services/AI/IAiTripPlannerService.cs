@@ -17,5 +17,10 @@ namespace TravAi.Services.AI
         /// 3. Selecting the best flight/hotel/tour per category using scoring
         /// </summary>
         Task<TripPlanResponseDto> GeneratePlanAsync(TripPlanRequestDto request);
+        
+        /// <summary>
+        /// Call the AI API to regenerate a flight alternative using the sessionId
+        /// </summary>
+        Task<PlannedFlightDto?> RegenerateFlightAsync(string sessionId, int adults, int children, string direction);
     }
 }
