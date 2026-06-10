@@ -15,5 +15,6 @@ namespace TravAi.Services
         Task<object> ConfirmPaymentAsync(string stripeSessionId);
         Task<bool> HandleStripeWebhookAsync(string jsonPayload, string stripeSignature);
         Task ExpireAndDeleteUnpaidBookingsAsync(long userId);
+        Task<object> GetPaymentTransactionDetailsAsync(long paymentTransactionId);
     }
 }

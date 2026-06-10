@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TravAi.Models.Auth;
 
 namespace TravAi.Models
 {
@@ -14,6 +16,11 @@ namespace TravAi.Models
         [ForeignKey("CheckoutSessionId")]
         public CheckoutSession CheckoutSession { get; set; } = null!;
 
+        public long? UserId { get; set; }
+
+        [ForeignKey("UserId")]
+        public User? User { get; set; }
+
         [Required]
         [MaxLength(50)]
         public string Provider { get; set; } = "Stripe";
@@ -24,8 +31,20 @@ namespace TravAi.Models
         [MaxLength(255)]
         public string? ProviderCheckoutSessionId { get; set; } // Stripe Checkout Session Id
 
+        [MaxLength(255)]
+        public string? StripeSessionId { get; set; }
+
+        [MaxLength(255)]
+        public string? StripePaymentIntentId { get; set; }
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal Amount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? TotalAmount { get; set; }
+
+        [MaxLength(50)]
+        public string? PaymentMethod { get; set; } = "Stripe";
 
         [Required]
         [MaxLength(10)]
@@ -39,6 +58,11 @@ namespace TravAi.Models
 
         public DateTime CreatedAt { get; set; }
 
+        public DateTime? UpdatedAt { get; set; }
+
         public string? RawProviderResponse { get; set; }
+
+        public ICollection<PaymentTransactionItem> Items { get; set; } = new List<PaymentTransactionItem>();
     }
 }
+

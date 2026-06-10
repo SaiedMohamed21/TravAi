@@ -228,5 +228,23 @@ namespace TravAi.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        [HttpGet("payments/{paymentTransactionId}")]
+        public async Task<IActionResult> GetPaymentDetails(long paymentTransactionId)
+        {
+            try
+            {
+                var payment = await _checkoutService.GetPaymentTransactionDetailsAsync(paymentTransactionId);
+                if (payment == null)
+                    return NotFound(new ApiResponse<string>(false, "Payment transaction not found."));
+
+                return Ok(new ApiResponse<object>(payment, "Payment transaction retrieved successfully."));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting payment transaction details for id {Id}", paymentTransactionId);
+                return BadRequest(new ApiResponse<string>(false, ex.Message));
+            }
+        }
     }
 }

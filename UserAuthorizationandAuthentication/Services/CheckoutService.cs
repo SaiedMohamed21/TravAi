@@ -237,10 +237,13 @@ namespace TravAi.Services
                     var paymentTransaction = new PaymentTransaction
                     {
                         CheckoutSessionId = checkoutSession.Id,
+                        UserId = request.UserId,
                         Provider = "Stripe",
                         Amount = booking.TotalPrice,
+                        TotalAmount = booking.TotalPrice,
                         Currency = _stripeOptions.Currency.ToLower(),
                         Status = "Pending",
+                        PaymentMethod = "Stripe",
                         CreatedAt = now
                     };
 
@@ -438,10 +441,13 @@ namespace TravAi.Services
                     var paymentTransaction = new PaymentTransaction
                     {
                         CheckoutSessionId = checkoutSession.Id,
+                        UserId = request.UserId,
                         Provider = "Stripe",
                         Amount = totalAmount,
+                        TotalAmount = totalAmount,
                         Currency = currency,
                         Status = "Pending",
+                        PaymentMethod = "Stripe",
                         CreatedAt = now
                     };
 
@@ -706,10 +712,13 @@ namespace TravAi.Services
                     var paymentTransaction = new PaymentTransaction
                     {
                         CheckoutSessionId = checkoutSession.Id,
+                        UserId = request.UserId,
                         Provider = "Stripe",
                         Amount = totalAmount,
+                        TotalAmount = totalAmount,
                         Currency = currency,
                         Status = "Pending",
+                        PaymentMethod = "Stripe",
                         CreatedAt = now
                     };
 
@@ -1035,10 +1044,13 @@ namespace TravAi.Services
                 transaction = new PaymentTransaction
                 {
                     CheckoutSessionId = session.Id,
+                    UserId = session.UserId,
                     Provider = "Stripe",
                     Amount = session.TotalAmount,
+                    TotalAmount = session.TotalAmount,
                     Currency = session.Currency,
                     Status = "Pending",
+                    PaymentMethod = "Stripe",
                     CreatedAt = DateTime.UtcNow
                 };
                 _context.PaymentTransactions.Add(transaction);
@@ -1119,6 +1131,47 @@ namespace TravAi.Services
                         transaction.ProviderTransactionId = paymentIntentId;
                         transaction.ProviderCheckoutSessionId = stripeSessionId;
                         transaction.RawProviderResponse = rawResponse;
+                    }
+
+                    // Ensure unified fields are set
+                    transaction.UserId = session.UserId;
+                    transaction.StripeSessionId = stripeSessionId;
+                    transaction.StripePaymentIntentId = paymentIntentId;
+                    transaction.TotalAmount = session.TotalAmount;
+                    transaction.PaymentMethod = "Stripe";
+                    transaction.UpdatedAt = DateTime.UtcNow;
+
+                    // 2b. Add PaymentTransactionItems for each item in the session
+                    foreach (var item in session.Items)
+                    {
+                        string bookingType = item.ItemType switch
+                        {
+                            "HotelBooking" => "Hotel",
+                            "TourBooking" => "Tour",
+                            "AirlineBooking" => "Airline",
+                            _ => item.ItemType
+                        };
+
+                        // Idempotency check: check if it already exists for this payment transaction
+                        bool itemExists = await _context.PaymentTransactionItems.AnyAsync(pti =>
+                            pti.PaymentTransactionId == transaction.Id &&
+                            pti.BookingType == bookingType &&
+                            pti.BookingId == item.ReferenceId);
+
+                        if (!itemExists)
+                        {
+                            var transactionItem = new PaymentTransactionItem
+                            {
+                                PaymentTransactionId = transaction.Id,
+                                BookingType = bookingType,
+                                BookingId = item.ReferenceId,
+                                Amount = item.Amount,
+                                Currency = session.Currency,
+                                Status = "Paid",
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.PaymentTransactionItems.Add(transactionItem);
+                        }
                     }
 
                     bool hasMissing = false;
@@ -1405,6 +1458,41 @@ namespace TravAi.Services
             _context.TourBookingParticipants.RemoveRange(participants);
             _context.TourBookingPayments.RemoveRange(payments);
             _context.TourBookings.Remove(tourBooking);
+        }
+
+        public async Task<object> GetPaymentTransactionDetailsAsync(long paymentTransactionId)
+        {
+            var tx = await _context.PaymentTransactions
+                .Include(t => t.Items)
+                .FirstOrDefaultAsync(t => t.Id == paymentTransactionId);
+
+            if (tx == null)
+                return null!;
+
+            return new
+            {
+                paymentTransactionId = tx.Id,
+                userId = tx.UserId,
+                checkoutSessionId = tx.CheckoutSessionId,
+                stripeSessionId = tx.StripeSessionId ?? tx.ProviderCheckoutSessionId,
+                stripePaymentIntentId = tx.StripePaymentIntentId ?? tx.ProviderTransactionId,
+                totalAmount = (tx.TotalAmount ?? 0) > 0 ? tx.TotalAmount : tx.Amount,
+                currency = tx.Currency,
+                paymentMethod = tx.PaymentMethod,
+                status = tx.Status,
+                paidAt = tx.PaidAt,
+                createdAt = tx.CreatedAt,
+                updatedAt = tx.UpdatedAt,
+                items = tx.Items.Select(i => new
+                {
+                    paymentTransactionItemId = i.Id,
+                    bookingType = i.BookingType,
+                    bookingId = i.BookingId,
+                    amount = i.Amount,
+                    status = i.Status,
+                    createdAt = i.CreatedAt
+                }).ToList()
+            };
         }
     }
 }
