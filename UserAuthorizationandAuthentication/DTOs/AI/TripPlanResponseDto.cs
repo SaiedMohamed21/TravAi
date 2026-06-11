@@ -46,6 +46,10 @@ namespace TravAi.DTOs.AI
         public int NumHotelsSingle { get; set; }
         public int NumHotelsDouble { get; set; }
         public int NumberHotels { get; set; }
+        public decimal MedianTour { get; set; }
+        public int NumTours { get; set; }
+        public Dictionary<string, string>? TourDebugPerCity { get; set; }
+        public Dictionary<string, string>? HotelDebugPerCity { get; set; }
         public string? TourApiRequestJson { get; set; }
         public string? TourApiResponseJson { get; set; }
     }

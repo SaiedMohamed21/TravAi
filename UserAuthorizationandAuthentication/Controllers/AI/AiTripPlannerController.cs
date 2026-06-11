@@ -211,18 +211,53 @@ namespace TravAi.Controllers.AI
 
             try
             {
-                var response = await _aiService.RegenerateTourAsync(req.SessionId, req.FixedDates, req.TotalPeople);
+                var result = await _aiService.RegenerateTourAsync(req.SessionId, req.FixedDates, req.TotalPeople);
                 
-                if (response == null || response.Count == 0)
+                if (result.Tours == null || result.Tours.Count == 0)
                 {
                     return NotFound(new { Message = "No alternative tour found." });
                 }
 
-                return Ok(response);
+                return Ok(result.Tours);
             }
             catch (Exception ex)
             {
                 return BadRequest(new { Message = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Regenerates a partial or complete trip plan using unified locks.
+        /// </summary>
+        [HttpPost("regenerate-plan")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegeneratePlan([FromBody] RegeneratePlanRequestDto request)
+        {
+            try
+            {
+                if (request.ReturnDate <= request.DepartureDate)
+                    return BadRequest(new ApiResponse<string>(false, "Return date must be after departure date.", null));
+
+                if (request.MaxBudget <= 0)
+                    return BadRequest(new ApiResponse<string>(false, "MaxBudget must be greater than 0.", null));
+
+                var validTypes = new[] { "Economy", "Premium", "Luxury" };
+                if (!validTypes.Contains(request.BudgetType))
+                    return BadRequest(new ApiResponse<string>(false, "BudgetType must be Economy, Premium, or Luxury.", null));
+
+                var result = await _aiService.RegeneratePlanAsync(request);
+
+                return Ok(new ApiResponse<TripPlanResponseDto>
+                {
+                    Success = true,
+                    Message = "Trip plan regenerated successfully.",
+                    Data    = result,
+                    Errors  = new List<string>()
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<string>(false, ex.Message, new List<string> { ex.Message }));
             }
         }
     }

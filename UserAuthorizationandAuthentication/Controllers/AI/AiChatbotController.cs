@@ -54,22 +54,26 @@ namespace TravAi.Controllers.AI
                     {
                         userId = parsedUserId;
 
-                        // Delete sessions older than 1 hour for this user
-                        var expiredSessions = await _context.ChatSessions
-                            .Where(s => s.UserId == userId && s.LastUpdatedAt < DateTime.UtcNow.AddHours(-1))
-                            .ToListAsync();
-                        
-                        if (expiredSessions.Any())
-                        {
-                            _context.ChatSessions.RemoveRange(expiredSessions);
-                            await _context.SaveChangesAsync();
-                        }
-
-                        session = await _context.ChatSessions
+                        var existingSession = await _context.ChatSessions
                             .Include(s => s.Messages)
                             .FirstOrDefaultAsync(s => s.UserId == userId);
 
-                        if (session == null)
+                        if (existingSession != null)
+                        {
+                            if (existingSession.LastUpdatedAt < DateTime.UtcNow.AddHours(-1))
+                            {
+                                if (existingSession.Messages.Any())
+                                {
+                                    _context.ChatMessages.RemoveRange(existingSession.Messages);
+                                    existingSession.Messages.Clear();
+                                }
+                                existingSession.LastUpdatedAt = DateTime.UtcNow;
+                                existingSession.CreatedAt = DateTime.UtcNow;
+                                await _context.SaveChangesAsync();
+                            }
+                            session = existingSession;
+                        }
+                        else
                         {
                             session = new ChatSession { UserId = userId.Value };
                             _context.ChatSessions.Add(session);
@@ -103,28 +107,47 @@ namespace TravAi.Controllers.AI
                 }
 
                 // Save to database
-                if (isUserLoggedIn && session != null && result.Message != null)
+                if (isUserLoggedIn && userId.HasValue && result.Message != null)
                 {
-                    // Add User Message
-                    session.Messages.Add(new ChatMessage
+                    try
                     {
-                        ChatSessionId = session.Id,
-                        Role = "user",
-                        Content = request.Message,
-                        CreatedAt = DateTime.UtcNow
-                    });
+                        // Re-fetch the session to avoid concurrency issues (e.g. if it was cleared/deleted during ChatAsync)
+                        var currentSession = await _context.ChatSessions
+                            .Include(s => s.Messages)
+                            .FirstOrDefaultAsync(s => s.UserId == userId.Value);
 
-                    // Add Assistant Message
-                    session.Messages.Add(new ChatMessage
+                        if (currentSession == null)
+                        {
+                            currentSession = new ChatSession { UserId = userId.Value };
+                            _context.ChatSessions.Add(currentSession);
+                            await _context.SaveChangesAsync();
+                        }
+
+                        // Add User Message
+                        currentSession.Messages.Add(new ChatMessage
+                        {
+                            ChatSessionId = currentSession.Id,
+                            Role = "user",
+                            Content = request.Message,
+                            CreatedAt = DateTime.UtcNow
+                        });
+
+                        // Add Assistant Message
+                        currentSession.Messages.Add(new ChatMessage
+                        {
+                            ChatSessionId = currentSession.Id,
+                            Role = "assistant",
+                            Content = result.Message.Content,
+                            CreatedAt = DateTime.UtcNow
+                        });
+
+                        currentSession.LastUpdatedAt = DateTime.UtcNow;
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (Exception dbEx)
                     {
-                        ChatSessionId = session.Id,
-                        Role = "assistant",
-                        Content = result.Message.Content,
-                        CreatedAt = DateTime.UtcNow
-                    });
-
-                    session.LastUpdatedAt = DateTime.UtcNow;
-                    await _context.SaveChangesAsync();
+                        _logger.LogError(dbEx, "Failed to save chat message to history database, but returning chatbot response to user.");
+                    }
                 }
 
                 return Ok(result);
@@ -135,7 +158,7 @@ namespace TravAi.Controllers.AI
                 return StatusCode(500, new ChatResponseDto
                 {
                     Success = false,
-                    Error = "An unexpected error occurred.",
+                    Error = $"Error in Chat endpoint: {ex.Message} | StackTrace: {ex.StackTrace}",
                     Message = new ChatMessageDto
                     {
                         Role = "assistant",
