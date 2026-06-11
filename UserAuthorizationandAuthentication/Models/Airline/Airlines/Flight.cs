@@ -1,4 +1,4 @@
-﻿using TravAi.Models.Enums;
+using TravAi.Models.Enums;
 using TravAi.Models;
 using TravAi.Models.Auth;
 using System.ComponentModel.DataAnnotations.Schema;

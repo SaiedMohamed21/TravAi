@@ -408,7 +408,11 @@ function renderPlan() {
       num return: (${d.numReturn})<br>
       Median hotels single: ${d.medianHotelsSingle}<br>
       Median hotels double: ${d.medianHotelsDouble}<br>
-      number of hotels: (${d.numHotelsSingle}, ${d.numHotelsDouble})
+      number of hotels: (${d.numHotelsSingle}, ${d.numHotelsDouble})<br><br>
+      <div style="color:#10b981; margin-bottom:5px; font-weight:bold;">Tour Recommender API Request:</div>
+      <pre style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; overflow-x:auto; color:#a7f3d0; margin:0; font-size: 0.8rem; margin-bottom: 10px;">${d.tourApiRequestJson ? d.tourApiRequestJson.replace(/</g, "&lt;") : 'N/A'}</pre>
+      <div style="color:#3b82f6; margin-bottom:5px; font-weight:bold;">Tour Recommender API Response:</div>
+      <pre style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; overflow-x:auto; color:#93c5fd; margin:0; font-size: 0.8rem; max-height: 300px; overflow-y: auto;">${d.tourApiResponseJson ? d.tourApiResponseJson.replace(/</g, "&lt;") : 'API failed or returned nothing.'}</pre>
     `;
   } else {
     debugEl.style.display = 'none';
@@ -500,34 +504,140 @@ async function regenerateFlight(sessionId, direction, btnElement) {
   }
 }
 
+async function regenerateTour(sessionId, dateToRegen, cityStr, btnElement) {
+  const originalText = btnElement.innerHTML;
+  btnElement.innerHTML = '🔄 Regenerating...';
+  btnElement.disabled = true;
+
+  try {
+    const cityPlan = planResult.cityPlans.find(c => c.city === cityStr);
+    const fixedDates = cityPlan.tours
+        .filter(t => t.availableDate !== dateToRegen)
+        .map(t => {
+             const d = new Date(t.availableDate);
+             return d.toISOString().split('T')[0];
+        });
+
+    const req = {
+      sessionId: sessionId,
+      fixedDates: fixedDates,
+      totalPeople: (planResult.adults || 1) + (planResult.children || 0)
+    };
+
+    const res = await fetch(`${API}/api/ai/regenerate-tour`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+      body: JSON.stringify(req)
+    });
+
+    const newTours = await res.json();
+    if (!res.ok) throw new Error(newTours.message || 'Failed to regenerate tour');
+
+    if (cityPlan) {
+      cityPlan.tours = newTours;
+    }
+    
+    renderPlan();
+
+  } catch (e) {
+    alert('Error regenerating tour: ' + e.message);
+    btnElement.innerHTML = originalText;
+    btnElement.disabled = false;
+  }
+}
+
 function cityCard(city) {
   const el = document.createElement('div');
   el.className = 'city-plan';
+  
   const hotelHtml = city.hotel ? `
-    <div class="mini-card">
-      <div class="mini-card-title">🏨 Hotel</div>
-      <div class="mini-card-name">${city.hotel.hotelName}</div>
-      <div class="stars">${'⭐'.repeat(city.hotel.starRating || 0)}</div>
-      <div style="font-size:.8rem;color:var(--muted);margin:4px 0">${city.hotel.nights} nights · ${city.hotel.singleRooms} single, ${city.hotel.doubleRooms} double</div>
-      <div class="mini-card-price">$${fmt(city.hotel.totalPrice)}</div>
-    </div>` : `<div class="none-badge">🏨 No hotel found in budget</div>`;
+    <div class="flight-card" style="margin-top: 10px; border-left: 4px solid var(--primary); min-height: unset; padding: 15px 25px;">
+      <span class="flight-dir" style="background: rgba(99, 102, 241, 0.15); color: var(--primary-light);">HOTEL</span>
+      <div class="flight-route" style="flex: 0 0 120px; text-align: left;">
+        <div class="city-code" style="font-size: 1.1rem; line-height: 1.3;">${city.hotel.nights} Nights</div>
+        <div class="stars" style="margin-top: 4px;">${'⭐'.repeat(city.hotel.starRating || 0)}</div>
+      </div>
+      <div style="flex:1; padding: 0 15px; border-left: 1px solid var(--border); margin-left: 10px;">
+        <div style="font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:6px; letter-spacing:0.5px;">
+          ${city.hotel.hotelName}
+        </div>
+        <div style="font-size:.8rem;color:var(--muted); margin-bottom:4px;">Rooms: ${city.hotel.singleRooms} Single, ${city.hotel.doubleRooms} Double</div>
+        <div style="font-size:.75rem;color:var(--muted); margin-top:8px; display:flex; gap:8px;">
+          <span style="background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:6px;border:1px solid var(--border)">📍 ${city.city}</span>
+        </div>
+      </div>
+      <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; min-width: 100px;">
+        <div class="flight-price" style="color: var(--primary-light);">$${fmt(city.hotel.totalPrice)}</div>
+      </div>
+    </div>` : `<div class="none-badge" style="margin-top: 10px;">🏨 No hotel found in budget</div>`;
 
-  const tourHtml = city.tour ? `
-    <div class="mini-card">
-      <div class="mini-card-title">🗺️ Tour</div>
-      <div class="mini-card-name">${city.tour.tourTitle}</div>
-      <div style="font-size:.8rem;color:var(--muted)">Guide: ${city.tour.guideName}</div>
-      <div style="font-size:.8rem;color:var(--muted)">${city.tour.durationHours || '?'}h · ${fmtDate(city.tour.availableDate)}</div>
-      <div class="mini-card-price">$${fmt(city.tour.totalPrice)}</div>
-    </div>` : `<div class="none-badge">🗺️ No tour found in budget</div>`;
+  let tourHtml = '';
+  if (city.tours && city.tours.length > 0) {
+    tourHtml = city.tours.map(t => `
+      <div class="flight-card" style="margin-top: 15px; border-left: 4px solid #10b981; min-height: unset; padding: 15px 25px;">
+        <span class="flight-dir" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">DAY TOUR</span>
+        <div class="flight-route" style="flex: 0 0 120px; text-align: left;">
+          <div class="city-code" style="font-size: 1.1rem; line-height: 1.3;">${fmtDate(t.availableDate)}</div>
+        </div>
+        <div style="flex:1; padding: 0 15px; border-left: 1px solid var(--border); margin-left: 10px;">
+          <div style="font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:6px; letter-spacing:0.5px;">
+            ${t.tourTitle}
+          </div>
+          <div style="font-size:.8rem;color:var(--muted); margin-bottom:4px;">Guide: ${t.guideName || 'Auto-Assigned'}</div>
+          <div style="font-size:.75rem;color:var(--muted); margin-top:8px; display:flex; gap:8px;">
+            <span style="background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:6px;border:1px solid var(--border)">⏱️ ${t.durationHours || '?'} hr</span>
+            <span style="background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:6px;border:1px solid var(--border)">⭐ ${t.rating || 'New'} (${t.numberOfReviews || 0})</span>
+          </div>
+        </div>
+        <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; min-width: 100px;">
+          <div class="flight-price" style="color: #10b981;">$${fmt(t.totalPrice)}</div>
+          ${planResult.tourSessionId ? `<button onclick="regenerateTour('${planResult.tourSessionId}', '${t.availableDate}', '${city.city.replace(/'/g, "\\'")}', this)" class="btn btn-outline" style="margin-top:12px; font-size:0.75rem; padding:6px 12px; border-color: rgba(16,185,129,0.5); color: #10b981;">🔄 Regenerate</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  } else if (city.tour) {
+    const t = city.tour;
+    tourHtml = `
+      <div class="flight-card" style="margin-top: 15px; border-left: 4px solid #10b981; min-height: unset; padding: 15px 25px;">
+        <span class="flight-dir" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">TOUR</span>
+        <div class="flight-route" style="flex: 0 0 120px; text-align: left;">
+          <div class="city-code" style="font-size: 1.1rem; line-height: 1.3;">${fmtDate(t.availableDate)}</div>
+        </div>
+        <div style="flex:1; padding: 0 15px; border-left: 1px solid var(--border); margin-left: 10px;">
+          <div style="font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:6px; letter-spacing:0.5px;">
+            ${t.tourTitle}
+          </div>
+          <div style="font-size:.8rem;color:var(--muted); margin-bottom:4px;">Guide: ${t.guideName || 'Auto-Assigned'}</div>
+          <div style="font-size:.75rem;color:var(--muted); margin-top:8px; display:flex; gap:8px;">
+            <span style="background:rgba(255,255,255,0.05);padding:4px 10px;border-radius:6px;border:1px solid var(--border)">⏱️ ${t.durationHours || '?'} hr</span>
+          </div>
+        </div>
+        <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; min-width: 100px;">
+          <div class="flight-price" style="color: #10b981;">$${fmt(t.totalPrice)}</div>
+        </div>
+      </div>`;
+  } else {
+    tourHtml = `<div class="none-badge" style="margin-top: 10px;">🗺️ No tours found in budget</div>`;
+  }
 
   el.innerHTML = `
     <div class="city-plan-header">
       <div><div class="city-name">📍 ${city.city}</div><div class="city-dates">${fmtDate(city.checkIn)} → ${fmtDate(city.checkOut)}</div></div>
-      <div style="text-align:right"><div style="font-size:.8rem;color:var(--muted)">Hotel budget: $${fmt(city.cityHotelBudget)}</div>
-        <div style="font-size:.8rem;color:var(--muted)">Tours budget: $${fmt(city.cityToursBudget)}</div></div>
+      <div style="text-align:right">
+        <div style="font-size:.8rem;color:var(--muted)">Hotel budget: $${fmt(city.cityHotelBudget)}</div>
+        <div style="font-size:.8rem;color:var(--muted)">Tours budget: $${fmt(city.cityToursBudget)}</div>
+      </div>
     </div>
-    <div class="city-plan-body">${hotelHtml}${tourHtml}</div>`;
+    <div style="padding: 24px; display: flex; flex-direction: column; gap: 24px;">
+      <div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🏨 Accommodation</div>
+        ${hotelHtml}
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">🗺️ Activities & Tours</div>
+        ${tourHtml}
+      </div>
+    </div>`;
   return el;
 }
 

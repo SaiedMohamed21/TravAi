@@ -22,5 +22,6 @@ namespace TravAi.Services.AI
         /// Call the AI API to regenerate a flight alternative using the sessionId
         /// </summary>
         Task<PlannedFlightDto?> RegenerateFlightAsync(string sessionId, int adults, int children, string direction);
+        Task<List<PlannedTourDto>> RegenerateTourAsync(string sessionId, List<string> fixedDates, int totalPeople);
     }
 }

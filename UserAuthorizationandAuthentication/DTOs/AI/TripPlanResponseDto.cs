@@ -23,6 +23,8 @@ namespace TravAi.DTOs.AI
         /// <summary>Best return flight (null if excluded or not found)</summary>
         public PlannedFlightDto? ReturnFlight { get; set; }
 
+        public string? TourSessionId { get; set; }
+
         // --- Per-city Plan ---
         public List<CityPlanDto> CityPlans { get; set; } = new();
 
@@ -44,5 +46,7 @@ namespace TravAi.DTOs.AI
         public int NumHotelsSingle { get; set; }
         public int NumHotelsDouble { get; set; }
         public int NumberHotels { get; set; }
+        public string? TourApiRequestJson { get; set; }
+        public string? TourApiResponseJson { get; set; }
     }
 }

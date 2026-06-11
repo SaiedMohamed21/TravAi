@@ -26,10 +26,68 @@ namespace TravAi.TourGuide.Services
 
         public async Task<TourGuideResponseDto> ApplyAsync(long userId, TourGuideApplicationDto model)
         {
-            var existingApp = await _context.TourGuides.FirstOrDefaultAsync(tg => tg.UserId == userId);
+            var existingApp = await _context.TourGuides
+                .Include(tg => tg.TourGuideEmails)
+                .Include(tg => tg.TourGuidePhones)
+                .Include(tg => tg.TourGuideLanguages)
+                .Include(tg => tg.TourGuideCities)
+                .FirstOrDefaultAsync(tg => tg.UserId == userId);
+            
             if (existingApp != null)
             {
-                throw new InvalidOperationException("User already has a pending or active tour guide profile.");
+                if (existingApp.Status == TourGuideStatus.Pending || existingApp.Status == TourGuideStatus.Active)
+                {
+                    throw new InvalidOperationException("User already has a pending or active tour guide profile.");
+                }
+
+                // If rejected or banned, allow re-application by updating the existing profile
+                existingApp.Name = model.Name;
+                existingApp.Bio = model.Bio;
+                existingApp.LicenseId = model.LicenseId;
+                existingApp.LicenseCard = model.LicenseCard;
+                existingApp.LicenseIdFrontPhoto = model.LicenseIdFrontPhoto;
+                existingApp.LicenseIdBackPhoto = model.LicenseIdBackPhoto;
+                existingApp.Certification = model.Certification;
+                existingApp.ExperienceYears = model.ExperienceYears;
+                existingApp.Status = TourGuideStatus.Pending;
+                existingApp.RejectionReason = null;
+
+                _context.TourGuideEmails.RemoveRange(existingApp.TourGuideEmails);
+                if (model.Emails != null && model.Emails.Any())
+                {
+                    foreach (var email in model.Emails)
+                        existingApp.TourGuideEmails.Add(new TourGuideEmail { Email = email, EmailVerified = false });
+                }
+                else
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user != null && !string.IsNullOrEmpty(user.Email))
+                        existingApp.TourGuideEmails.Add(new TourGuideEmail { Email = user.Email, EmailVerified = false });
+                }
+
+                _context.TourGuidePhones.RemoveRange(existingApp.TourGuidePhones);
+                if (model.PhoneNumbers != null)
+                {
+                    foreach (var phone in model.PhoneNumbers)
+                        existingApp.TourGuidePhones.Add(new TourGuidePhone { PhoneNumber = phone, PhoneVerified = false });
+                }
+
+                _context.TourGuideLanguages.RemoveRange(existingApp.TourGuideLanguages);
+                if (model.Languages != null)
+                {
+                    foreach (var lang in model.Languages)
+                        existingApp.TourGuideLanguages.Add(new TourGuideLanguage { Language = lang });
+                }
+
+                _context.TourGuideCities.RemoveRange(existingApp.TourGuideCities);
+                if (model.Cities != null)
+                {
+                    foreach (var city in model.Cities)
+                        existingApp.TourGuideCities.Add(new TourGuideCity { City = city });
+                }
+
+                await _context.SaveChangesAsync();
+                return await MapToDto(existingApp);
             }
 
             var tourGuide = new TravAi.TourGuide.Models.TourGuide
@@ -302,6 +360,53 @@ namespace TravAi.TourGuide.Services
             }).ToList();
         }
 
+        public async Task<TourGuideReviewsDashboardDto> GetTourGuideReviewsDashboardAsync(long tourGuideId)
+        {
+            var reviewsQuery = _context.TourReviews
+                .Include(r => r.User)
+                .Include(r => r.Tour)
+                .Where(r => r.TourGuideId == tourGuideId);
+
+            var totalReviews = await reviewsQuery.CountAsync();
+            var averageRating = totalReviews > 0 ? await reviewsQuery.AverageAsync(r => r.Rating) : 0;
+
+            var fiveStars = await reviewsQuery.CountAsync(r => r.Rating == 5);
+            var fourStars = await reviewsQuery.CountAsync(r => r.Rating == 4);
+            var threeStars = await reviewsQuery.CountAsync(r => r.Rating == 3);
+            var twoStars = await reviewsQuery.CountAsync(r => r.Rating == 2);
+            var oneStars = await reviewsQuery.CountAsync(r => r.Rating == 1);
+
+            var reviews = await reviewsQuery
+                .OrderByDescending(r => r.CreatedAt)
+                .Take(50) // limit to 50 for dashboard, or we can use pagination
+                .ToListAsync();
+
+            return new TourGuideReviewsDashboardDto
+            {
+                AverageRating = Math.Round(averageRating, 1),
+                TotalReviews = totalReviews,
+                RatingBreakdown = new RatingBreakdownDto
+                {
+                    FiveStars = fiveStars,
+                    FourStars = fourStars,
+                    ThreeStars = threeStars,
+                    TwoStars = twoStars,
+                    OneStars = oneStars
+                },
+                Reviews = reviews.Select(r => new TourGuideDashboardReviewDto
+                {
+                    Id = r.Id,
+                    TourId = r.TourId,
+                    TourTitle = r.Tour?.TourTitle,
+                    ReviewerName = r.User?.UserName ?? "Unknown",
+                    ReviewerImage = r.User?.ProfilePic,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt
+                }).ToList()
+            };
+        }
+
         public async Task<TourGuideProfileDto> GetProfileAsync(long id)
         {
             var guide = await _context.TourGuides
@@ -413,6 +518,40 @@ namespace TravAi.TourGuide.Services
             }
 
             return result;
+        }
+
+        public async Task<TourGuideEarningsSummaryDto> GetEarningsSummaryAsync(long tourGuideId)
+        {
+            var bookings = await _context.TourBookings
+                .Where(b => b.TourGuideId == tourGuideId)
+                .ToListAsync();
+
+            var completedBookingsList = bookings
+                .Where(b => b.Status == TravAi.TourGuide.Models.Enums.BookingStatus.Completed || b.Status == TravAi.TourGuide.Models.Enums.BookingStatus.Confirmed)
+                .ToList();
+
+            var totalEarnings = completedBookingsList.Sum(b => b.TotalPrice);
+            var completedCount = completedBookingsList.Count;
+            var averageBookingValue = completedCount > 0 ? totalEarnings / completedCount : 0;
+
+            var currentMonthStart = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1);
+            var currentMonthEarnings = completedBookingsList
+                .Where(b => b.CreatedAt >= currentMonthStart)
+                .Sum(b => b.TotalPrice);
+
+            var pendingWithdrawals = await _context.WithdrawRequests
+                .Where(w => w.TourGuideId == tourGuideId && w.Status == TravAi.TourGuide.Models.Enums.WithdrawRequestStatus.Pending)
+                .SumAsync(w => w.Amount);
+
+            return new TourGuideEarningsSummaryDto
+            {
+                TotalEarnings = totalEarnings,
+                CurrentMonthEarnings = currentMonthEarnings,
+                PendingWithdrawals = pendingWithdrawals,
+                CompletedBookings = completedCount,
+                AverageBookingValue = Math.Round(averageBookingValue, 2),
+                Currency = "USD"
+            };
         }
     }
 }

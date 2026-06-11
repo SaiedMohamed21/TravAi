@@ -198,5 +198,32 @@ namespace TravAi.Controllers.AI
                 return BadRequest(new { Message = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Regenerates a tour alternative using the AI session ID.
+        /// </summary>
+        [HttpPost("regenerate-tour")]
+        [AllowAnonymous]
+        public async Task<IActionResult> RegenerateTour([FromBody] RegenerateTourApiRequestDto req)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var response = await _aiService.RegenerateTourAsync(req.SessionId, req.FixedDates, req.TotalPeople);
+                
+                if (response == null || response.Count == 0)
+                {
+                    return NotFound(new { Message = "No alternative tour found." });
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Message = ex.Message });
+            }
+        }
     }
 }

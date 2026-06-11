@@ -19,9 +19,11 @@ namespace TravAi.TourGuide.Services
         Task<bool> UpdateLicenseAsync(long tourGuideId, UpdateLicenseDto model);
         Task<bool> UpdateProfileAsync(long tourGuideId, UpdateProfileDto model);
         Task<List<ReviewDto>> GetTourGuideReviewsAsync(long tourGuideId);
+        Task<TourGuideReviewsDashboardDto> GetTourGuideReviewsDashboardAsync(long tourGuideId);
         Task<TourGuideProfileDto> GetProfileAsync(long id);
         Task<DashboardSummaryDto> GetDashboardSummaryAsync(long tourGuideId);
         Task<List<EarningsChartDto>> GetEarningsChartAsync(long tourGuideId);
+        Task<TourGuideEarningsSummaryDto> GetEarningsSummaryAsync(long tourGuideId);
     }
 }
 
