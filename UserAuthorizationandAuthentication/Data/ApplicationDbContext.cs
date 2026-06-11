@@ -10,6 +10,7 @@ using TravAi.Airline.Models.Airlines;
 using TravAi.TourGuide.Models;
 using TravAi.Models.Common;
 using TravAi.Models.AI;
+using TravAi.Models.Admin;
 
 namespace TravAi.Data
 {
@@ -93,6 +94,7 @@ namespace TravAi.Data
 
         public DbSet<ChatSession> ChatSessions { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<PlatformCommission> PlatformCommissions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -656,6 +658,9 @@ namespace TravAi.Data
             // AI Chatbot
             modelBuilder.Entity<ChatSession>().ToTable("ai_ChatSessions");
             modelBuilder.Entity<ChatMessage>().ToTable("ai_ChatMessages");
+
+            // Admin Platform Commissions
+            modelBuilder.Entity<PlatformCommission>().ToTable("admin_PlatformCommissions");
 
             modelBuilder.Entity<ChatSession>()
                 .HasOne(s => s.User)

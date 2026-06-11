@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commission Settings - TravAi Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin-commission-settings.css">
+</head>
+<body>
+    <div class="max-width-container">
+        <!-- Back navigation link -->
+        <a href="/index.html" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Main Platform
+        </a>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 id="page-title-text">Platform Commission Settings</h1>
+            <p>Global Financial Rules & Platform Commission Rules for service providers.</p>
+        </div>
+
+        <!-- Horizontal navigation tabs -->
+        <div class="tabs-container" id="tabs-container">
+            <button class="tab-btn active" data-tab="Hotel">Hotel Commission</button>
+            <button class="tab-btn" data-tab="Tour">Tour Commission</button>
+            <button class="tab-btn" data-tab="Airline">Airline Commission</button>
+        </div>
+
+        <!-- Main Content Card -->
+        <div class="content-card">
+            <div class="commission-section">
+                <h2 class="section-title" id="current-service-title">Hotel Commission Details</h2>
+                
+                <div class="current-commission-box">
+                    <div class="label-text">Current Active Commission</div>
+                    <div class="percentage-value" id="active-percentage">--%</div>
+                    <div class="effective-date" id="active-effective">Effective from: --</div>
+                </div>
+
+                <div class="pending-commission-box" id="pending-box" style="display: none;">
+                    <div class="warning-text">
+                        <i class="fa-solid fa-triangle-exclamation"></i> 
+                        This update will become active after one month. The current commission remains active until then.
+                    </div>
+                    <div class="label-text">Scheduled Update</div>
+                    <div class="percentage-value text-primary" id="pending-percentage">--%</div>
+                    <div class="effective-date" id="pending-effective">Will be active at: --</div>
+                    
+                    <div class="timer-container">
+                        <div class="timer-item">
+                            <span class="timer-value" id="timer-days">00</span>
+                            <span class="timer-label">Days</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-value" id="timer-hours">00</span>
+                            <span class="timer-label">Hours</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-value" id="timer-minutes">00</span>
+                            <span class="timer-label">Minutes</span>
+                        </div>
+                        <div class="timer-item">
+                            <span class="timer-value" id="timer-seconds">00</span>
+                            <span class="timer-label">Seconds</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="update-form" id="update-form">
+                    <h3>Update Commission</h3>
+                    <div class="form-group">
+                        <label for="new-percentage">New Percentage (%)</label>
+                        <input type="number" id="new-percentage" class="input-field" min="0" max="100" step="0.01" placeholder="e.g. 15">
+                    </div>
+                    <div class="form-group">
+                        <label for="update-notes">Notes (Optional)</label>
+                        <input type="text" id="update-notes" class="input-field" placeholder="Reason for update...">
+                    </div>
+                    <button class="btn-action btn-primary" id="btn-save-commission">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Update
+                    </button>
+                    <div id="form-error" class="error-msg"></div>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 40px;">Commission History</h2>
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Percentage</th>
+                            <th>Effective From</th>
+                            <th>Created By</th>
+                            <th>Notes</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <!-- Filled dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="js/admin-commission-settings.js"></script>
+</body>
+</html>
