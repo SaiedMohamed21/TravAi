@@ -93,6 +93,11 @@ let estimateReq = null;
 let estimation = null;
 let selectedType = null;
 let planResult = null;
+let fixedItems = {
+  goFlight: false,
+  returnFlight: false,
+  tours: []
+};
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -303,6 +308,11 @@ function updateSlider(val) {
 
 // ─── STEP 2 → 3: Generate Plan ───────────────────────────────────────────────
 async function goGenerate() {
+  fixedItems = {
+    goFlight: false,
+    returnFlight: false,
+    tours: []
+  };
   if (!selectedType) return showAlert('alert2', 'Please select a budget type.');
   const maxBudget = parseFloat(document.getElementById('budgetSlider').value);
   const req = { ...estimateReq, budgetType: capitalize(selectedType), maxBudget };
@@ -408,7 +418,11 @@ function renderPlan() {
       num return: (${d.numReturn})<br>
       Median hotels single: ${d.medianHotelsSingle}<br>
       Median hotels double: ${d.medianHotelsDouble}<br>
-      number of hotels: (${d.numHotelsSingle}, ${d.numHotelsDouble})<br><br>
+      number of hotels: (${d.numHotelsSingle}, ${d.numHotelsDouble})<br>
+      Median tours: ${d.medianTour}<br>
+      num tours: (${d.numTours})<br><br>
+      ${d.tourDebugPerCity ? `<div style="color:#c084fc; margin-top:5px; margin-bottom:5px; font-weight:bold;">🗺️ Tours Per City:</div>` + Object.entries(d.tourDebugPerCity).map(([city, info]) => ` &nbsp;&nbsp;· ${city}: ${info}`).join('<br>') + '<br><br>' : ''}
+      ${d.hotelDebugPerCity ? `<div style="color:#c084fc; margin-top:5px; margin-bottom:5px; font-weight:bold;">🏨 Hotels Per City:</div>` + Object.entries(d.hotelDebugPerCity).map(([city, info]) => ` &nbsp;&nbsp;· ${city}: ${info}`).join('<br>') + '<br><br>' : ''}
       <div style="color:#10b981; margin-bottom:5px; font-weight:bold;">Tour Recommender API Request:</div>
       <pre style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; overflow-x:auto; color:#a7f3d0; margin:0; font-size: 0.8rem; margin-bottom: 10px;">${d.tourApiRequestJson ? d.tourApiRequestJson.replace(/</g, "&lt;") : 'N/A'}</pre>
       <div style="color:#3b82f6; margin-bottom:5px; font-weight:bold;">Tour Recommender API Response:</div>
@@ -438,6 +452,11 @@ function flightCard(f) {
   else if (f.numberOfStops === 1) stopsText = '1 Stop';
   else if (f.numberOfStops > 1) stopsText = `${f.numberOfStops} Stops`;
 
+  const isGo = f.direction.toLowerCase() === 'outbound';
+  const isFixed = isGo ? fixedItems.goFlight : fixedItems.returnFlight;
+  const fixText = isFixed ? '🔒 Fixed' : '🔓 Fix';
+  const fixClass = isFixed ? 'btn-fixed' : 'btn-outline';
+
   el.innerHTML = `
     <span class="flight-dir">${f.direction}</span>
     <div class="flight-route">
@@ -459,7 +478,7 @@ function flightCard(f) {
     </div>
     <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end;">
       <div class="flight-price">$${fmt(f.totalPrice)}</div>
-      ${f.sessionId ? `<button onclick="regenerateFlight('${f.sessionId}', '${f.direction}', this)" class="btn btn-outline" style="margin-top:12px; font-size:0.75rem; padding:6px 12px">🔄 Regenerate</button>` : ''}
+      <button onclick="toggleFlightFix('${f.direction}')" class="btn ${fixClass}" style="margin-top:12px; font-size:0.75rem; padding:6px 12px">${fixText}</button>
     </div>
     `;
   return el;
@@ -573,7 +592,12 @@ function cityCard(city) {
 
   let tourHtml = '';
   if (city.tours && city.tours.length > 0) {
-    tourHtml = city.tours.map(t => `
+    tourHtml = city.tours.map(t => {
+      const tDateStr = new Date(t.availableDate).toISOString().split('T')[0];
+      const isFixed = fixedItems.tours.includes(tDateStr);
+      const fixText = isFixed ? '🔒 Fixed' : '🔓 Fix';
+      const fixClass = isFixed ? 'btn-fixed' : 'btn-outline';
+      return `
       <div class="flight-card" style="margin-top: 15px; border-left: 4px solid #10b981; min-height: unset; padding: 15px 25px;">
         <span class="flight-dir" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">DAY TOUR</span>
         <div class="flight-route" style="flex: 0 0 120px; text-align: left;">
@@ -591,12 +615,16 @@ function cityCard(city) {
         </div>
         <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; min-width: 100px;">
           <div class="flight-price" style="color: #10b981;">$${fmt(t.totalPrice)}</div>
-          ${planResult.tourSessionId ? `<button onclick="regenerateTour('${planResult.tourSessionId}', '${t.availableDate}', '${city.city.replace(/'/g, "\\'")}', this)" class="btn btn-outline" style="margin-top:12px; font-size:0.75rem; padding:6px 12px; border-color: rgba(16,185,129,0.5); color: #10b981;">🔄 Regenerate</button>` : ''}
+          <button onclick="toggleTourFix('${tDateStr}')" class="btn ${fixClass}" style="margin-top:12px; font-size:0.75rem; padding:6px 12px; border-color: rgba(16,185,129,0.5); color: #10b981;">${fixText}</button>
         </div>
-      </div>
-    `).join('');
+      </div>`;
+    }).join('');
   } else if (city.tour) {
     const t = city.tour;
+    const tDateStr = new Date(t.availableDate).toISOString().split('T')[0];
+    const isFixed = fixedItems.tours.includes(tDateStr);
+    const fixText = isFixed ? '🔒 Fixed' : '🔓 Fix';
+    const fixClass = isFixed ? 'btn-fixed' : 'btn-outline';
     tourHtml = `
       <div class="flight-card" style="margin-top: 15px; border-left: 4px solid #10b981; min-height: unset; padding: 15px 25px;">
         <span class="flight-dir" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">TOUR</span>
@@ -614,6 +642,7 @@ function cityCard(city) {
         </div>
         <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; min-width: 100px;">
           <div class="flight-price" style="color: #10b981;">$${fmt(t.totalPrice)}</div>
+          <button onclick="toggleTourFix('${tDateStr}')" class="btn ${fixClass}" style="margin-top:12px; font-size:0.75rem; padding:6px 12px; border-color: rgba(16,185,129,0.5); color: #10b981;">${fixText}</button>
         </div>
       </div>`;
   } else {
@@ -639,6 +668,89 @@ function cityCard(city) {
       </div>
     </div>`;
   return el;
+}
+
+function toggleFlightFix(direction) {
+  const isGo = direction.toLowerCase() === 'outbound';
+  if (isGo) {
+    fixedItems.goFlight = !fixedItems.goFlight;
+  } else {
+    fixedItems.returnFlight = !fixedItems.returnFlight;
+  }
+  renderPlan();
+}
+
+function toggleTourFix(dateStr) {
+  const idx = fixedItems.tours.indexOf(dateStr);
+  if (idx > -1) {
+    fixedItems.tours.splice(idx, 1);
+  } else {
+    fixedItems.tours.push(dateStr);
+  }
+  renderPlan();
+}
+
+async function goRegenerateUnified() {
+  const btn = document.getElementById('unifiedRegenBtn');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '🔄 Regenerating...';
+  btn.disabled = true;
+
+  document.getElementById('loader3').classList.add('active');
+  document.getElementById('planContent').style.display = 'none';
+
+  try {
+    const req = {
+      goFlightSessionId: planResult.goFlight?.sessionId || null,
+      returnFlightSessionId: planResult.returnFlight?.sessionId || null,
+      tourSessionId: planResult.tourSessionId || null,
+
+      isGoFlightFixed: fixedItems.goFlight,
+      fixedGoFlightId: fixedItems.goFlight ? (planResult.goFlight?.id || null) : null,
+
+      isReturnFlightFixed: fixedItems.returnFlight,
+      fixedReturnFlightId: fixedItems.returnFlight ? (planResult.returnFlight?.id || null) : null,
+
+      fixedTourDates: fixedItems.tours,
+
+      fromCity: estimateReq.fromCity,
+      fromCountry: estimateReq.fromCountry || '',
+      toCity: estimateReq.toCity,
+      toCountry: estimateReq.toCountry || '',
+      departureDate: estimateReq.departureDate,
+      returnDate: estimateReq.returnDate,
+      adults: estimateReq.adults,
+      children: estimateReq.children,
+      singleRooms: estimateReq.singleRooms,
+      doubleRooms: estimateReq.doubleRooms,
+      touristLanguage: estimateReq.touristLanguage,
+      excludeFlights: estimateReq.excludeFlights,
+      excludeHotels: estimateReq.excludeHotels,
+      excludeTours: estimateReq.excludeTours,
+      itinerary: estimateReq.itinerary,
+      budgetType: capitalize(selectedType),
+      maxBudget: parseFloat(document.getElementById('budgetSlider').value)
+    };
+
+    const res = await fetch(`${API}/api/ai/regenerate-plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token() },
+      body: JSON.stringify(req)
+    });
+    
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || 'Regeneration failed');
+
+    planResult = data.data;
+    renderPlan();
+  } catch (e) {
+    showAlert('alert3', e.message);
+  } finally {
+    document.getElementById('loader3').classList.remove('active');
+    document.getElementById('planContent').style.display = 'block';
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
 }
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
