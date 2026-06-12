@@ -263,16 +263,15 @@ function renderBudgetCards() {
   grid.innerHTML = '';
   types.forEach(t => {
     const d = t.data;
-    const avail = d.available !== false && d.isAvailable;
-    const reason = d.reason || (d.isAvailable ? 'Based on available data' : 'No data available for this type');
+    const avail = d.isAvailable;
     const card = document.createElement('div');
     card.className = `budget-card ${t.key}${avail ? '' : ' unavailable'}`;
     card.id = 'bc-' + t.key;
     card.innerHTML = `
       <div class="budget-icon">${t.icon}</div>
-      <div class="budget-name">${t.label}${avail ? '' : '<span style="font-size:0.8rem;color:var(--danger)"> (Not Available)</span>'}</div>
-      <div class="budget-range">${avail ? `$${fmt(d.minEstimate)} – $${fmt(d.maxEstimate)}` : 'N/A'}</div>
-      <div class="budget-sub" style="${avail ? '' : 'color:var(--danger)'}">${avail ? 'Based on available data' : reason}</div>
+      <div class="budget-name">${t.label}</div>
+      <div class="budget-range">$${fmt(d.minEstimate)} – $${fmt(d.maxEstimate)}</div>
+      <div class="budget-sub">${avail ? 'Based on available data' : 'No data available for this type'}</div>
       ${avail ? `<div class="budget-breakdown">
         <div class="breakdown-item"><span>✈️ Flights</span><span>$${fmt(d.flightMinEstimate)}–$${fmt(d.flightMaxEstimate)}</span></div>
         <div class="breakdown-item"><span>🏨 Hotels</span><span>$${fmt(d.hotelMinEstimate)}–$${fmt(d.hotelMaxEstimate)}</span></div>

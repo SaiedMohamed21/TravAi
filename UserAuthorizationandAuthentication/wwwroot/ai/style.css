@@ -91,7 +91,7 @@ select option{background:#1e293b;}
 .budget-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
 .budget-card{background:var(--card-bg);border:2px solid var(--border);border-radius:16px;
   padding:24px;cursor:pointer;transition:.3s;text-align:center;}
-.budget-card:not(.unavailable):hover{transform:translateY(-4px);}
+.budget-card:hover{transform:translateY(-4px);}
 .budget-card.selected{border-color:var(--primary);background:rgba(99,102,241,.1);}
 .budget-card.economy.selected{border-color:var(--economy);}
 .budget-card.premium.selected{border-color:var(--premium);}
