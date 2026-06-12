@@ -124,7 +124,6 @@ namespace TravAi.Services.AI
             var firstCity   = itinerary.First().City;
             var lastCity    = itinerary.Last().City;
             var (starMin, starMax) = GetStarRange(budgetType);
-            var (tourMin, tourMax) = GetTourPriceRange(budgetType);
             var lang = ParseLanguage(req.TouristLanguage);
             string targetCluster = budgetType.ToLower() switch
             {
@@ -133,6 +132,160 @@ namespace TravAi.Services.AI
                 "luxury"  => "business",
                 _         => "economic"
             };
+            string targetTourType = budgetType.ToLower() switch
+            {
+                "economy" => "economy",
+                "premium" => "premium",
+                "luxury"  => "luxury",
+                _         => "economy"
+            };
+
+            // ── Tier Availability Validation ─────────────────────────────────
+            // --- 1. Flights Validation ---
+            if (!req.ExcludeFlights)
+            {
+                var fromCodes = await _db.Airports.Where(a => a.City.ToLower() == req.FromCity.ToLower()).Select(a => a.Code).ToListAsync();
+                var toCodes   = await _db.Airports.Where(a => a.City.ToLower() == firstCity.ToLower()).Select(a => a.Code).ToListAsync();
+                var lastCodes = await _db.Airports.Where(a => a.City.ToLower() == lastCity.ToLower()).Select(a => a.Code).ToListAsync();
+
+                int totalTravelers = req.Adults + req.Children;
+                var goDate = req.DepartureDate.Date;
+                var retDate = req.ReturnDate.Date;
+
+                var outboundExist = await _db.Flights
+                    .AnyAsync(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
+                        && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
+                        && f.DepartureTime!.Value.Date == goDate
+                        && fromCodes.Contains(f.DepartureAirportCode!)
+                        && toCodes.Contains(f.ArrivalAirportCode!)
+                        && f.AvailableSeats >= totalTravelers);
+
+                if (!outboundExist)
+                {
+                    return new BudgetTypeRangeDto
+                    {
+                        Type = budgetType,
+                        IsAvailable = false,
+                        Available = false,
+                        Reason = "No matching outbound flights with sufficient seats"
+                    };
+                }
+
+                var returnExist = await _db.Flights
+                    .AnyAsync(f => f.Status == "Active" && f.Price.HasValue && f.DepartureTime.HasValue
+                        && f.FlightClass != null && f.FlightClass.ToLower() == flightClass.ToLower()
+                        && f.DepartureTime!.Value.Date == retDate
+                        && lastCodes.Contains(f.DepartureAirportCode!)
+                        && fromCodes.Contains(f.ArrivalAirportCode!)
+                        && f.AvailableSeats >= totalTravelers);
+
+                if (!returnExist)
+                {
+                    return new BudgetTypeRangeDto
+                    {
+                        Type = budgetType,
+                        IsAvailable = false,
+                        Available = false,
+                        Reason = "No matching return flights with sufficient seats"
+                    };
+                }
+            }
+
+            // --- 2. Hotels Validation ---
+            if (!req.ExcludeHotels)
+            {
+                foreach (var city in itinerary)
+                {
+                    var cityLower = city.City.ToLower();
+                    var hasValidHotel = await _db.Hotels
+                        .Include(h => h.Rooms)
+                        .AnyAsync(h => h.Verified && h.Active
+                            && h.StarRating >= starMin && h.StarRating <= starMax
+                            && h.ClusterSegment != null && h.ClusterSegment.ToLower() == targetCluster
+                            && (h.Governorate != null && h.Governorate.ToLower() == cityLower
+                             || h.CityArea    != null && h.CityArea.ToLower()    == cityLower)
+                            && (req.SingleRooms <= 0 || h.Rooms.Where(r => r.BedType == BedType.Single && r.State == RoomState.Active && r.FBPrice.HasValue).Sum(r => r.Quantity) >= req.SingleRooms)
+                            && (req.DoubleRooms <= 0 || h.Rooms.Where(r => r.BedType == BedType.Double && r.State == RoomState.Active && r.FBPrice.HasValue).Sum(r => r.Quantity) >= req.DoubleRooms));
+
+                    if (!hasValidHotel)
+                    {
+                        return new BudgetTypeRangeDto
+                        {
+                            Type = budgetType,
+                            IsAvailable = false,
+                            Available = false,
+                            Reason = "Hotel inventory cannot satisfy requested room configuration"
+                        };
+                    }
+                }
+            }
+
+            // --- 3. Tours Validation ---
+            if (!req.ExcludeTours)
+            {
+                int totalTravelers = req.Adults + req.Children;
+                foreach (var city in itinerary)
+                {
+                    var cityLower = city.City.ToLower();
+                    var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
+                    var co = ci.AddDays(city.Days);
+
+                    var toursInCity = await _db.Tours
+                        .Where(t => t.Active && t.BasePriceUsd.HasValue
+                            && t.City != null && t.City.ToLower() == cityLower
+                            && t.TourType != null && t.TourType.ToLower() == targetTourType
+                            && t.AvailableDateTime >= ci && t.AvailableDateTime < co)
+                        .Select(t => new {
+                            t.Id,
+                            GroupSizeMax = t.GroupSizeMax ?? 10
+                        })
+                        .ToListAsync();
+
+                    if (!toursInCity.Any())
+                    {
+                        return new BudgetTypeRangeDto
+                        {
+                            Type = budgetType,
+                            IsAvailable = false,
+                            Available = false,
+                            Reason = "No tours with sufficient remaining capacity"
+                        };
+                    }
+
+                    var tourIds = toursInCity.Select(t => t.Id).ToList();
+                    var bookings = await _db.TourBookings
+                        .Where(tb => tourIds.Contains(tb.TourId) && tb.Status != TravAi.TourGuide.Models.Enums.BookingStatus.Cancelled)
+                        .GroupBy(tb => tb.TourId)
+                        .Select(g => new {
+                            TourId = g.Key,
+                            BookedCount = g.Sum(tb => tb.ParticipantsCount)
+                        })
+                        .ToDictionaryAsync(x => x.TourId, x => x.BookedCount);
+
+                    bool hasTourWithCapacity = false;
+                    foreach (var tour in toursInCity)
+                    {
+                        int booked = bookings.ContainsKey(tour.Id) ? bookings[tour.Id] : 0;
+                        int remaining = tour.GroupSizeMax - booked;
+                        if (remaining >= totalTravelers)
+                        {
+                            hasTourWithCapacity = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasTourWithCapacity)
+                    {
+                        return new BudgetTypeRangeDto
+                        {
+                            Type = budgetType,
+                            IsAvailable = false,
+                            Available = false,
+                            Reason = "No tours with sufficient remaining capacity"
+                        };
+                    }
+                }
+            }
 
             decimal flightMin = 0, flightMax = 0;
             decimal hotelMin  = 0, hotelMax  = 0;
@@ -225,8 +378,7 @@ namespace TravAi.Services.AI
                         .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
                         .Where(t => t.Active && t.BasePriceUsd.HasValue
                             && t.City!.ToLower() == cityLower
-                            && t.BasePriceUsd >= tourMin
-                            && (tourMax < 0 || t.BasePriceUsd <= tourMax)
+                            && t.TourType != null && t.TourType.ToLower() == targetTourType
                             && t.AvailableDateTime.HasValue
                             && t.AvailableDateTime >= ci && t.AvailableDateTime < co
                             && (lang == null || t.TourGuide.TourGuideLanguages
@@ -251,6 +403,8 @@ namespace TravAi.Services.AI
                 MinEstimate        = Math.Round(totalMin, 2),
                 MaxEstimate        = Math.Round(totalMax, 2),
                 IsAvailable        = available,
+                Available          = true,
+                Reason             = null,
                 FlightMinEstimate  = Math.Round(flightMin, 2),
                 FlightMaxEstimate  = Math.Round(flightMax, 2),
                 HotelMinEstimate   = Math.Round(hotelMin, 2),
@@ -270,7 +424,6 @@ namespace TravAi.Services.AI
             var firstCity   = itinerary.First().City;
             var lastCity    = itinerary.Last().City;
             var (starMin, starMax)   = GetStarRange(req.BudgetType);
-            var (tourPMin, tourPMax) = GetTourPriceRange(req.BudgetType);
             var lang        = ParseLanguage(req.TouristLanguage);
             string targetCluster = req.BudgetType.ToLower() switch
             {
@@ -278,6 +431,13 @@ namespace TravAi.Services.AI
                 "premium" => "premium",
                 "luxury"  => "business",
                 _         => "economic"
+            };
+            string targetTourType = req.BudgetType.ToLower() switch
+            {
+                "economy" => "economy",
+                "premium" => "premium",
+                "luxury"  => "luxury",
+                _         => "economy"
             };
             int totalPeople = req.Adults + req.Children;
 
@@ -431,22 +591,24 @@ namespace TravAi.Services.AI
                     LogDebug($"   - Double Rooms Count : {dm.Count} (Median={dMed})");
 
                     decimal cityHotelCost = 0;
+                    decimal sPart = 0;
+                    decimal dPart = 0;
                     if (sm.Any())
                     {
-                        decimal sPart = sMed * city.Days * req.SingleRooms;
+                        sPart = sMed * city.Days * req.SingleRooms;
                         hotelSingleMedians.Add(sPart);
                         cityHotelCost += sPart;
                         LogDebug($"   - Single Room Part   : {sMed} * {city.Days} days * {req.SingleRooms} rooms = {sPart}");
                     }
                     if (dm.Any())
                     {
-                        decimal dPart = dMed * city.Days * req.DoubleRooms;
+                        dPart = dMed * city.Days * req.DoubleRooms;
                         hotelDoubleMedians.Add(dPart);
                         cityHotelCost += dPart;
                         LogDebug($"   - Double Room Part   : {dMed} * {city.Days} days * {req.DoubleRooms} rooms = {dPart}");
                     }
 
-                    hotelDebugPerCity[city.City] = $"Single Med: {sMed} (Qty: {sm.Count}), Double Med: {dMed} (Qty: {dm.Count})";
+                    hotelDebugPerCity[city.City] = $"Single Med: {sMed} * {req.SingleRooms} Rms * {city.Days} Days = {sPart} | Double Med: {dMed} * {req.DoubleRooms} Rms * {city.Days} Days = {dPart} | Total Est: {cityHotelCost} (Rooms: {rooms.Count})";
                     hotelCosts[city.City] = cityHotelCost;
                 }
                 else
@@ -457,33 +619,31 @@ namespace TravAi.Services.AI
 
                 if (!req.ExcludeTours)
                 {
-                    var tourCi = tourDates[cityIdx].CheckIn;
-                    var tourCo = tourDates[cityIdx].CheckOut;
+                    var origCi = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
+                    var origCo = origCi.AddDays(city.Days);
                     var cityLower = city.City.ToLower();
                     var tp = await _db.Tours
                         .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
                         .Where(t => t.Active && t.BasePriceUsd.HasValue
                             && t.City!.ToLower() == cityLower
-                            && t.BasePriceUsd >= tourPMin
-                            && (tourPMax < 0 || t.BasePriceUsd <= tourPMax)
-                            && t.AvailableDateTime >= tourCi && t.AvailableDateTime < tourCo
+                            && t.TourType != null && t.TourType.ToLower() == targetTourType
+                            && t.AvailableDateTime >= origCi && t.AvailableDateTime < origCo
                             && (lang == null || t.TourGuide.TourGuideLanguages.Any(l => l.Language == lang.Value)))
                         .Select(t => t.BasePriceUsd!.Value).ToListAsync();
 
                     decimal cityTourCost = 0;
+                    decimal cityMedian = 0;
+                    int cityCount = tp.Count;
                     if (tp.Any())
                     {
-                        decimal mean = tp.Average();
-                        tourMeans.Add((city.City, mean, adjustedTourDays[cityIdx]));
+                        cityMedian = Median(tp);
+                        tourMeans.Add((city.City, cityMedian, city.Days));
                         allTourPrices.AddRange(tp);
-                        cityTourCost = mean * adjustedTourDays[cityIdx] * totalPeople;
-                        LogDebug($"   - Tours Found in City: {tp.Count} (Mean/Average Price={mean})");
+                        cityTourCost = cityMedian * city.Days * totalPeople;
+                        LogDebug($"   - Tours Found in City: {tp.Count} (Median Price={cityMedian})");
                     }
                     tourCosts[city.City] = cityTourCost;
-
-                    decimal cityMedian = Median(tp);
-                    int cityCount = tp.Count;
-                    tourDebugPerCity[city.City] = $"Median: {cityMedian}, Count: {cityCount}";
+                    tourDebugPerCity[city.City] = $"Median: {cityMedian} * {totalPeople} Pax * {city.Days} Days = {cityTourCost} (Count: {cityCount})";
                 }
                 else
                 {
@@ -504,33 +664,25 @@ namespace TravAi.Services.AI
             LogDebug($"   - marketSum Eq       : {avgGoFlight} + {avgRetFlight} + {avgHotel} + {avgTours} = {marketSum}");
             LogDebug(new string('-', 60));
 
-            // Allocate budgets proportionally (budget_divider logic)
+            // Allocate budgets proportionally using the unified DivideBudget function (budget_divider logic)
             decimal budget = req.MaxBudget;
-            decimal flightBudget, hotelBudget, toursBudget;
+            var initialAllocation = DivideBudget(
+                budget,
+                req.ExcludeFlights,
+                req.ExcludeHotels,
+                req.ExcludeTours,
+                avgGoFlight + avgRetFlight,
+                avgHotel,
+                avgTours);
 
-            if (marketSum <= 0)
-            {
-                // Fallback: equal split among active categories
-                int activeCount = (req.ExcludeFlights ? 0 : 1)
-                                + (req.ExcludeHotels  ? 0 : 1)
-                                + (req.ExcludeTours   ? 0 : 1);
-                decimal part = activeCount > 0 ? budget / activeCount : budget;
-                flightBudget = req.ExcludeFlights ? 0 : part;
-                hotelBudget  = req.ExcludeHotels  ? 0 : part;
-                toursBudget  = req.ExcludeTours   ? 0 : part;
-                LogDebug(" [PROPORTIONAL ALLOCATION - FALLBACK RUN]");
-            }
-            else
-            {
-                flightBudget = ((avgGoFlight + avgRetFlight) / marketSum) * budget;
-                hotelBudget  = (avgHotel / marketSum) * budget;
-                toursBudget  = (avgTours  / marketSum) * budget;
+            decimal flightBudget = initialAllocation.flightAlloc;
+            decimal hotelBudget  = initialAllocation.hotelAlloc;
+            decimal toursBudget  = initialAllocation.toursAlloc;
 
-                LogDebug($" [PROPORTIONAL ALLOCATION (budget_divider)]");
-                LogDebug($"   - flightBudget Eq    : (({avgGoFlight} + {avgRetFlight}) / {marketSum}) * {budget} = {flightBudget}");
-                LogDebug($"   - hotelBudget Eq     : ({avgHotel} / {marketSum}) * {budget} = {hotelBudget}");
-                LogDebug($"   - toursBudget Eq     : ({avgTours} / {marketSum}) * {budget} = {toursBudget}");
-            }
+            LogDebug($" [PROPORTIONAL ALLOCATION (budget_divider)]");
+            LogDebug($"   - flightBudget       : {flightBudget}");
+            LogDebug($"   - hotelBudget        : {hotelBudget}");
+            LogDebug($"   - toursBudget        : {toursBudget}");
             LogDebug(" [DEBUG: BUDGET DIVIDER END]");
             LogDebug(new string('=', 60) + "\n");
 
@@ -544,45 +696,31 @@ namespace TravAi.Services.AI
 
             if (req.ExcludeHotels && req.ExcludeTours)
             {
-                hotelBudget = 0;
-                toursBudget = 0;
+                // Flight only scenario: flight budget remains MaxBudget
                 flightBudget = req.MaxBudget;
                 goBudget = (avgGoFlight + avgRetFlight) > 0
                     ? flightBudget * (avgGoFlight / (avgGoFlight + avgRetFlight)) : flightBudget / 2;
                 retBudget = flightBudget - goBudget;
-            }
-            else if (req.ExcludeHotels)
-            {
                 hotelBudget = 0;
-                toursBudget = remainingBudget;
-                flightBudget = actualFlightsCost;
-                goBudget = actualGoPrice;
-                retBudget = actualRetPrice;
-            }
-            else if (req.ExcludeTours)
-            {
                 toursBudget = 0;
-                hotelBudget = remainingBudget;
-                flightBudget = actualFlightsCost;
-                goBudget = actualGoPrice;
-                retBudget = actualRetPrice;
             }
             else
             {
-                decimal hotelTourSum = avgHotel + avgTours;
-                if (hotelTourSum > 0)
-                {
-                    hotelBudget = (avgHotel / hotelTourSum) * remainingBudget;
-                    toursBudget = (avgTours / hotelTourSum) * remainingBudget;
-                }
-                else
-                {
-                    hotelBudget = remainingBudget / 2;
-                    toursBudget = remainingBudget / 2;
-                }
+                // Dynamic reallocation of flight surplus: exclude flights, distribute remainingBudget among active non-flight categories
+                var reallocation = DivideBudget(
+                    remainingBudget,
+                    excludeFlights: true,
+                    req.ExcludeHotels,
+                    req.ExcludeTours,
+                    0,
+                    avgHotel,
+                    avgTours);
+
                 flightBudget = actualFlightsCost;
                 goBudget = actualGoPrice;
                 retBudget = actualRetPrice;
+                hotelBudget = reallocation.hotelAlloc;
+                toursBudget = reallocation.toursAlloc;
             }
 
             // Per-city budgets for hotels/tours (proportional to days)
@@ -615,14 +753,145 @@ namespace TravAi.Services.AI
                     CheckOut        = co,
                     CityHotelBudget = Math.Round(cityHotelBudget, 2),
                     CityToursBudget = Math.Round(cityToursBudget, 2),
-                    Hotel           = null, // Selection stopped: Budget divider only
-                    Tour            = null  // Will be assigned from new API structure later
+                    Hotel           = null,
+                    Tour            = null
                 });
             }
 
+            // --- 1. CALL HOTEL RECOMMENDATION API ---
+            string hotelApiRequestJsonStr = "";
+            string hotelApiResponseJsonStr = null;
+            decimal actualHotelsCost = 0;
+
+            if (!req.ExcludeHotels)
+            {
+                var hotelReq = new HotelRecommendationRequestDto
+                {
+                    TripPlan = itinerary.Select(city => {
+                        var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
+                        var co = ci.AddDays(city.Days);
+                        return new HotelTripPlanItemDto
+                        {
+                            City = city.City,
+                            CheckIn = ci.ToString("yyyy-MM-dd"),
+                            CheckOut = co.ToString("yyyy-MM-dd")
+                        };
+                    }).ToList(),
+                    Cluster = targetCluster,
+                    TotalBudget = (double)hotelBudget,
+                    NumPeople = totalPeople,
+                    SingleRooms = req.SingleRooms,
+                    DoubleRooms = req.DoubleRooms,
+                    TopKPerCity = 8,
+                    QualityThreshold = 0.45,
+                    RegenerateIndex = 0
+                };
+
+                hotelApiRequestJsonStr = JsonSerializer.Serialize(hotelReq, new JsonSerializerOptions { WriteIndented = true });
+                
+                var client = _httpClientFactory.CreateClient();
+                var hotelBaseUrl = _config["HotelRecommendationApi:BaseUrl"] ?? "https://travai-python-hotel.onrender.com";
+                
+                var content = new StringContent(hotelApiRequestJsonStr, System.Text.Encoding.UTF8, "application/json");
+                try {
+                    var response = await client.PostAsync($"{hotelBaseUrl.TrimEnd('/')}/api/hotels/recommend", content);
+                    
+                    if (response.IsSuccessStatusCode) {
+                        var responseStr = await response.Content.ReadAsStringAsync();
+                        hotelApiResponseJsonStr = responseStr;
+                        
+                        var apiResp = JsonSerializer.Deserialize<HotelRecommendationResponseDto>(responseStr);
+                        
+                        if (apiResp != null && apiResp.Hotels != null) {
+                            var hotelNames = apiResp.Hotels.Select(h => h.HotelName).Where(name => !string.IsNullOrEmpty(name)).Distinct().ToList();
+                            var dbHotels = await _db.Hotels
+                                .Include(h => h.Rooms).Include(h => h.Images)
+                                .Where(h => hotelNames.Contains(h.HotelName))
+                                .ToDictionaryAsync(h => h.HotelName, StringComparer.OrdinalIgnoreCase);
+
+                            foreach (var h in apiResp.Hotels) {
+                                if (string.IsNullOrEmpty(h.HotelName)) continue;
+
+                                int nights = 1;
+                                if (DateTime.TryParse(h.CheckOut, out var coDate) && DateTime.TryParse(h.CheckIn, out var ciDate)) {
+                                    nights = (coDate - ciDate).Days;
+                                }
+
+                                PlannedHotelDto pHotel;
+                                if (dbHotels.TryGetValue(h.HotelName, out var dbHotel)) {
+                                    var singleRoomsList = dbHotel.Rooms.Where(r => r.BedType == BedType.Single && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+                                    var doubleRoomsList = dbHotel.Rooms.Where(r => r.BedType == BedType.Double && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+
+                                    decimal singlePrice = singleRoomsList.Any() ? singleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                                    decimal doublePrice = doubleRoomsList.Any() ? doubleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                                    decimal total = (singlePrice * req.SingleRooms + doublePrice * req.DoubleRooms) * nights;
+
+                                    pHotel = new PlannedHotelDto {
+                                        Id = dbHotel.Id,
+                                        HotelName = dbHotel.HotelName,
+                                        City = dbHotel.CityArea ?? dbHotel.Governorate ?? h.CityArea ?? h.Governorate ?? "",
+                                        Country = dbHotel.Country ?? "Egypt",
+                                        StarRating = dbHotel.StarRating ?? h.StarRating,
+                                        AvgReviewScore = dbHotel.AvgReviewScore,
+                                        NumReviews = dbHotel.NumReviews,
+                                        ImageUrl = dbHotel.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl ?? dbHotel.Images.FirstOrDefault()?.ImageUrl,
+                                        Nights = nights,
+                                        SingleRooms = req.SingleRooms,
+                                        DoubleRooms = req.DoubleRooms,
+                                        SingleRoomPricePerNight = singlePrice,
+                                        DoubleRoomPricePerNight = doublePrice,
+                                        TotalPrice = Math.Round(total, 2)
+                                    };
+                                } else {
+                                    pHotel = new PlannedHotelDto {
+                                        Id = 0,
+                                        HotelName = h.HotelName,
+                                        City = h.CityArea ?? h.Governorate ?? "",
+                                        Country = "Egypt",
+                                        StarRating = h.StarRating,
+                                        AvgReviewScore = (decimal)(h.AvgReviewScore ?? 0.0),
+                                        NumReviews = h.NumReviews ?? 0,
+                                        Nights = nights,
+                                        SingleRooms = req.SingleRooms,
+                                        DoubleRooms = req.DoubleRooms,
+                                        TotalPrice = 0
+                                    };
+                                }
+
+                                actualHotelsCost += pHotel.TotalPrice;
+
+                                var cityPlan = cityPlans.FirstOrDefault(cp => 
+                                    cp.City.Equals(h.CityArea, StringComparison.OrdinalIgnoreCase) || 
+                                    cp.City.Equals(h.Governorate, StringComparison.OrdinalIgnoreCase) || 
+                                    cp.City.Equals(pHotel.City, StringComparison.OrdinalIgnoreCase));
+                                
+                                if (cityPlan != null) {
+                                    cityPlan.Hotel = pHotel;
+                                    cityPlan.CityHotelBudget = pHotel.TotalPrice;
+                                }
+                            }
+                        }
+                    } else {
+                        hotelApiResponseJsonStr = $"HTTP Error: {response.StatusCode}\n{await response.Content.ReadAsStringAsync()}";
+                    }
+                } catch (Exception ex) {
+                    hotelApiResponseJsonStr = $"Exception: {ex.Message}\n{ex.StackTrace}";
+                }
+            }
+
+            // --- 2. REALLOCATE HOTEL SURPLUS TO TOURS BUDGET ---
+            decimal hotelSurplus = Math.Max(0, hotelBudget - actualHotelsCost);
+            if (!req.ExcludeTours)
+            {
+                toursBudget += hotelSurplus;
+            }
+
+            // --- 3. CALL TOUR RECOMMENDATION API ---
             string tourApiRequestJsonStr = "";
             string tourApiResponseJsonStr = null;
             string tourSessionId = null;
+            decimal actualToursCost = 0;
+
             if (!req.ExcludeTours)
             {
                 var tourReq = new TourRecommendationRequestDto
@@ -632,7 +901,7 @@ namespace TravAi.Services.AI
                     Days = adjustedTourDays,
                     StartDate = tourStartDate.ToString("yyyy-MM-dd"),
                     EndDate = tourEndDate.ToString("yyyy-MM-dd"),
-                    Preferences = new List<string>(), // Empty for now
+                    Preferences = new List<string>(),
                     TourBudget = toursBudget,
                     Travelers = totalPeople
                 };
@@ -684,6 +953,8 @@ namespace TravAi.Services.AI
                                             TotalPrice      = Math.Round((dbTour?.BasePriceUsd ?? rec.Tour.BasePriceUsd) * totalPeople, 2)
                                         };
                                         
+                                        actualToursCost += pTour.TotalPrice;
+
                                         var cityPlan = cityPlans.FirstOrDefault(cp => cp.City.Equals(rec.City, StringComparison.OrdinalIgnoreCase));
                                         if (cityPlan != null) {
                                             cityPlan.Tours.Add(pTour);
@@ -708,7 +979,7 @@ namespace TravAi.Services.AI
             {
                 BudgetType         = req.BudgetType,
                 MaxBudget          = req.MaxBudget,
-                EstimatedTotalCost = Math.Round(req.MaxBudget, 2),
+                EstimatedTotalCost = Math.Round(actualFlightsCost + actualHotelsCost + actualToursCost, 2),
                 TotalDays          = totalDays,
                 Adults             = req.Adults,
                 Children           = req.Children,
@@ -726,6 +997,8 @@ namespace TravAi.Services.AI
                 {
                     TourApiRequestJson = tourApiRequestJsonStr,
                     TourApiResponseJson = tourApiResponseJsonStr,
+                    HotelApiRequestJson = hotelApiRequestJsonStr,
+                    HotelApiResponseJson = hotelApiResponseJsonStr,
                     MedianGo = goMedian,
                     MedianReturn = retMedian,
                     NumGo = goPriceList.Count,
@@ -1194,6 +1467,13 @@ namespace TravAi.Services.AI
             int totalDays = itinerary.Sum(c => c.Days);
             int totalPeople = req.Adults + req.Children;
             var flightClass = GetFlightClass(req.BudgetType);
+            string targetTourType = req.BudgetType.ToLower() switch
+            {
+                "economy" => "economy",
+                "premium" => "premium",
+                "luxury"  => "luxury",
+                _         => "economy"
+            };
 
             var fromCodesP = await _db.Airports.Where(a => a.City.ToLower() == req.FromCity.ToLower()).Select(a => a.Code).ToListAsync();
             var firstCity = itinerary.First().City;
@@ -1365,20 +1645,22 @@ namespace TravAi.Services.AI
                     }
 
                     decimal cityHotelCost = 0;
+                    decimal sPart = 0;
+                    decimal dPart = 0;
                     if (sm.Any())
                     {
-                        decimal sPart = sMed * city.Days * req.SingleRooms;
+                        sPart = sMed * city.Days * req.SingleRooms;
                         hotelSingleMedians.Add(sPart);
                         cityHotelCost += sPart;
                     }
                     if (dm.Any())
                     {
-                        decimal dPart = dMed * city.Days * req.DoubleRooms;
+                        dPart = dMed * city.Days * req.DoubleRooms;
                         hotelDoubleMedians.Add(dPart);
                         cityHotelCost += dPart;
                     }
 
-                    hotelDebugPerCity[city.City] = $"Single Med: {sMed} (Qty: {sm.Count}), Double Med: {dMed} (Qty: {dm.Count})";
+                    hotelDebugPerCity[city.City] = $"Single Med: {sMed} * {req.SingleRooms} Rms * {city.Days} Days = {sPart} | Double Med: {dMed} * {req.DoubleRooms} Rms * {city.Days} Days = {dPart} | Total Est: {cityHotelCost} (Rooms: {rooms.Count})";
                     hotelCosts[city.City] = cityHotelCost;
                 }
                 else
@@ -1393,37 +1675,29 @@ namespace TravAi.Services.AI
                     var tourCo = tourDates[cityIdx].CheckOut;
                     var cityLower = city.City.ToLower();
                     
-                    decimal tourPMin = 0;
-                    decimal tourPMax = -1;
-                    if (flightClass.Equals("Economy", StringComparison.OrdinalIgnoreCase)) tourPMax = 50;
-                    else if (flightClass.Equals("Premium", StringComparison.OrdinalIgnoreCase)) { tourPMin = 50; tourPMax = 150; }
-                    else if (flightClass.Equals("Luxury", StringComparison.OrdinalIgnoreCase)) tourPMin = 150;
-
                     var lang = ParseLanguage(req.TouristLanguage);
 
                     var tp = await _db.Tours
                         .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
                         .Where(t => t.Active && t.BasePriceUsd.HasValue
                             && t.City!.ToLower() == cityLower
-                            && t.BasePriceUsd >= tourPMin
-                            && (tourPMax < 0 || t.BasePriceUsd <= tourPMax)
+                            && t.TourType != null && t.TourType.ToLower() == targetTourType
                             && t.AvailableDateTime >= tourCi && t.AvailableDateTime < tourCo
                             && (lang == null || t.TourGuide.TourGuideLanguages.Any(l => l.Language == lang.Value)))
                         .Select(t => t.BasePriceUsd!.Value).ToListAsync();
 
                     decimal cityTourCost = 0;
+                    decimal cityMedian = 0;
+                    int cityCount = tp.Count;
                     if (tp.Any())
                     {
-                        decimal mean = tp.Average();
-                        tourMeans.Add((city.City, mean, adjustedTourDays[cityIdx]));
+                        cityMedian = Median(tp);
+                        tourMeans.Add((city.City, cityMedian, adjustedTourDays[cityIdx]));
                         allTourPrices.AddRange(tp);
-                        cityTourCost = mean * adjustedTourDays[cityIdx] * totalPeople;
+                        cityTourCost = cityMedian * adjustedTourDays[cityIdx] * totalPeople;
                     }
                     tourCosts[city.City] = cityTourCost;
-
-                    decimal cityMedian = Median(tp);
-                    int cityCount = tp.Count;
-                    tourDebugPerCity[city.City] = $"Median: {cityMedian}, Count: {cityCount}";
+                    tourDebugPerCity[city.City] = $"Median: {cityMedian} * {totalPeople} Pax * {adjustedTourDays[cityIdx]} Days = {cityTourCost} (Count: {cityCount})";
                 }
                 else
                 {
@@ -1446,6 +1720,9 @@ namespace TravAi.Services.AI
             decimal hotelBudget = 0;
             decimal toursBudget = actualToursCost;
 
+            decimal avgHotel = hotelSingleMedians.Sum() + hotelDoubleMedians.Sum();
+            decimal avgTours = tourMeans.Sum(t => t.mean * t.days * totalPeople);
+
             if (req.ExcludeHotels && req.ExcludeTours)
             {
                 hotelBudget = 0;
@@ -1455,24 +1732,25 @@ namespace TravAi.Services.AI
                     ? flightBudget * (actualGoFlightCost / actualFlightsCost) : flightBudget / 2;
                 retBudget = flightBudget - goBudget;
             }
-            else if (req.ExcludeHotels)
-            {
-                hotelBudget = 0;
-                toursBudget = actualToursCost + remainingBudget;
-            }
-            else if (req.ExcludeTours)
-            {
-                toursBudget = 0;
-                hotelBudget = remainingBudget;
-            }
             else
             {
-                hotelBudget = remainingBudget;
+                var reallocation = DivideBudget(
+                    remainingBudget,
+                    excludeFlights: true,
+                    req.ExcludeHotels,
+                    req.ExcludeTours,
+                    0,
+                    avgHotel,
+                    avgTours);
+
+                flightBudget = actualFlightsCost;
+                goBudget = actualGoFlightCost;
+                retBudget = actualRetFlightCost;
+                hotelBudget = reallocation.hotelAlloc;
+                toursBudget = actualToursCost + reallocation.toursAlloc;
             }
 
-            decimal avgHotel = hotelSingleMedians.Sum() + hotelDoubleMedians.Sum();
-
-            // 6. Build City Plans
+            // 6. Build City Plans structure
             var cityPlans = new List<CityPlanDto>();
             foreach (var city in itinerary)
             {
@@ -1503,6 +1781,195 @@ namespace TravAi.Services.AI
                 });
             }
 
+            // --- 1. RESOLVE HOTELS ---
+            string hotelApiRequestJsonStr = "";
+            string hotelApiResponseJsonStr = null;
+            decimal actualHotelsCost = 0;
+
+            if (!req.ExcludeHotels)
+            {
+                if (req.IsHotelFixed && req.FixedHotelId.HasValue)
+                {
+                    var h = await _db.Hotels
+                        .Include(h => h.Rooms).Include(h => h.Images)
+                        .FirstOrDefaultAsync(hot => hot.Id == req.FixedHotelId.Value);
+                    if (h != null)
+                    {
+                        var city = itinerary.FirstOrDefault(c => c.City.Equals(h.Governorate, StringComparison.OrdinalIgnoreCase) 
+                                                              || c.City.Equals(h.CityArea, StringComparison.OrdinalIgnoreCase));
+                        int nights = city?.Days ?? 1;
+
+                        var singleRoomsList = h.Rooms.Where(r => r.BedType == BedType.Single && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+                        var doubleRoomsList = h.Rooms.Where(r => r.BedType == BedType.Double && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+
+                        decimal singlePrice = singleRoomsList.Any() ? singleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                        decimal doublePrice = doubleRoomsList.Any() ? doubleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                        decimal total = (singlePrice * req.SingleRooms + doublePrice * req.DoubleRooms) * nights;
+
+                        var pHotel = new PlannedHotelDto
+                        {
+                            Id = h.Id,
+                            HotelName = h.HotelName,
+                            City = h.CityArea ?? h.Governorate ?? "",
+                            Country = h.Country ?? "Egypt",
+                            StarRating = h.StarRating,
+                            AvgReviewScore = h.AvgReviewScore,
+                            NumReviews = h.NumReviews,
+                            ImageUrl = h.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl ?? h.Images.FirstOrDefault()?.ImageUrl,
+                            Nights = nights,
+                            SingleRooms = req.SingleRooms,
+                            DoubleRooms = req.DoubleRooms,
+                            SingleRoomPricePerNight = singlePrice,
+                            DoubleRoomPricePerNight = doublePrice,
+                            TotalPrice = Math.Round(total, 2)
+                        };
+
+                        actualHotelsCost += pHotel.TotalPrice;
+
+                        var cityPlan = cityPlans.FirstOrDefault(cp => 
+                            cp.City.Equals(h.CityArea, StringComparison.OrdinalIgnoreCase) || 
+                            cp.City.Equals(h.Governorate, StringComparison.OrdinalIgnoreCase) || 
+                            cp.City.Equals(pHotel.City, StringComparison.OrdinalIgnoreCase));
+                        
+                        if (cityPlan != null)
+                        {
+                            cityPlan.Hotel = pHotel;
+                            cityPlan.CityHotelBudget = pHotel.TotalPrice;
+                        }
+                    }
+                }
+                else
+                {
+                    string targetCluster = req.BudgetType.ToLower() switch
+                    {
+                        "economy" => "economic",
+                        "premium" => "premium",
+                        "luxury"  => "business",
+                        _         => "economic"
+                    };
+
+                    var hotelReq = new HotelRecommendationRequestDto
+                    {
+                        TripPlan = itinerary.Select(city => {
+                            var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
+                            var co = ci.AddDays(city.Days);
+                            return new HotelTripPlanItemDto
+                            {
+                                City = city.City,
+                                CheckIn = ci.ToString("yyyy-MM-dd"),
+                                CheckOut = co.ToString("yyyy-MM-dd")
+                            };
+                        }).ToList(),
+                        Cluster = targetCluster,
+                        TotalBudget = (double)hotelBudget,
+                        NumPeople = totalPeople,
+                        SingleRooms = req.SingleRooms,
+                        DoubleRooms = req.DoubleRooms,
+                        TopKPerCity = 8,
+                        QualityThreshold = 0.45,
+                        RegenerateIndex = req.HotelRegenerateIndex
+                    };
+
+                    hotelApiRequestJsonStr = JsonSerializer.Serialize(hotelReq, new JsonSerializerOptions { WriteIndented = true });
+                    
+                    var client = _httpClientFactory.CreateClient();
+                    var hotelBaseUrl = _config["HotelRecommendationApi:BaseUrl"] ?? "https://travai-python-hotel.onrender.com";
+                    
+                    var content = new StringContent(hotelApiRequestJsonStr, System.Text.Encoding.UTF8, "application/json");
+                    try {
+                        var response = await client.PostAsync($"{hotelBaseUrl.TrimEnd('/')}/api/hotels/recommend", content);
+                        
+                        if (response.IsSuccessStatusCode) {
+                            var responseStr = await response.Content.ReadAsStringAsync();
+                            hotelApiResponseJsonStr = responseStr;
+                            
+                            var apiResp = JsonSerializer.Deserialize<HotelRecommendationResponseDto>(responseStr);
+                            
+                            if (apiResp != null && apiResp.Hotels != null) {
+                                var hotelNames = apiResp.Hotels.Select(h => h.HotelName).Where(name => !string.IsNullOrEmpty(name)).Distinct().ToList();
+                                var dbHotels = await _db.Hotels
+                                    .Include(h => h.Rooms).Include(h => h.Images)
+                                    .Where(h => hotelNames.Contains(h.HotelName))
+                                    .ToDictionaryAsync(h => h.HotelName, StringComparer.OrdinalIgnoreCase);
+
+                                foreach (var h in apiResp.Hotels) {
+                                    if (string.IsNullOrEmpty(h.HotelName)) continue;
+
+                                    int nights = 1;
+                                    if (DateTime.TryParse(h.CheckOut, out var coDate) && DateTime.TryParse(h.CheckIn, out var ciDate)) {
+                                        nights = (coDate - ciDate).Days;
+                                    }
+
+                                    PlannedHotelDto pHotel;
+                                    if (dbHotels.TryGetValue(h.HotelName, out var dbHotel)) {
+                                        var singleRoomsList = dbHotel.Rooms.Where(r => r.BedType == BedType.Single && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+                                        var doubleRoomsList = dbHotel.Rooms.Where(r => r.BedType == BedType.Double && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+
+                                        decimal singlePrice = singleRoomsList.Any() ? singleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                                        decimal doublePrice = doubleRoomsList.Any() ? doubleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                                        decimal total = (singlePrice * req.SingleRooms + doublePrice * req.DoubleRooms) * nights;
+
+                                        pHotel = new PlannedHotelDto {
+                                            Id = dbHotel.Id,
+                                            HotelName = dbHotel.HotelName,
+                                            City = dbHotel.CityArea ?? dbHotel.Governorate ?? h.CityArea ?? h.Governorate ?? "",
+                                            Country = dbHotel.Country ?? "Egypt",
+                                            StarRating = dbHotel.StarRating ?? h.StarRating,
+                                            AvgReviewScore = dbHotel.AvgReviewScore,
+                                            NumReviews = dbHotel.NumReviews,
+                                            ImageUrl = dbHotel.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl ?? dbHotel.Images.FirstOrDefault()?.ImageUrl,
+                                            Nights = nights,
+                                            SingleRooms = req.SingleRooms,
+                                            DoubleRooms = req.DoubleRooms,
+                                            SingleRoomPricePerNight = singlePrice,
+                                            DoubleRoomPricePerNight = doublePrice,
+                                            TotalPrice = Math.Round(total, 2)
+                                        };
+                                    } else {
+                                        pHotel = new PlannedHotelDto {
+                                            Id = 0,
+                                            HotelName = h.HotelName,
+                                            City = h.CityArea ?? h.Governorate ?? "",
+                                            Country = "Egypt",
+                                            StarRating = h.StarRating,
+                                            AvgReviewScore = (decimal)(h.AvgReviewScore ?? 0.0),
+                                            NumReviews = h.NumReviews ?? 0,
+                                            Nights = nights,
+                                            SingleRooms = req.SingleRooms,
+                                            DoubleRooms = req.DoubleRooms,
+                                            TotalPrice = 0
+                                        };
+                                    }
+
+                                    actualHotelsCost += pHotel.TotalPrice;
+
+                                    var cityPlan = cityPlans.FirstOrDefault(cp => 
+                                        cp.City.Equals(h.CityArea, StringComparison.OrdinalIgnoreCase) || 
+                                        cp.City.Equals(h.Governorate, StringComparison.OrdinalIgnoreCase) || 
+                                        cp.City.Equals(pHotel.City, StringComparison.OrdinalIgnoreCase));
+                                    
+                                    if (cityPlan != null) {
+                                        cityPlan.Hotel = pHotel;
+                                        cityPlan.CityHotelBudget = pHotel.TotalPrice;
+                                    }
+                                }
+                            }
+                        } else {
+                            hotelApiResponseJsonStr = $"HTTP Error: {response.StatusCode}\n{await response.Content.ReadAsStringAsync()}";
+                        }
+                    } catch (Exception ex) {
+                        hotelApiResponseJsonStr = $"Exception: {ex.Message}\n{ex.StackTrace}";
+                    }
+                }
+            }
+
+            // --- 2. REALLOCATE SURPLUS TO TOURS ---
+            decimal hotelSurplus = Math.Max(0, hotelBudget - actualHotelsCost);
+            if (!req.ExcludeTours)
+            {
+                toursBudget += hotelSurplus;
+            }
+
             // Map the regenerated tours to cityPlans
             foreach (var pTour in generatedTours)
             {
@@ -1523,7 +1990,7 @@ namespace TravAi.Services.AI
             {
                 BudgetType         = req.BudgetType,
                 MaxBudget          = req.MaxBudget,
-                EstimatedTotalCost = Math.Round(actualFlightsCost + hotelBudget + actualToursCost, 2),
+                EstimatedTotalCost = Math.Round(actualFlightsCost + actualHotelsCost + actualToursCost, 2),
                 TotalDays          = totalDays,
                 Adults             = req.Adults,
                 Children           = req.Children,
@@ -1541,6 +2008,8 @@ namespace TravAi.Services.AI
                 {
                     TourApiRequestJson = tourApiRequestJsonStr,
                     TourApiResponseJson = tourApiResponseJsonStr,
+                    HotelApiRequestJson = hotelApiRequestJsonStr,
+                    HotelApiResponseJson = hotelApiResponseJsonStr,
                     MedianGo = Median(new List<decimal>()), 
                     MedianReturn = Median(new List<decimal>()),
                     NumGo = 0,
@@ -1556,6 +2025,46 @@ namespace TravAi.Services.AI
                     HotelDebugPerCity = hotelDebugPerCity
                 }
             };
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        //  Unified Budget Divider Logic
+        // ─────────────────────────────────────────────────────────────────────
+        private (decimal flightAlloc, decimal hotelAlloc, decimal toursAlloc) DivideBudget(
+            decimal budget,
+            bool excludeFlights,
+            bool excludeHotels,
+            bool excludeTours,
+            decimal avgFlights,
+            decimal avgHotel,
+            decimal avgTours)
+        {
+            int activeCount = (excludeFlights ? 0 : 1)
+                            + (excludeHotels  ? 0 : 1)
+                            + (excludeTours   ? 0 : 1);
+
+            if (activeCount == 0)
+            {
+                return (0, 0, 0);
+            }
+
+            decimal marketSum = (excludeFlights ? 0 : avgFlights)
+                              + (excludeHotels  ? 0 : avgHotel)
+                              + (excludeTours   ? 0 : avgTours);
+
+            if (marketSum <= 0)
+            {
+                decimal part = budget / activeCount;
+                return (excludeFlights ? 0 : part,
+                        excludeHotels  ? 0 : part,
+                        excludeTours   ? 0 : part);
+            }
+
+            decimal flightAlloc = excludeFlights ? 0 : (avgFlights / marketSum) * budget;
+            decimal hotelAlloc  = excludeHotels  ? 0 : (avgHotel  / marketSum) * budget;
+            decimal toursAlloc  = excludeTours   ? 0 : (avgTours  / marketSum) * budget;
+
+            return (flightAlloc, hotelAlloc, toursAlloc);
         }
     }
 }

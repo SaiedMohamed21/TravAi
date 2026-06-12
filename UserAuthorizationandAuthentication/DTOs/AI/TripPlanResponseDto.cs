@@ -52,5 +52,7 @@ namespace TravAi.DTOs.AI
         public Dictionary<string, string>? HotelDebugPerCity { get; set; }
         public string? TourApiRequestJson { get; set; }
         public string? TourApiResponseJson { get; set; }
+        public string? HotelApiRequestJson { get; set; }
+        public string? HotelApiResponseJson { get; set; }
     }
 }

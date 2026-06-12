@@ -16,5 +16,9 @@ namespace TravAi.DTOs.AI
         public long? FixedReturnFlightId { get; set; }
 
         public List<string> FixedTourDates { get; set; } = new List<string>();
+
+        public int HotelRegenerateIndex { get; set; } = 0;
+        public bool IsHotelFixed { get; set; } = false;
+        public long? FixedHotelId { get; set; }
     }
 }
