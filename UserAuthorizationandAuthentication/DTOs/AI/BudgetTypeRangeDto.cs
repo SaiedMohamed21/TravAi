@@ -14,6 +14,9 @@ namespace TravAi.DTOs.AI
         /// <summary>True if real data exists for this type on the requested route/dates</summary>
         public bool IsAvailable { get; set; }
 
+        public bool Available { get; set; } = true;
+        public string? Reason { get; set; }
+
         /// <summary>Breakdown for transparency</summary>
         public decimal FlightMinEstimate { get; set; }
         public decimal FlightMaxEstimate { get; set; }

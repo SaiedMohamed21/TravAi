@@ -93,10 +93,12 @@ let estimateReq = null;
 let estimation = null;
 let selectedType = null;
 let planResult = null;
+let hotelRegenerateIndex = 0;
 let fixedItems = {
   goFlight: false,
   returnFlight: false,
-  tours: []
+  tours: [],
+  hotel: false
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -200,7 +202,7 @@ function buildRequest() {
     adults: parseInt(document.getElementById('adults').value) || 1,
     children: parseInt(document.getElementById('children').value) || 0,
     singleRooms: parseInt(document.getElementById('singleRooms').value) || 0,
-    doubleRooms: parseInt(document.getElementById('doubleRooms').value) || 1,
+    doubleRooms: isNaN(parseInt(document.getElementById('doubleRooms').value)) ? 1 : parseInt(document.getElementById('doubleRooms').value),
     touristLanguage: document.getElementById('language').value,
     excludeFlights: !document.getElementById('inclFlights').checked,
     excludeHotels: !document.getElementById('inclHotels').checked,
@@ -261,15 +263,16 @@ function renderBudgetCards() {
   grid.innerHTML = '';
   types.forEach(t => {
     const d = t.data;
-    const avail = d.isAvailable;
+    const avail = d.available !== false && d.isAvailable;
+    const reason = d.reason || (d.isAvailable ? 'Based on available data' : 'No data available for this type');
     const card = document.createElement('div');
     card.className = `budget-card ${t.key}${avail ? '' : ' unavailable'}`;
     card.id = 'bc-' + t.key;
     card.innerHTML = `
       <div class="budget-icon">${t.icon}</div>
-      <div class="budget-name">${t.label}</div>
-      <div class="budget-range">$${fmt(d.minEstimate)} – $${fmt(d.maxEstimate)}</div>
-      <div class="budget-sub">${avail ? 'Based on available data' : 'No data available for this type'}</div>
+      <div class="budget-name">${t.label}${avail ? '' : '<span style="font-size:0.8rem;color:var(--danger)"> (Not Available)</span>'}</div>
+      <div class="budget-range">${avail ? `$${fmt(d.minEstimate)} – $${fmt(d.maxEstimate)}` : 'N/A'}</div>
+      <div class="budget-sub" style="${avail ? '' : 'color:var(--danger)'}">${avail ? 'Based on available data' : reason}</div>
       ${avail ? `<div class="budget-breakdown">
         <div class="breakdown-item"><span>✈️ Flights</span><span>$${fmt(d.flightMinEstimate)}–$${fmt(d.flightMaxEstimate)}</span></div>
         <div class="breakdown-item"><span>🏨 Hotels</span><span>$${fmt(d.hotelMinEstimate)}–$${fmt(d.hotelMaxEstimate)}</span></div>
@@ -308,10 +311,12 @@ function updateSlider(val) {
 
 // ─── STEP 2 → 3: Generate Plan ───────────────────────────────────────────────
 async function goGenerate() {
+  hotelRegenerateIndex = 0;
   fixedItems = {
     goFlight: false,
     returnFlight: false,
-    tours: []
+    tours: [],
+    hotel: false
   };
   if (!selectedType) return showAlert('alert2', 'Please select a budget type.');
   const maxBudget = parseFloat(document.getElementById('budgetSlider').value);
@@ -423,6 +428,10 @@ function renderPlan() {
       num tours: (${d.numTours})<br><br>
       ${d.tourDebugPerCity ? `<div style="color:#c084fc; margin-top:5px; margin-bottom:5px; font-weight:bold;">🗺️ Tours Per City:</div>` + Object.entries(d.tourDebugPerCity).map(([city, info]) => ` &nbsp;&nbsp;· ${city}: ${info}`).join('<br>') + '<br><br>' : ''}
       ${d.hotelDebugPerCity ? `<div style="color:#c084fc; margin-top:5px; margin-bottom:5px; font-weight:bold;">🏨 Hotels Per City:</div>` + Object.entries(d.hotelDebugPerCity).map(([city, info]) => ` &nbsp;&nbsp;· ${city}: ${info}`).join('<br>') + '<br><br>' : ''}
+      <div style="color:#10b981; margin-bottom:5px; font-weight:bold;">Hotel Recommender API Request:</div>
+      <pre style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; overflow-x:auto; color:#a7f3d0; margin:0; font-size: 0.8rem; margin-bottom: 10px;">${d.hotelApiRequestJson ? d.hotelApiRequestJson.replace(/</g, "&lt;") : 'N/A'}</pre>
+      <div style="color:#3b82f6; margin-bottom:5px; font-weight:bold;">Hotel Recommender API Response:</div>
+      <pre style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; overflow-x:auto; color:#93c5fd; margin:0; font-size: 0.8rem; max-height: 300px; overflow-y: auto; margin-bottom: 10px;">${d.hotelApiResponseJson ? d.hotelApiResponseJson.replace(/</g, "&lt;") : 'API failed or returned nothing.'}</pre>
       <div style="color:#10b981; margin-bottom:5px; font-weight:bold;">Tour Recommender API Request:</div>
       <pre style="background:rgba(0,0,0,0.3); padding:10px; border-radius:8px; overflow-x:auto; color:#a7f3d0; margin:0; font-size: 0.8rem; margin-bottom: 10px;">${d.tourApiRequestJson ? d.tourApiRequestJson.replace(/</g, "&lt;") : 'N/A'}</pre>
       <div style="color:#3b82f6; margin-bottom:5px; font-weight:bold;">Tour Recommender API Response:</div>
@@ -565,6 +574,11 @@ async function regenerateTour(sessionId, dateToRegen, cityStr, btnElement) {
   }
 }
 
+function toggleHotelFix() {
+  fixedItems.hotel = !fixedItems.hotel;
+  renderPlan();
+}
+
 function cityCard(city) {
   const el = document.createElement('div');
   el.className = 'city-plan';
@@ -587,6 +601,7 @@ function cityCard(city) {
       </div>
       <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; min-width: 100px;">
         <div class="flight-price" style="color: var(--primary-light);">$${fmt(city.hotel.totalPrice)}</div>
+        <button onclick="toggleHotelFix()" class="btn ${fixedItems.hotel ? 'btn-fixed' : 'btn-outline'}" style="margin-top:12px; font-size:0.75rem; padding:6px 12px">${fixedItems.hotel ? '🔒 Fixed' : '🔓 Fix'}</button>
       </div>
     </div>` : `<div class="none-badge" style="margin-top: 10px;">🏨 No hotel found in budget</div>`;
 
@@ -699,6 +714,10 @@ async function goRegenerateUnified() {
   document.getElementById('loader3').classList.add('active');
   document.getElementById('planContent').style.display = 'none';
 
+  if (!fixedItems.hotel) {
+    hotelRegenerateIndex++;
+  }
+
   try {
     const req = {
       goFlightSessionId: planResult.goFlight?.sessionId || null,
@@ -710,6 +729,10 @@ async function goRegenerateUnified() {
 
       isReturnFlightFixed: fixedItems.returnFlight,
       fixedReturnFlightId: fixedItems.returnFlight ? (planResult.returnFlight?.id || null) : null,
+
+      hotelRegenerateIndex: hotelRegenerateIndex,
+      isHotelFixed: fixedItems.hotel,
+      fixedHotelId: fixedItems.hotel ? (planResult.cityPlans.find(cp => cp.hotel)?.hotel?.id || null) : null,
 
       fixedTourDates: fixedItems.tours,
 

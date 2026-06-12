@@ -124,22 +124,24 @@ namespace TravAi.Controllers.AI
                         }
 
                         // Add User Message
-                        currentSession.Messages.Add(new ChatMessage
+                        var userMsg = new ChatMessage
                         {
                             ChatSessionId = currentSession.Id,
                             Role = "user",
                             Content = request.Message,
                             CreatedAt = DateTime.UtcNow
-                        });
+                        };
+                        _context.ChatMessages.Add(userMsg);
 
                         // Add Assistant Message
-                        currentSession.Messages.Add(new ChatMessage
+                        var assistantMsg = new ChatMessage
                         {
                             ChatSessionId = currentSession.Id,
                             Role = "assistant",
                             Content = result.Message.Content,
                             CreatedAt = DateTime.UtcNow
-                        });
+                        };
+                        _context.ChatMessages.Add(assistantMsg);
 
                         currentSession.LastUpdatedAt = DateTime.UtcNow;
                         await _context.SaveChangesAsync();
