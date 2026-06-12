@@ -26,10 +26,18 @@ namespace TravAi.Controllers
             return long.TryParse(userIdStr, out long id) ? id : 0;
         }
 
+
+
         [HttpGet("bookings")]
-        public async Task<IActionResult> GetEligibleBookings()
+        public async Task<IActionResult> GetEligibleBookings([FromQuery] string? type)
         {
-            var bookings = await _hotelService.GetEligibleBookingsForComplaintAsync(GetUserId());
+            var complaintType = TravAi.Models.Enums.ComplaintType.Hotel;
+            if (!string.IsNullOrEmpty(type) && Enum.TryParse<TravAi.Models.Enums.ComplaintType>(type, true, out var parsedType))
+            {
+                complaintType = parsedType;
+            }
+
+            var bookings = await _hotelService.GetEligibleBookingsForComplaintAsync(GetUserId(), complaintType);
             return Ok(new ApiResponse<List<UserBookingMinimalDto>> { Success = true, Data = bookings });
         }
 
@@ -48,7 +56,14 @@ namespace TravAi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new ApiResponse<string> { Success = false, Message = ex.Message });
+                var msg = ex.Message;
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    msg += " -> " + inner.Message;
+                    inner = inner.InnerException;
+                }
+                return BadRequest(new ApiResponse<string> { Success = false, Message = msg });
             }
         }
 
@@ -109,5 +124,21 @@ namespace TravAi.Controllers
                 return BadRequest(new ApiResponse<string> { Success = false, Message = ex.Message });
             }
         }
+
+        [HttpPost("{id}/reply")]
+        public async Task<IActionResult> ReplyToComplaint(long id, [FromForm] AdminReplyCreateDto dto)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var result = await _hotelService.UserReplyToComplaintAsync(userId, id, dto);
+                return Ok(new ApiResponse<bool> { Success = result, Message = result ? "Reply sent successfully." : "Failed to send reply." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<string> { Success = false, Message = ex.Message });
+            }
+        }
+
     }
 }

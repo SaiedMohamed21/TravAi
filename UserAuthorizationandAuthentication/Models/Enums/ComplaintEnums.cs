@@ -2,8 +2,10 @@ namespace TravAi.Models.Enums
 {
     public enum ComplaintType
     {
-        Booking = 1,
-        Platform = 2
+        Hotel = 1,
+        Service = 2,
+        Tour = 3,
+        Airline = 4
     }
 
     public enum ComplaintStatus

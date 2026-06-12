@@ -24,6 +24,11 @@ namespace TravAi.DTOs.Hotel
         public string RoomName { get; set; } = string.Empty;
         public string Dates { get; set; } = string.Empty;
         public string TotalPrice { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string ProviderName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public string ExtraInfo { get; set; } = string.Empty;
     }
 
     public class ComplaintSummaryDto
@@ -117,6 +122,9 @@ namespace TravAi.DTOs.Hotel
         public string? TransactionId { get; set; }
         public DateTime? PaidAt { get; set; }
         public decimal? RefundAmount { get; set; }
+        public string ProviderName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
     }
 
     public class AdminReplyCreateDto

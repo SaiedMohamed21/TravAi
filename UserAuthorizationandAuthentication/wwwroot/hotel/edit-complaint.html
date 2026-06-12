@@ -147,8 +147,18 @@
 
             <div id="content" class="glass-panel" style="padding: 30px; display: none;">
                 <div class="type-toggle">
-                    <button class="type-btn" id="typeBooking" onclick="switchType('Booking')">Hotel Booking</button>
-                    <button class="type-btn" id="typePlatform" onclick="switchType('Platform')">Platform</button>
+                    <button class="type-btn" id="typeHotel" onclick="switchType('Hotel', this)">
+                        <i class="fas fa-hotel"></i> Hotel
+                    </button>
+                    <button class="type-btn" id="typeTour" onclick="switchType('Tour', this)">
+                        <i class="fas fa-map-marked-alt"></i> Tour
+                    </button>
+                    <button class="type-btn" id="typeAirline" onclick="switchType('Airline', this)">
+                        <i class="fas fa-plane"></i> Airline
+                    </button>
+                    <button class="type-btn" id="typeService" onclick="switchType('Service', this)">
+                        <i class="fas fa-laptop"></i> Service
+                    </button>
                 </div>
 
                 <form id="editForm">
@@ -189,7 +199,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const complaintId = urlParams.get('id');
-        let currentType = 'Booking';
+        let currentType = 'Hotel';
         let removedIds = [];
         let userBookings = [];
 
@@ -197,17 +207,17 @@
         if (!complaintId) window.location.href = 'complaint.html';
 
         async function init() {
-            await loadEligibleBookings();
             await loadDetails();
         }
 
         async function loadEligibleBookings() {
-            const res = await API.get('/user/complaints/bookings');
+            if (currentType === 'Service') return;
+            const res = await API.get('/user/complaints/bookings?type=' + currentType);
             if (res.success) {
                 userBookings = res.data;
                 const select = document.getElementById('bookingSelect');
                 select.innerHTML = '<option value="">-- Choose a Booking --</option>' + 
-                    userBookings.map(b => `<option value="${b.bookingId}">Booking #${b.bookingId} - ${b.hotelName}</option>`).join('');
+                    userBookings.map(b => `<option value="${b.bookingId}">[${b.type}] #${b.bookingId} - ${b.providerName || b.hotelName}</option>`).join('');
             }
         }
 
@@ -227,7 +237,7 @@
                 document.getElementById('subject').value = c.subject;
                 document.getElementById('message').value = c.message;
                 
-                switchType(c.complaintType);
+                await switchType(c.complaintType);
 
                 if (c.bookingId) {
                     document.getElementById('bookingSelect').value = c.bookingId;
@@ -250,11 +260,31 @@
             }
         }
 
-        function switchType(type) {
+        async function switchType(type, btn) {
             currentType = type;
-            document.getElementById('typeBooking').classList.toggle('active', type === 'Booking');
-            document.getElementById('typePlatform').classList.toggle('active', type === 'Platform');
-            document.getElementById('bookingSelectorGroup').style.display = type === 'Platform' ? 'none' : 'block';
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            
+            if (type === 'Platform') currentType = 'Service';
+
+            if (btn) {
+                btn.classList.add('active');
+            } else {
+                let targetBtnId = 'typeHotel';
+                if (currentType === 'Hotel') targetBtnId = 'typeHotel';
+                if (currentType === 'Tour') targetBtnId = 'typeTour';
+                if (currentType === 'Airline') targetBtnId = 'typeAirline';
+                if (currentType === 'Service') targetBtnId = 'typeService';
+                const el = document.getElementById(targetBtnId);
+                if (el) el.classList.add('active');
+            }
+
+            const bookingGroup = document.getElementById('bookingSelectorGroup');
+            if (currentType === 'Service') {
+                bookingGroup.style.display = 'none';
+            } else {
+                bookingGroup.style.display = 'block';
+                await loadEligibleBookings();
+            }
         }
 
         function removeExisting(id) {
@@ -286,8 +316,8 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
 
             const formData = new FormData();
-            formData.append('ComplaintType', currentType === 'Booking' ? 1 : 2);
-            if (currentType === 'Booking') {
+            formData.append('ComplaintType', currentType);
+            if (currentType !== 'Service') {
                 const bId = document.getElementById('bookingSelect').value;
                 if (!bId) {
                     alert('Please select a booking.');
@@ -307,7 +337,6 @@
                 formData.append('Attachments', file);
             });
 
-            // FIXED: Using API.put helper or passing correct options object
             const res = await API.put(`/user/complaints/${complaintId}`, formData);
             if (res.success) {
                 alert('Complaint updated successfully!');

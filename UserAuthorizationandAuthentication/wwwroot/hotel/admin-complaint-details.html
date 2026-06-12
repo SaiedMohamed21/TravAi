@@ -332,7 +332,7 @@
                 const currentUser = Auth.getUser();
                 const currentUserId = currentUser ? parseInt(currentUser.userId || currentUser.UserId || currentUser.id || currentUser.Id || 0) : 0;
 
-                if (c.replies.length > 0) {
+                if (c.replies && c.replies.length > 0) {
                     currentReplies = c.replies;
                     repliesContainer.innerHTML = c.replies.map(r => {
                         const rAdminId = r.adminUserId || r.AdminUserId;
@@ -358,6 +358,9 @@
                             ` : ''}
                         </div>
                     `; }).join('');
+                } else {
+                    currentReplies = [];
+                    repliesContainer.innerHTML = '<p style="color:var(--text-muted); font-style:italic;">No replies yet.</p>';
                 }
 
                 // Status Actions - Guard against resolving already resolved/finalized complaints
