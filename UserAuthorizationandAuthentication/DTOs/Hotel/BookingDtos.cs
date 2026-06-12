@@ -105,6 +105,10 @@ namespace TravAi.DTOs.Hotel
         public bool CanCancel { get; set; }
         public bool CanRebook { get; set; }
         public bool CanReview { get; set; }
+        public bool HasReviewed { get; set; }
+        public long? ReviewId { get; set; }
+        public int? ReviewRating { get; set; }
+        public string? ReviewComment { get; set; }
     }
 
     public class CancelBookingRequest
@@ -114,6 +118,8 @@ namespace TravAi.DTOs.Hotel
 
         [Required]
         public string Reason { get; set; }
+
+        public string? RefundMethod { get; set; } // "Wallet" or "OriginalPaymentMethod"
     }
 
     public class ProcessPaymentRequest
@@ -134,5 +140,19 @@ namespace TravAi.DTOs.Hotel
         public string PaymentMethod { get; set; }
         public string TransactionId { get; set; }
         public DateTime? PaidAt { get; set; }
+    }
+    public class CancelPreviewDto
+    {
+        public long BookingId { get; set; }
+        public decimal TotalPrice { get; set; }
+        public decimal RefundAmount { get; set; }
+        public decimal CancellationFee { get; set; }
+        public decimal RefundPercentage { get; set; }
+        public string PolicyStrategy { get; set; }
+        public List<HotelCancellationRuleDto>? CancellationRules { get; set; }
+        public string? AppliedRuleText { get; set; }
+
+        public bool OriginalPaymentMethodAvailable { get; set; }
+        public List<string> AvailableRefundMethods { get; set; } = new List<string> { "Wallet" };
     }
 }

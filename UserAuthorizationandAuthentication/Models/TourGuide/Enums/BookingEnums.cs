@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace TravAi.TourGuide.Models.Enums
 {
@@ -18,7 +18,8 @@ namespace TravAi.TourGuide.Models.Enums
         Pending,
         Confirmed,
         Cancelled,
-        Completed
+        Completed,
+        PendingUserDecision
     }
 
     [JsonConverter(typeof(JsonStringEnumConverter))]

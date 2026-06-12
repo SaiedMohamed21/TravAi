@@ -52,7 +52,8 @@ namespace TravAi.Services.HotelService
         Task<List<BookingDto>> GetUserTripsAsync(long userId, string tab);
         Task<List<BookingDto>> GetHotelBookingsAsync(long userId, long hotelId); // For hotel owners
         Task<BookingDto> GetBookingByIdAsync(long userId, long bookingId);
-        Task<BookingDto> CancelBookingAsync(long userId, long bookingId, string reason);
+        Task<CancelPreviewDto> PreviewCancelBookingAsync(long userId, long bookingId);
+        Task<BookingDto> CancelBookingAsync(long userId, long bookingId, string reason, string? refundMethod = null);
         Task<BookingDto> UpdateBookingStatusAsync(long userId, long bookingId, string status); // For hotel owners (Confirm, CheckIn, etc.)
         Task<PaymentResponseDto> ProcessPaymentAsync(long userId, ProcessPaymentRequest request);
 

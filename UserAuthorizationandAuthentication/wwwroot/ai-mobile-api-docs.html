@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Services API Docs - TravAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151f32;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #6366f1; /* TravAi Indigo */
+            --accent-green: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --method-get: #38bdf8;
+            --method-post: #34d399;
+            --method-put: #fbbf24;
+            --method-delete: #f87171;
+            --method-guide: #a78bfa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: #0f172a;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1 i {
+            color: var(--gold);
+        }
+
+        .search-container {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px 10px 38px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-container input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .endpoints-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .category-title {
+            padding: 20px 24px 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .endpoint-link {
+            padding: 10px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .endpoint-link:hover, .endpoint-link.active {
+            background: rgba(255, 255, 255, 0.04);
+            border-left-color: var(--gold);
+        }
+
+        .method-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
+            min-width: 50px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .method-GET { background: rgba(56, 189, 248, 0.15); color: var(--method-get); }
+        .method-POST { background: rgba(52, 211, 153, 0.15); color: var(--method-post); }
+        .method-PUT { background: rgba(251, 191, 36, 0.15); color: var(--method-put); }
+        .method-DELETE { background: rgba(248, 113, 113, 0.15); color: var(--method-delete); }
+        .method-GUIDE { background: rgba(167, 139, 250, 0.15); color: var(--method-guide); }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .url-box {
+            background: #0b0f19;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        h2 { color: var(--text-main); font-size: 1.8rem; margin-top: 0; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 15px;}
+        h3 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 35px; color: #cbd5e1; font-weight: 600;}
+
+        pre {
+            background: #0a0e17;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: #a5b4fc;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 120px 50px;
+            color: var(--text-muted);
+        }
+
+        .hl-req { color: #fca5a5; font-weight: 600; }
+        .hl-res { color: #34d399; font-weight: 600; }
+        .hl-guide { color: #c084fc; font-weight: 600; }
+
+        code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .alert-box {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 4px solid var(--gold);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .alert-box.warning {
+            background: rgba(239, 68, 68, 0.08);
+            border-left-color: var(--method-delete);
+        }
+        
+        .alert-box.success {
+            background: rgba(16, 185, 129, 0.08);
+            border-left-color: var(--accent-green);
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 25px;
+            line-height: 1.6;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fas fa-brain"></i> TravAi AI Services</h1>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 6px;">AI Chatbot & Trip Planner Mobile Specs</p>
+        </div>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchSidebar" placeholder="Search categories or endpoints..." oninput="filterSidebar()">
+        </div>
+        <div class="endpoints-list" id="sidebarList">
+            <!-- Rendered Dynamically -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="empty-state">
+            <i class="fas fa-robot fa-4x" style="color: var(--gold); margin-bottom: 25px; opacity: 0.6;"></i>
+            <h2 style="color: #fff; margin-bottom: 10px;">TravAi AI Mobile Specs</h2>
+            <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto; line-height: 1.6;">Select a documentation category or API endpoint from the sidebar to view detailed parameters, payload structures, and implementation flows for Flutter.</p>
+        </div>
+    </div>
+
+    <script>
+        const apiData = [
+            {
+                category: "1. AI Chatbot Workflow",
+                endpoints: [
+                    {
+                        title: "Chatbot Flow Overview", method: "GUIDE", url: "HorusChat",
+                        desc: "How to implement the Multilingual Tourism AI Assistant (Horus).",
+                        isGuide: true,
+                        content: `
+                            <div class="alert-box">
+                                <strong>System Goal:</strong> Provide users with an interactive, RAG-grounded AI tourism assistant that supports both English and Arabic.
+                            </div>
+                            <h3>Core Lifecycle Workflow</h3>
+                            <ol>
+                                <li><strong>App Startup / Screen Load</strong>: If the user is logged in, the app calls <code>GET /api/ai/chat/history</code> to retrieve previous messages (from the last 1 hour) and displays them in the UI.</li>
+                                <li><strong>User Sends Message</strong>: The user types a question. The app appends it to the UI and calls <code>POST /api/ai/chat</code>. Include the JWT token if logged in.</li>
+                                <li><strong>Database History Override</strong>: For logged-in users, the backend automatically overrides the provided <code>ConversationHistory</code> with the secure database history. The app does not strictly need to maintain full history locally across app restarts.</li>
+                                <li><strong>Display Response</strong>: The AI returns a localized message and optionally a list of suggested tours. Display the text, and render horizontal cards if tours are attached.</li>
+                                <li><strong>Clear History</strong>: When the user explicitly requests to clear chat, or logs out, call <code>DELETE /api/ai/chat/history</code>.</li>
+                            </ol>
+                            <div class="alert-box success">
+                                <strong>Multilingual:</strong> The AI automatically detects Arabic vs English and responds in the same language. The <code>LanguageDetected</code> field in the response confirms this.
+                            </div>
+                        `
+                    },
+                    {
+                        title: "Chat Endpoint", method: "POST", url: "/api/ai/chat",
+                        desc: "Send a message to Horus. Returns AI response + retrieved tours. Uses JWT to maintain session history if provided.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            message: "Tell me about historical tours in Cairo",
+                            cityContext: "Cairo",
+                            conversationHistory: [
+                                { role: "user", content: "Hello" },
+                                { role: "assistant", content: "Hi! How can I help you?" }
+                            ]
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: {
+                                role: "assistant",
+                                content: "Cairo is rich in history! I recommend the Pyramids tour.",
+                                languageDetected: "en"
+                            },
+                            suggestedTours: [
+                                {
+                                    id: 10,
+                                    tourTitle: "Pyramids Full Day",
+                                    city: "Cairo",
+                                    price: 50.00,
+                                    description: "Visit the Great Pyramids...",
+                                    score: 0.95
+                                }
+                            ]
+                        }, null, 2),
+                        notes: `
+                            <h3>Notes for Flutter</h3>
+                            <ul>
+                                <li><code>cityContext</code> is optional. If passed, it narrows AI suggestions.</li>
+                                <li><code>conversationHistory</code> is required in the schema but can be an empty array <code>[]</code>. If the user is authenticated, the backend will fetch the real history from the DB automatically.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "Get Chat History", method: "GET", url: "/api/ai/chat/history",
+                        desc: "Retrieves the current user's chat history from the last hour.",
+                        requestParams: [
+                            { name: "Authorization", type: "Header", desc: "Bearer Token (Required)" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "History retrieved successfully.",
+                            data: [
+                                { role: "user", content: "Tell me about historical tours in Cairo" },
+                                { role: "assistant", content: "Cairo is rich in history! I recommend the Pyramids tour." }
+                            ]
+                        }, null, 2)
+                    },
+                    {
+                        title: "Clear Chat History", method: "DELETE", url: "/api/ai/chat/history",
+                        desc: "Clears the user's current chat history. Useful for logout or a manual 'Reset Chat' button.",
+                        requestParams: [
+                            { name: "Authorization", type: "Header", desc: "Bearer Token (Required)" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Chat history cleared successfully.",
+                            data: null
+                        }, null, 2)
+                    },
+                    {
+                        title: "Chat Health Check", method: "GET", url: "/api/ai/chat/health",
+                        desc: "Check if the Python AI microservice is online before allowing the user to chat.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "AI service is healthy.",
+                            data: {
+                                ai_service_online: true,
+                                status: "ok"
+                            }
+                        }, null, 2)
+                    }
+                ]
+            },
+            {
+                category: "2. AI Trip Planner Workflow",
+                endpoints: [
+                    {
+                        title: "Trip Planner Flow Overview", method: "GUIDE", url: "PlannerFlow",
+                        desc: "How to implement the multi-step AI Trip Planner.",
+                        isGuide: true,
+                        content: `
+                            <div class="alert-box">
+                                <strong>System Goal:</strong> Build a complete travel itinerary (Flights, Hotels, Tours) using an AI algorithm that optimizes based on a user's budget.
+                            </div>
+                            <h3>Core Lifecycle Workflow</h3>
+                            <ol>
+                                <li><strong>Step 1: Location & Dates Selection</strong>
+                                    <ul>
+                                        <li>Fetch autocomplete cities using <code>GET /api/ai/cities</code>.</li>
+                                        <li>User inputs Departure City, Destination City, Dates, and Passenger count.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Step 2: Budget Estimation</strong>
+                                    <ul>
+                                        <li>Call <code>POST /api/ai/estimate</code> with the selected data.</li>
+                                        <li>The API returns realistic minimum prices for Economy, Premium, and Luxury.</li>
+                                        <li>Display these options to the user. User selects one and sets a Final Budget.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Step 3: Generate Plan</strong>
+                                    <ul>
+                                        <li>Call <code>POST /api/ai/generate-plan</code> passing the budget type, exact budget limit, dates, and cities.</li>
+                                        <li>Display the generated itinerary containing flights, hotels, and daily tours.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Step 4: Regeneration (Optional)</strong>
+                                    <ul>
+                                        <li>If the user dislikes a flight or a tour, use <code>POST /api/ai/regenerate-flight</code> or <code>POST /api/ai/regenerate-tour</code> passing the <code>SessionId</code> returned in Step 3.</li>
+                                    </ul>
+                                </li>
+                            </ol>
+                        `
+                    },
+                    {
+                        title: "Get Autocomplete Cities", method: "GET", url: "/api/ai/cities",
+                        desc: "Returns all unique city names available in the database across airports, hotels, and tours.",
+                        requestParams: [
+                            { name: "q", type: "Query", desc: "(Optional) Search prefix to filter cities." }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "25 cities found.",
+                            data: [
+                                "Cairo",
+                                "Dubai",
+                                "Paris",
+                                "London"
+                            ],
+                            errors: []
+                        }, null, 2)
+                    },
+                    {
+                        title: "Estimate Trip Budget", method: "POST", url: "/api/ai/estimate",
+                        desc: "Step 2: Calculate realistic price estimates based on real database records.",
+                        requestParams: [
+                            { name: "Authorization", type: "Header", desc: "Bearer Token (Required)" }
+                        ],
+                        requestBody: JSON.stringify({
+                            departureCity: "Dubai",
+                            destinationCity: "Cairo",
+                            departureDate: "2026-07-01",
+                            returnDate: "2026-07-07",
+                            adults: 2,
+                            children: 0,
+                            itinerary: [
+                                { city: "Cairo", days: 6 }
+                            ]
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Budget estimation calculated from available data.",
+                            data: {
+                                economyEst: 1200.50,
+                                premiumEst: 2500.00,
+                                luxuryEst: 5000.00,
+                                warnings: []
+                            },
+                            errors: []
+                        }, null, 2)
+                    },
+                    {
+                        title: "Generate Trip Plan", method: "POST", url: "/api/ai/generate-plan",
+                        desc: "Step 3: Generate a complete trip plan optimizing flights, hotels, and tours within budget limits.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            departureCity: "Dubai",
+                            destinationCity: "Cairo",
+                            departureDate: "2026-07-01",
+                            returnDate: "2026-07-07",
+                            adults: 2,
+                            children: 0,
+                            maxBudget: 2000.00,
+                            budgetType: "Economy",
+                            itinerary: [
+                                { city: "Cairo", days: 6 }
+                            ]
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Trip plan generated successfully.",
+                            data: {
+                                sessionId: "session_abc123",
+                                flights: {
+                                    outbound: { flightId: 101, route: "DXB -> CAI", price: 400.00 },
+                                    returnFlight: { flightId: 102, route: "CAI -> DXB", price: 400.00 }
+                                },
+                                hotels: [
+                                    { hotelId: 5, name: "Pyramids Resort", roomPrice: 100.00, totalCost: 600.00 }
+                                ],
+                                tours: [
+                                    { date: "2026-07-02", tourId: 10, title: "Pyramids Tour", price: 50.00 }
+                                ],
+                                summary: {
+                                    totalCost: 1450.00,
+                                    remainingBudget: 550.00
+                                }
+                            },
+                            errors: []
+                        }, null, 2),
+                        notes: `
+                            <div class="alert-box warning">
+                                <strong>Save SessionId:</strong> The <code>sessionId</code> returned in this response is required if the user wants to regenerate individual flights or tours.
+                            </div>
+                        `
+                    },
+                    {
+                        title: "Regenerate Flight Alternative", method: "POST", url: "/api/ai/regenerate-flight",
+                        desc: "Swap out an assigned flight for an alternative one.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            sessionId: "session_abc123",
+                            adults: 2,
+                            children: 0,
+                            direction: "outbound" // or "return"
+                        }, null, 2),
+                        response: JSON.stringify({
+                            flightId: 105, 
+                            route: "DXB -> CAI", 
+                            price: 450.00,
+                            departureTime: "2026-07-01T14:00:00"
+                        }, null, 2)
+                    },
+                    {
+                        title: "Regenerate Tour Alternative", method: "POST", url: "/api/ai/regenerate-tour",
+                        desc: "Swap out an assigned tour for a different one on the exact same date.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            sessionId: "session_abc123",
+                            fixedDates: ["2026-07-02"],
+                            totalPeople: 2
+                        }, null, 2),
+                        response: JSON.stringify([
+                            {
+                                date: "2026-07-02",
+                                tourId: 12,
+                                title: "Egyptian Museum Visit",
+                                price: 40.00
+                            }
+                        ], null, 2)
+                    }
+                ]
+            }
+        ];
+
+        function renderSidebar() {
+            const list = document.getElementById('sidebarList');
+            list.innerHTML = '';
+
+            apiData.forEach((cat, catIndex) => {
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.textContent = cat.category;
+                list.appendChild(title);
+
+                cat.endpoints.forEach((ep, epIndex) => {
+                    const link = document.createElement('a');
+                    link.className = 'endpoint-link';
+                    link.id = `link-${catIndex}-${epIndex}`;
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        renderContent(catIndex, epIndex);
+                    };
+
+                    const badge = document.createElement('span');
+                    badge.className = `method-badge method-${ep.method}`;
+                    badge.textContent = ep.method;
+
+                    const text = document.createElement('span');
+                    text.style.fontSize = '0.9rem';
+                    text.textContent = ep.title;
+
+                    link.appendChild(badge);
+                    link.appendChild(text);
+                    list.appendChild(link);
+                });
+            });
+        }
+
+        function filterSidebar() {
+            const q = document.getElementById('searchSidebar').value.toLowerCase();
+            const list = document.getElementById('sidebarList');
+            list.innerHTML = '';
+
+            apiData.forEach((cat, catIndex) => {
+                const matchingEndpoints = cat.endpoints.filter(ep => 
+                    ep.title.toLowerCase().includes(q) || 
+                    ep.url.toLowerCase().includes(q) ||
+                    cat.category.toLowerCase().includes(q)
+                );
+
+                if (matchingEndpoints.length > 0) {
+                    const title = document.createElement('div');
+                    title.className = 'category-title';
+                    title.textContent = cat.category;
+                    list.appendChild(title);
+
+                    matchingEndpoints.forEach(ep => {
+                        const epIndex = cat.endpoints.indexOf(ep);
+                        const link = document.createElement('a');
+                        link.className = 'endpoint-link';
+                        link.id = `link-${catIndex}-${epIndex}`;
+                        link.onclick = (e) => {
+                            e.preventDefault();
+                            renderContent(catIndex, epIndex);
+                        };
+
+                        const badge = document.createElement('span');
+                        badge.className = `method-badge method-${ep.method}`;
+                        badge.textContent = ep.method;
+
+                        const text = document.createElement('span');
+                        text.style.fontSize = '0.9rem';
+                        text.textContent = ep.title;
+
+                        link.appendChild(badge);
+                        link.appendChild(text);
+                        list.appendChild(link);
+                    });
+                }
+            });
+        }
+
+        function renderContent(catIndex, epIndex) {
+            document.querySelectorAll('.endpoint-link').forEach(el => el.classList.remove('active'));
+            const activeLink = document.getElementById(`link-${catIndex}-${epIndex}`);
+            if(activeLink) activeLink.classList.add('active');
+
+            const ep = apiData[catIndex].endpoints[epIndex];
+            const contentDiv = document.getElementById('mainContent');
+            
+            let html = `<div class="card">`;
+            
+            if (ep.isGuide) {
+                html += `
+                    <h2><span class="method-badge method-${ep.method}" style="font-size: 0.8rem; padding: 6px 10px; margin-right: 15px; vertical-align: middle;">${ep.method}</span> ${ep.title}</h2>
+                    <p style="color: var(--text-muted); font-size: 1.05rem; margin: 15px 0;">${ep.desc}</p>
+                    <div style="margin-top: 30px;">${ep.content}</div>
+                `;
+            } else {
+                html += `
+                    <h2><span class="method-badge method-${ep.method}" style="font-size: 0.8rem; padding: 6px 10px; margin-right: 15px; vertical-align: middle;">${ep.method}</span> ${ep.title}</h2>
+                    <div class="url-box">
+                        <i class="fas fa-link" style="color: var(--gold);"></i> 
+                        <span style="color: #fff;">${ep.url}</span>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 25px;">${ep.desc}</p>
+                `;
+
+                if (ep.requestParams && ep.requestParams.length > 0) {
+                    html += `<h3>Request Parameters</h3><table><tr><th>Name</th><th>Type</th><th>Description</th></tr>`;
+                    ep.requestParams.forEach(p => {
+                        html += `<tr><td><code>${p.name}</code></td><td>${p.type}</td><td>${p.desc}</td></tr>`;
+                    });
+                    html += `</table>`;
+                }
+
+                if (ep.requestBody) {
+                    html += `<h3><span class="hl-req">Request</span> Payload (JSON)</h3>`;
+                    html += `<pre><code>${ep.requestBody}</code></pre>`;
+                }
+
+                if (ep.response) {
+                    html += `<h3><span class="hl-res">Response</span> Payload (JSON)</h3>`;
+                    html += `<pre><code>${ep.response}</code></pre>`;
+                }
+
+                if (ep.notes) {
+                    html += `<div style="margin-top: 35px;">${ep.notes}</div>`;
+                }
+            }
+
+            html += `</div>`;
+            contentDiv.innerHTML = html;
+        }
+
+        renderSidebar();
+    </script>
+</body>
+</html>

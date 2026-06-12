@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Details - Travai Unified</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0a0f1d;
+            --card-bg: #161e31;
+            --primary: #6366f1;
+            --accent: #10b981;
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
+            --danger: #ef4444;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        nav {
+            background: rgba(22, 30, 49, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .refund-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .details-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-row.total-row {
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--border);
+            border-bottom: none;
+        }
+
+        .detail-label { color: var(--text-muted); font-size: 0.95rem; }
+        .detail-value { font-weight: 600; text-align: right; }
+        
+        .value-highlight { color: var(--accent); font-size: 1.2rem; }
+        .value-danger { color: var(--danger); }
+
+        .warning-box {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            color: #fca5a5;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .warning-box i { font-size: 1.2rem; margin-top: 2px; color: var(--danger); }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-danger:hover { background: var(--danger); color: white; }
+        .btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .btn-outline { border: 1px solid var(--border); color: var(--text); background: transparent; }
+        .btn-outline:hover { background: var(--border); }
+        
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #4f46e5; }
+
+        /* Loader */
+        .loader-container { text-align: center; padding: 40px; }
+        .spinner { 
+            width: 40px; height: 40px; border: 4px solid var(--border); 
+            border-top: 4px solid var(--primary); border-radius: 50%; 
+            animation: spin 1s linear infinite; margin: 0 auto 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Success Box */
+        .success-box {
+            text-align: center;
+            padding: 20px 0;
+            display: none;
+        }
+        .success-icon {
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+        }
+
+        #mainContent { display: none; }
+        #errorContent { display: none; text-align: center; }
+
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/my-trips.html" class="logo">
+            <i class="fas fa-arrow-left"></i> Back to Trips
+        </a>
+    </nav>
+
+    <div class="container">
+        <div class="refund-card">
+            
+            <div id="loader" class="loader-container">
+                <div class="spinner"></div>
+                <p>Calculating refund details...</p>
+            </div>
+
+            <div id="errorContent">
+                <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 20px;"></i>
+                <h2 style="margin-bottom: 10px;">Unable to Load Details</h2>
+                <p id="errorMsg" style="color: var(--text-muted); margin-bottom: 25px;">Something went wrong while retrieving your booking policy.</p>
+                <a href="/my-trips.html" class="btn btn-outline">Return to My Trips</a>
+            </div>
+
+            <div id="mainContent">
+                <h1>Review Cancellation</h1>
+                <p class="subtitle">Please review the cancellation policy and refund calculation before confirming.</p>
+
+                <div class="details-box">
+                    <div class="detail-row">
+                        <span class="detail-label">Booking ID</span>
+                        <span class="detail-value" id="valId">#</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Service Type</span>
+                        <span class="detail-value" id="valType" style="text-transform: capitalize;"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Cancellation Policy</span>
+                        <span class="detail-value" id="valPolicy"></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Paid Amount</span>
+                        <span class="detail-value" id="valPaid">$0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Cancellation/Service Fee</span>
+                        <span class="detail-value value-danger" id="valFee">-$0.00</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Total Refund</span>
+                        <span class="detail-value value-highlight" id="valRefund">$0.00</span>
+                    </div>
+
+                    <div id="refundMethodContainer" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+                        <h4 style="margin-bottom: 15px; color: var(--text);">Select Refund Destination:</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255, 255, 255, 0.02);">
+                                <input type="radio" name="refundMethod" value="Wallet" checked style="accent-color: var(--primary); width: 18px; height: 18px;">
+                                <span>Refund to User Wallet <i class="fas fa-wallet" style="margin-left: 5px; color: var(--primary);"></i></span>
+                            </label>
+                            
+                            <label id="lblOriginalPayment" style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: rgba(255, 255, 255, 0.02);">
+                                <input type="radio" name="refundMethod" value="OriginalPaymentMethod" id="radioOriginalPayment" style="accent-color: var(--primary); width: 18px; height: 18px;">
+                                <span>Refund to Original Payment Method (Stripe) <i class="fab fa-cc-stripe" style="margin-left: 5px; color: #6772e5;"></i></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="policyDetailBox" style="display: none; background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; padding: 20px; margin-bottom: 25px;">
+                    <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-gavel"></i> Detailed Policies & Rules
+                    </h3>
+                    <div id="policyRulesList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; font-size: 0.9rem;">
+                        <!-- Detailed rules go here -->
+                    </div>
+                    <div id="policyAppliedCase" style="background: rgba(16, 185, 129, 0.1); border-left: 4px solid var(--accent); padding: 12px 15px; border-radius: 4px 8px 8px 4px; font-size: 0.9rem; color: #a7f3d0; line-height: 1.5;">
+                        <!-- Applied case goes here -->
+                    </div>
+                </div>
+
+                <div class="warning-box" id="warningBox">
+                    <i class="fas fa-info-circle"></i>
+                    <div id="warningText">
+                        Once confirmed, this booking will be cancelled permanently. Any applicable refund will be credited directly to your digital wallet.
+                    </div>
+                </div>
+
+                <button id="btnConfirm" class="btn btn-danger" onclick="executeCancellation()">
+                    <i class="fas fa-times-circle"></i> Confirm Cancellation
+                </button>
+                <a href="/my-trips.html" class="btn btn-outline">Keep Booking</a>
+            </div>
+
+            <div id="successContent" class="success-box">
+                <div class="success-icon">
+                    <i class="fas fa-check"></i>
+                </div>
+                <h2 style="margin-bottom: 15px;">Cancellation Confirmed</h2>
+                <p id="successMsg" style="color: var(--text-muted); margin-bottom: 30px;">
+                    Your booking was cancelled successfully. The refund has been deposited to your wallet.
+                </p>
+                <a href="/user/wallet.html" class="btn btn-primary">Go to Wallet</a>
+                <a href="/my-trips.html" class="btn btn-outline">Back to My Trips</a>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const type = urlParams.get('type');
+        const bookingId = urlParams.get('id');
+        const token = localStorage.getItem('token');
+
+        if (!token || !type || !bookingId) {
+            window.location.href = '/my-trips.html';
+        }
+
+        let previewData = null;
+
+        async function loadPreview() {
+            let endpoint = '';
+            if (type === 'hotel') endpoint = `/api/HotelBookings/${bookingId}/cancel-preview`;
+            else if (type === 'airline') endpoint = `/api/airline/bookings/${bookingId}/cancel-preview`;
+            else if (type === 'tour') endpoint = `/api/tourguide/bookings/${bookingId}/cancel-preview`;
+            else {
+                showError("Invalid booking type.");
+                return;
+            }
+
+            try {
+                const res = await fetch(endpoint, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const result = await res.json();
+                
+                if (!res.ok || !result.success) {
+                    // Special case: if backend throws because no policy exists or error retrieving policy, 
+                    // we want to gracefully degrade to 0 refund instead of crashing.
+                    let errorMsg = result.message || result.Message || "Error retrieving cancellation policy.";
+                    
+                    if (type === 'hotel' && (errorMsg.toLowerCase().includes('policy') || errorMsg.toLowerCase().includes('not found'))) {
+                        // Assume no policy configured, proceed with safe defaults
+                        previewData = {
+                            totalPrice: 0,
+                            refundAmount: 0,
+                            cancellationFee: 0,
+                            policyStrategy: 'No cancellation policy configured for this hotel'
+                        };
+                    } else {
+                        showError(errorMsg);
+                        return;
+                    }
+                } else {
+                    previewData = result.data || {};
+                }
+
+                renderDetails();
+
+            } catch (err) {
+                showError("A network error occurred while fetching the preview.");
+            }
+        }
+
+        function renderDetails() {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+
+            document.getElementById('valId').innerText = `#${bookingId}`;
+            document.getElementById('valType').innerText = type;
+
+            let paid = 0, fee = 0, refund = 0, policy = '';
+
+            if (type === 'hotel') {
+                paid = previewData.totalPrice || 0;
+                
+                // If policy explicitly says no policy configured, use safe defaults
+                if (previewData.policyStrategy === 'No cancellation policy configured for this hotel') {
+                    fee = paid;
+                    refund = 0;
+                    policy = previewData.policyStrategy;
+                } else {
+                    fee = previewData.cancellationFee || 0;
+                    refund = previewData.refundAmount || 0;
+                    policy = previewData.policyStrategy || 'Standard';
+
+                    // Display detailed rules and applied case
+                    const policyBox = document.getElementById('policyDetailBox');
+                    const rulesListEl = document.getElementById('policyRulesList');
+                    const appliedCaseEl = document.getElementById('policyAppliedCase');
+
+                    if (policyBox && rulesListEl && appliedCaseEl) {
+                        policyBox.style.display = 'block';
+                        
+                        let strategyLabel = previewData.policyStrategy;
+                        if (strategyLabel === 'NonRefundable') strategyLabel = 'Non-Refundable';
+                        else if (strategyLabel === 'FreeAll') strategyLabel = 'Free Cancellation';
+                        else if (strategyLabel === 'WindowBased') strategyLabel = 'Window-Based';
+
+                        let rulesHtml = `<p style="margin-bottom: 5px; font-weight: 600; color: var(--text);">Strategy: ${strategyLabel}</p>`;
+                        
+                        if (previewData.cancellationRules && previewData.cancellationRules.length > 0) {
+                            rulesHtml += '<ul style="padding-left: 20px; list-style-type: square; color: var(--text-muted);">';
+                            previewData.cancellationRules.forEach(rule => {
+                                let timeWindow = '';
+                                if (rule.fromHoursBeforeCheckIn !== null && rule.toHoursBeforeCheckIn !== null) {
+                                    timeWindow = `Between ${rule.fromHoursBeforeCheckIn} and ${rule.toHoursBeforeCheckIn} hours before check-in`;
+                                } else if (rule.fromHoursBeforeCheckIn !== null) {
+                                    timeWindow = `More than ${rule.fromHoursBeforeCheckIn} hours before check-in`;
+                                } else if (rule.toHoursBeforeCheckIn !== null) {
+                                    timeWindow = `Less than ${rule.toHoursBeforeCheckIn} hours before check-in`;
+                                } else {
+                                    timeWindow = `Any time before check-in`;
+                                }
+                                rulesHtml += `<li style="margin-bottom: 4px;">${timeWindow}: <strong style="color: var(--danger);">${rule.penaltyPct}% Penalty</strong> (Refund: ${100 - rule.penaltyPct}%)</li>`;
+                            });
+                            rulesHtml += '</ul>';
+                        } else {
+                            if (previewData.policyStrategy === 'NonRefundable') {
+                                rulesHtml += `<p style="color: var(--text-muted);">This hotel's policy does not allow refunds for cancellations at any time (100% Penalty).</p>`;
+                            } else if (previewData.policyStrategy === 'FreeAll') {
+                                rulesHtml += `<p style="color: var(--text-muted);">Cancellations are 100% free of charge at any time (0% Penalty).</p>`;
+                            } else {
+                                rulesHtml += `<p style="color: var(--text-muted);">No custom rules are configured for this hotel.</p>`;
+                            }
+                        }
+
+                        rulesListEl.innerHTML = rulesHtml;
+                        appliedCaseEl.innerHTML = `<strong>Applied Case:</strong> ${previewData.appliedRuleText || 'N/A'}`;
+                        
+                        if (previewData.refundPercentage === 0) {
+                            appliedCaseEl.style.background = 'rgba(239, 68, 68, 0.1)';
+                            appliedCaseEl.style.borderLeftColor = 'var(--danger)';
+                            appliedCaseEl.style.color = '#fca5a5';
+                        } else {
+                            appliedCaseEl.style.background = 'rgba(16, 185, 129, 0.1)';
+                            appliedCaseEl.style.borderLeftColor = 'var(--accent)';
+                            appliedCaseEl.style.color = '#a7f3d0';
+                        }
+                    }
+                }
+            } else if (type === 'airline') {
+                paid = previewData.paidAmount || 0;
+                fee = previewData.serviceFee || 0;
+                refund = previewData.refundAmount || 0;
+                policy = previewData.policyDescription || 'Airline Policy';
+            } else if (type === 'tour') {
+                paid = previewData.paidAmount || 0;
+                fee = previewData.cancellationFee || 0;
+                refund = previewData.refundAmount || 0;
+                policy = previewData.policyDescription || 'Tour Policy';
+
+                if (previewData.canCancel === false) {
+                    document.getElementById('btnConfirm').disabled = true;
+                    document.getElementById('btnConfirm').innerHTML = '<i class="fas fa-lock"></i> Cancellation Blocked';
+                    document.getElementById('warningBox').style.background = 'rgba(239, 68, 68, 0.2)';
+                    document.getElementById('warningText').innerHTML = '<strong>Not Permitted:</strong> This tour starts in less than 24 hours and cannot be cancelled according to the policy.';
+                }
+            }
+
+            // Handle OriginalPaymentMethod availability
+            if (previewData.originalPaymentMethodAvailable === false) {
+                document.getElementById('radioOriginalPayment').disabled = true;
+                document.getElementById('lblOriginalPayment').style.opacity = '0.5';
+                document.getElementById('lblOriginalPayment').style.cursor = 'not-allowed';
+                document.getElementById('lblOriginalPayment').title = 'Original payment was not processed via Stripe';
+            }
+
+            document.getElementById('valPaid').innerText = `$${paid.toFixed(2)}`;
+            document.getElementById('valFee').innerText = `$${fee.toFixed(2)}`;
+            document.getElementById('valRefund').innerText = `$${refund.toFixed(2)}`;
+            document.getElementById('valPolicy').innerText = policy;
+        }
+
+        async function executeCancellation() {
+            const btn = document.getElementById('btnConfirm');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            let endpoint = '';
+            let method = '';
+            let body = null;
+            
+            const selectedRefundMethod = document.querySelector('input[name="refundMethod"]:checked').value;
+
+            if (type === 'hotel') {
+                endpoint = `/api/HotelBookings/cancel`;
+                method = 'POST';
+                body = JSON.stringify({ bookingId: parseInt(bookingId), reason: 'User requested cancellation', refundMethod: selectedRefundMethod });
+            } else if (type === 'airline') {
+                endpoint = `/api/airline/bookings/${bookingId}`;
+                method = 'DELETE';
+                body = JSON.stringify({ refundMethod: selectedRefundMethod });
+            } else if (type === 'tour') {
+                // Tour backend supports both, so we use DELETE with body
+                endpoint = `/api/tourguide/bookings/${bookingId}`;
+                method = 'DELETE';
+                body = JSON.stringify({ refundMethod: selectedRefundMethod });
+            }
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: method,
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: body
+                });
+
+                if (res.ok) {
+                    document.getElementById('mainContent').style.display = 'none';
+                    document.getElementById('successContent').style.display = 'block';
+                    
+                    let refundAmt = (type === 'hotel') ? previewData.refundAmount : previewData.refundAmount;
+                    if (refundAmt > 0) {
+                        if (selectedRefundMethod === 'Wallet') {
+                            document.getElementById('successMsg').innerHTML = `Your booking was cancelled successfully. <br><strong>$${refundAmt.toFixed(2)}</strong> has been added to your wallet.`;
+                        } else {
+                            document.getElementById('successMsg').innerHTML = `Your booking was cancelled successfully. <br><strong>$${refundAmt.toFixed(2)}</strong> will be refunded to your original payment method.`;
+                        }
+                    } else {
+                        document.getElementById('successMsg').innerText = `Your booking was cancelled successfully. No refund was issued based on the policy.`;
+                    }
+                } else {
+                    let errMsg = "Cancellation failed.";
+                    try {
+                        const errObj = await res.json();
+                        errMsg = errObj.message || errObj.Message || errMsg;
+                    } catch(e) {}
+                    alert("Error: " + errMsg);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-times-circle"></i> Confirm Cancellation';
+                }
+            } catch (err) {
+                alert("A network error occurred. Please try again.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-times-circle"></i> Confirm Cancellation';
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('errorContent').style.display = 'block';
+            document.getElementById('errorMsg').innerText = msg;
+        }
+
+        // Initialize
+        loadPreview();
+
+    </script>
+</body>
+</html>

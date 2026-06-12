@@ -121,13 +121,40 @@ namespace TravAi.Controllers.Hotel
             }
         }
 
+        // 4.5. Preview Booking Cancellation
+        [HttpGet("{id}/cancel-preview")]
+        public async Task<IActionResult> PreviewCancelBooking(long id)
+        {
+            try
+            {
+                var preview = await _hotelService.PreviewCancelBookingAsync(GetUserId(), id);
+                return Ok(new ApiResponse<CancelPreviewDto> { Success = true, Message = "Cancellation preview calculated.", Data = preview, Errors = new List<string>() });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new ApiResponse<string> { Success = false, Message = ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string> { Success = false, Message = ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ApiResponse<string> { Success = false, Message = ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ApiResponse<string> { Success = false, Message = "Error generating preview: " + ex.Message, Data = null!, Errors = new List<string> { ex.Message } });
+            }
+        }
+
         // 5. Cancel Booking (User or Owner)
         [HttpPost("cancel")]
         public async Task<IActionResult> CancelBooking([FromBody] CancelBookingRequest request)
         {
             try
             {
-                var booking = await _hotelService.CancelBookingAsync(GetUserId(), request.BookingId, request.Reason);
+                var booking = await _hotelService.CancelBookingAsync(GetUserId(), request.BookingId, request.Reason, request.RefundMethod);
                 return Ok(new ApiResponse<BookingDto>
                 {
                     Success = true,

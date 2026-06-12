@@ -1,4 +1,4 @@
-﻿using TravAi;
+using TravAi;
 using TravAi.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -55,6 +55,46 @@ namespace TravAi.Airline.Services.ReviewService
                 Comment = review.Comment,
                 ReviewDate = review.ReviewDate
             };
+        }
+
+        public async Task<ReviewResponseDto> UpdateReviewAsync(long userId, long reviewId, UpdateReviewRequestDto dto)
+        {
+            var review = await _context.AirlineReviews.FindAsync(reviewId);
+            if (review == null)
+                throw new Exception("Review not found.");
+
+            if (review.UserId != userId)
+                throw new Exception("You are not authorized to update this review.");
+
+            review.Rating = dto.Rating;
+            review.Comment = dto.Comment;
+
+            await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FindAsync(userId);
+
+            return new ReviewResponseDto
+            {
+                Id = review.Id,
+                FlightId = review.FlightId,
+                UserName = user?.UserName ?? "Unknown",
+                Rating = review.Rating,
+                Comment = review.Comment,
+                ReviewDate = review.ReviewDate
+            };
+        }
+
+        public async Task DeleteReviewAsync(long userId, long reviewId)
+        {
+            var review = await _context.AirlineReviews.FindAsync(reviewId);
+            if (review == null)
+                throw new Exception("Review not found.");
+
+            if (review.UserId != userId)
+                throw new Exception("You are not authorized to delete this review.");
+
+            _context.AirlineReviews.Remove(review);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<List<ReviewResponseDto>> GetFlightReviewsAsync(long flightId)

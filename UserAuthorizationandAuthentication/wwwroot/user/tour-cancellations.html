@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Cancellation Resolutions - Travai Unified</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/tour-cancellations.css">
+    <script>
+        // Check auth
+        if (!localStorage.getItem('token')) {
+            window.location.href = '../auth/login.html';
+        }
+    </script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <a href="../index.html" class="logo">
+            <i class="fas fa-route"></i> Travai Unified
+        </a>
+        <div id="navRight" style="display: flex; align-items: center; gap: 15px;">
+            <a href="wallet.html" class="nav-link"><i class="fas fa-wallet"></i> My Wallet</a>
+            <a href="../my-trips.html" class="nav-link"><i class="fas fa-suitcase"></i> My Trips</a>
+            <button onclick="Auth.logout()" class="btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <header class="page-header">
+            <h1>Tour Guide Cancellations</h1>
+            <p class="subtitle">Action required: Choose how to resolve tour bookings cancelled by guides</p>
+        </header>
+
+        <!-- Messages -->
+        <div id="status-toast" class="toast" style="display: none;"></div>
+
+        <!-- Loading State -->
+        <div id="loader" class="loader-container">
+            <div class="spinner"></div>
+            <p>Scanning for affected bookings...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-message" class="error-container" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3 id="error-title">Error Loading Cancellations</h3>
+            <p id="error-text">We were unable to load your cancellation decisions. Please try again.</p>
+            <button onclick="loadCancellations()" class="btn-primary" style="margin-top: 15px;">Retry</button>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-card" style="display: none;">
+            <div class="empty-icon">✅</div>
+            <h2>All Bookings Intact</h2>
+            <p>You have no tour bookings currently affected by emergency cancellations.</p>
+            <a href="../tour/index.html" class="btn-primary">Browse New Tours</a>
+        </div>
+
+        <!-- Active Resolutions Grid -->
+        <div id="resolutions-grid" class="resolutions-grid" style="display: none;">
+            <!-- Cancellations list will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Alternatives Modal Overlay -->
+    <div id="alternatives-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Choose Alternative Tour</h2>
+                <button onclick="closeModal()" class="close-btn">&times;</button>
+            </div>
+            
+            <div id="modal-loader" class="modal-loader">
+                <div class="spinner"></div>
+                <p>Finding available tours in the area...</p>
+            </div>
+
+            <div id="modal-error" class="modal-error" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>Failed to retrieve alternative tours.</p>
+            </div>
+
+            <div id="modal-empty" class="modal-empty" style="display: none;">
+                <i class="fas fa-map-marked-alt"></i>
+                <p>No alternative tours found in this city.</p>
+                <span>We suggest requesting a full refund instead.</span>
+            </div>
+
+            <div id="alternatives-list" class="alternatives-list" style="display: none;">
+                <!-- Alternatives cards injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Method Modal Overlay -->
+    <div id="refund-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Choose Refund Method</h2>
+                <button onclick="closeRefundModal()" class="close-btn">&times;</button>
+            </div>
+            
+            <div id="refund-modal-loader" class="modal-loader" style="display: none;">
+                <div class="spinner"></div>
+                <p>Loading refund options...</p>
+            </div>
+
+            <div id="refund-modal-error" class="modal-error" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <p id="refund-error-text">Failed to retrieve refund preview.</p>
+            </div>
+
+            <div id="refund-modal-content" class="refund-modal-content">
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+                        <span style="color: var(--text-muted);">Booking ID:</span>
+                        <strong id="refund-preview-booking-id">#0000</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+                        <span style="color: var(--text-muted);">Tour Name:</span>
+                        <strong id="refund-preview-tour-name" style="text-align: right; max-width: 70%; word-break: break-word;">Pyramids Special</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 1.1rem; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px;">
+                        <strong>Refund Amount:</strong>
+                        <strong id="refund-preview-amount" style="color: var(--accent);">$0.00</strong>
+                    </div>
+                </div>
+
+                <div class="refund-method-options" style="margin-bottom: 25px;">
+                    <h4 style="margin: 0 0 15px 0; color: var(--text); font-size: 1rem;">Select Refund Destination:</h4>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <label class="refund-option-card" style="display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="refundMethod" value="Wallet" checked style="accent-color: var(--primary); margin-top: 4px;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-dark);">Refund to Wallet <i class="fas fa-wallet" style="color: var(--primary); margin-left: 5px;"></i></span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Refund will be credited to your TravAi wallet.</span>
+                            </div>
+                        </label>
+                        <label id="lblOriginalPayment" class="refund-option-card" style="display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="refundMethod" value="OriginalPaymentMethod" id="radioOriginalPayment" style="accent-color: var(--primary); margin-top: 4px;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-dark);">Refund to Original Payment Method (Stripe) <i class="fab fa-cc-stripe" style="color: #6772e5; margin-left: 5px;"></i></span>
+                                <span id="stripe-desc-text" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Refund will be processed through Stripe and returned to the same payment method used for the original payment.</span>
+                                <span id="stripe-unavailable-reason" style="font-size: 0.85rem; color: var(--danger); margin-top: 4px; display: none;"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="confirm-refund-btn" onclick="submitRefund()" class="btn-primary w-100" style="padding: 14px; font-weight: 600;">Confirm Refund</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alternative Payment Modal Overlay -->
+    <div id="alt-payment-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>Pay Price Difference</h2>
+                <button onclick="closeAltPaymentModal()" class="close-btn">&times;</button>
+            </div>
+            
+            <div class="refund-modal-content">
+                <div style="margin-bottom: 20px; padding: 15px; background: rgba(0,0,0,0.02); border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem;">
+                        <span style="color: var(--text-muted);">Amount Due:</span>
+                        <strong id="alt-payment-amount" style="color: var(--danger);">$0.00</strong>
+                    </div>
+                </div>
+
+                <div class="refund-method-options" style="margin-bottom: 25px;">
+                    <h4 style="margin: 0 0 15px 0; color: var(--text); font-size: 1rem;">Select Payment Method:</h4>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <label class="refund-option-card" style="display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="altPaymentMethod" value="Wallet" checked style="accent-color: var(--primary); margin-top: 4px;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-dark);">Pay from Wallet <i class="fas fa-wallet" style="color: var(--primary); margin-left: 5px;"></i></span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Deduct the difference directly from your TravAi wallet balance.</span>
+                            </div>
+                        </label>
+                        <label class="refund-option-card" style="display: flex; align-items: flex-start; gap: 12px; padding: 15px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                            <input type="radio" name="altPaymentMethod" value="Stripe" style="accent-color: var(--primary); margin-top: 4px;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600; font-size: 0.95rem; color: var(--text-dark);">Pay with Card (Stripe) <i class="fab fa-cc-stripe" style="color: #6772e5; margin-left: 5px;"></i></span>
+                                <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">You will be redirected to Stripe to securely process the payment difference.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button id="confirm-alt-payment-btn" onclick="submitAlternativeWithPayment()" class="btn-primary w-100" style="padding: 14px; font-weight: 600;">Confirm Payment & Move Booking</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Config and Script -->
+    <script src="../auth/js/config.js"></script>
+    <script src="js/tour-cancellations.js"></script>
+</body>
+</html>

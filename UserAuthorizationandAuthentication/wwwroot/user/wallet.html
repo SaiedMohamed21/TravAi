@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wallet - Travai Unified</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/wallet.css">
+    <script>
+        // Pre-render auth check
+        if (!localStorage.getItem('token')) {
+            window.location.href = '../auth/login.html';
+        }
+    </script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <a href="../index.html" class="logo">
+            <i class="fas fa-route"></i> Travai Unified
+        </a>
+        <div id="navRight" style="display: flex; align-items: center; gap: 15px;">
+            <a href="../my-trips.html" class="nav-link"><i class="fas fa-suitcase"></i> My Trips</a>
+            <a href="../tour/index.html" class="nav-link"><i class="fas fa-map"></i> Tours</a>
+            <button onclick="Auth.logout()" class="btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <header class="dashboard-header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>Personal Wallet</h1>
+                    <p class="subtitle">Manage your funds, view payout history, and track refunds</p>
+                </div>
+                <button onclick="loadWalletData()" class="btn-primary" style="padding: 10px 20px; font-weight: 500;"><i class="fas fa-sync-alt"></i> Refresh Wallet</button>
+            </div>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loader" class="loader-container">
+            <div class="spinner"></div>
+            <p>Retrieving secure wallet data...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-message" class="error-container" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3 id="error-title">Unable to Load Wallet</h3>
+            <p id="error-text">Please verify your connection and try again.</p>
+            <button onclick="loadWalletData()" class="btn-primary" style="margin-top: 15px;">Retry</button>
+        </div>
+
+        <!-- Wallet Interface -->
+        <div id="wallet-content" class="wallet-grid" style="display: none;">
+            
+            <!-- Left Panel: Balance and Top-up -->
+            <div class="wallet-left">
+                <!-- Balance Card -->
+                <div class="balance-card">
+                    <div class="balance-overlay"></div>
+                    <div class="balance-content">
+                        <span class="label">Available Balance</span>
+                        <div class="amount-container">
+                            <span class="currency-symbol">$</span>
+                            <span id="wallet-balance" class="amount">0.00</span>
+                            <span class="currency-code">USD</span>
+                        </div>
+                        <div class="card-chip">
+                            <i class="fas fa-microchip"></i>
+                        </div>
+                        <div class="card-details">
+                            <span class="card-holder" id="user-display-name">Loading...</span>
+                            <span class="card-valid">TravAi Wallet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Funds / Top Up Card -->
+                <div class="add-funds-card" style="margin-top: 25px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 25px;">
+                    <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 1.2rem; color: var(--text);"><i class="fas fa-plus-circle" style="color: var(--primary); margin-right: 10px;"></i> Add Funds to Wallet</h3>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Top-up your wallet securely using Stripe.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="input-group" style="position: relative;">
+                            <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-weight: 600;">$</span>
+                            <input type="number" id="topupAmount" placeholder="Amount (USD)" min="10" step="1" style="width: 100%; padding: 12px 12px 12px 30px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 1rem;">
+                        </div>
+                        <button id="topupBtn" onclick="topupWallet()" class="btn-primary" style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 600; display: flex; justify-content: center; gap: 10px; align-items: center;">
+                            <i class="fab fa-stripe" style="font-size: 1.2rem;"></i> Proceed to Pay
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Panel: History Sections -->
+            <div class="wallet-right" style="display: flex; flex-direction: column; gap: 25px;">
+                
+                <!-- Refund History -->
+                <div class="transactions-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-undo"></i> Refund History</h2>
+                        <span class="tx-count" id="refund-count-badge">0 items</span>
+                    </div>
+                    
+                    <div class="transactions-container">
+                        <!-- Refunds injected dynamically -->
+                        <div id="refunds-list"></div>
+
+                        <!-- Empty State -->
+                        <div id="refund-empty-state" class="empty-state" style="display: none;">
+                            <i class="fas fa-receipt"></i>
+                            <p>No refunds yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaction History -->
+                <div class="transactions-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-history"></i> Transaction History</h2>
+                        <span class="tx-count" id="tx-count-badge">0 items</span>
+                    </div>
+                    
+                    <div class="transactions-container">
+                        <!-- Transactions injected dynamically -->
+                        <div id="transactions-list"></div>
+
+                        <!-- Empty State -->
+                        <div id="tx-empty-state" class="empty-state" style="display: none;">
+                            <i class="fas fa-receipt"></i>
+                            <p>No wallet top-ups yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal -->
+    <div id="txModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px);">
+        <div style="background: var(--surface); width: 100%; max-width: 500px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden; border: 1px solid var(--border);">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; color: var(--text);"><i class="fas fa-file-invoice-dollar" style="color: var(--primary); margin-right: 10px;"></i> Refund Details</h3>
+                <button onclick="closeTxModal()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem;"><i class="fas fa-times"></i></button>
+            </div>
+            <div id="txModalBody" style="padding: 20px; max-height: 70vh; overflow-y: auto;">
+                <div class="loader-container" id="txModalLoader" style="display: flex; justify-content: center; padding: 40px;"><div class="spinner"></div></div>
+                <div id="txModalContent" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Config and Script -->
+    <script src="../auth/js/config.js"></script>
+    <script src="js/wallet.js?v=2"></script>
+</body>
+</html>

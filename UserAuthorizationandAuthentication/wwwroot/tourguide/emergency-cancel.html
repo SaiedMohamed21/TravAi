@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Tour Cancellation - Travai Unified</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/emergency-cancel.css">
+    <script>
+        if (!localStorage.getItem('token')) {
+            window.location.href = '../auth/login.html';
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="logo">
+            <i class="fas fa-route"></i> Travai Unified
+        </a>
+        <div id="navRight" style="display: flex; align-items: center; gap: 15px;">
+            <button onclick="Auth.logout()" class="btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <header class="page-header">
+            <h1>Emergency Tour Cancellation</h1>
+            <p class="subtitle">Submit an urgent cancellation request for one of your upcoming tours. This will notify affected users and prompt them for a resolution.</p>
+        </header>
+
+        <div id="status-toast" class="toast" style="display: none;"></div>
+
+        <div class="form-card">
+            <form id="emergency-cancel-form">
+                <div class="form-group">
+                    <label for="tour-id">Tour ID</label>
+                    <input type="number" id="tour-id" required placeholder="Enter Tour ID to cancel">
+                </div>
+                <div class="form-group">
+                    <label for="cancel-reason">Reason for Cancellation</label>
+                    <textarea id="cancel-reason" required rows="4" placeholder="Explain the emergency reason in detail (e.g., severe illness, transport failure, etc.)"></textarea>
+                </div>
+                <button type="submit" id="submit-btn" class="btn-primary w-100">
+                    <span id="btn-text">Submit Emergency Cancellation</span>
+                    <div class="btn-spinner" style="display: none;"></div>
+                </button>
+            </form>
+            <p class="helper-text mt-3 text-muted text-sm">
+                <i class="fas fa-info-circle"></i> Once submitted, the affected user bookings will become <strong>PendingUserDecision</strong>. Admin review will evaluate your reason for potential penalties.
+            </p>
+        </div>
+    </div>
+
+    <script src="../auth/js/config.js"></script>
+    <script src="js/emergency-cancel.js"></script>
+</body>
+</html>

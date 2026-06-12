@@ -185,6 +185,12 @@
     <div class="container">
         <header style="position: relative;">
             <div style="position: absolute; top: -20px; right: 0; display: flex; gap: 10px;">
+                <a href="admin/tour-guide-cancellations.html" 
+                   style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"
+                   onmouseover="this.style.background='#ef4444'; this.style.color='white';"
+                   onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444';">
+                    🚨 Review Cancellations
+                </a>
                 <a href="admin-payout/admin-payout.html" 
                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.8rem; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"
                    onmouseover="this.style.background='#10b981'; this.style.color='white';"
@@ -253,6 +259,38 @@
                 <h2>My Trips</h2>
                 <p>View your upcoming adventures, past journeys, and manage your bookings across all services.</p>
                 <div class="btn">View My Trips</div>
+            </a>
+
+            <!-- User Wallet -->
+            <a href="user/wallet.html" class="card">
+                <div class="icon-box">💳</div>
+                <h2>My Wallet</h2>
+                <p>View your wallet balance and track your recent transaction history.</p>
+                <div class="btn">Launch Wallet</div>
+            </a>
+
+            <!-- Cancellation Decisions -->
+            <a href="user/tour-cancellations.html" class="card">
+                <div class="icon-box">⚠️</div>
+                <h2>Tour Resolutions</h2>
+                <p>Resolve bookings affected by sudden tour guide cancellations. Choose alternatives or request refunds.</p>
+                <div class="btn">Resolve Bookings</div>
+            </a>
+
+            <!-- Tour Guide Emergency Cancel -->
+            <a href="tourguide/emergency-cancel.html" class="card">
+                <div class="icon-box">🚑</div>
+                <h2>Emergency Cancel</h2>
+                <p>For Tour Guides: Submit an urgent cancellation for a tour, notifying all affected users.</p>
+                <div class="btn">Cancel Tour</div>
+            </a>
+
+            <!-- Refund Flow Test Guide -->
+            <a href="test/refund-flow-test.html" class="card">
+                <div class="icon-box">🧪</div>
+                <h2>Refund Test Guide</h2>
+                <p>Manual testing dashboard for the full end-to-end refund, cancellation, and user wallet flows.</p>
+                <div class="btn">View Test Guide</div>
             </a>
 
             <!-- API Docs -->

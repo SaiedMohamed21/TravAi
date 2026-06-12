@@ -75,6 +75,8 @@ namespace TravAi.Data
         public DbSet<TourBooking> TourBookings { get; set; }
         public DbSet<TourBookingParticipant> TourBookingParticipants { get; set; }
         public DbSet<TourBookingPayment> TourBookingPayments { get; set; }
+        public DbSet<TourBookingResolution> TourBookingResolutions { get; set; }
+        public DbSet<UserTourCompensationCoupon> UserTourCompensationCoupons { get; set; }
         public DbSet<TravAi.TourGuide.Models.TourGuide> TourGuides { get; set; }
         public DbSet<TourGuideCity> TourGuideCities { get; set; }
         public DbSet<TourGuideEmail> TourGuideEmails { get; set; }
@@ -142,6 +144,8 @@ namespace TravAi.Data
             modelBuilder.Entity<TourBooking>().ToTable("tourguide_TourBookings");
             modelBuilder.Entity<TourBookingParticipant>().ToTable("tourguide_TourBookingParticipants");
             modelBuilder.Entity<TourBookingPayment>().ToTable("tourguide_TourBookingPayments");
+            modelBuilder.Entity<TourBookingResolution>().ToTable("tourguide_TourBookingResolutions");
+            modelBuilder.Entity<UserTourCompensationCoupon>().ToTable("tourguide_UserTourCompensationCoupons");
             modelBuilder.Entity<TravAi.TourGuide.Models.TourGuide>().ToTable("tourguide_TourGuides");
             modelBuilder.Entity<TourGuideCity>().ToTable("tourguide_TourGuideCities");
             modelBuilder.Entity<TourGuideEmail>().ToTable("tourguide_TourGuideEmails");

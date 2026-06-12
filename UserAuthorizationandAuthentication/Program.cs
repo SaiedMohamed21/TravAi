@@ -27,6 +27,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ISecurityService, SecurityService>();
+builder.Services.AddScoped<TravAi.Services.Common.IWalletService, TravAi.Services.Common.WalletService>();
 
 builder.Services.AddScoped<TravAi.Services.HotelService.IHotelService, TravAi.Services.HotelService.HotelService>();
 builder.Services.AddScoped<TravAi.Services.HotelService.IHotelDashboardService, TravAi.Services.HotelService.HotelDashboardService>();

@@ -10,6 +10,11 @@ using TravAi.Airline.DTOs.Passenger;
 
 namespace TravAi.Airline.Controllers
 {
+    public class CancelBookingRefundRequest
+    {
+        public string? RefundMethod { get; set; }
+    }
+
     [Authorize]
     [ApiController]
     [Route("api/airline/bookings")]
@@ -128,12 +133,41 @@ namespace TravAi.Airline.Controllers
         }
 
         // =============================
+        // Preview Cancellation
+        // =============================
+        [HttpGet("{id}/cancel-preview")]
+        public async Task<IActionResult> PreviewCancel(long id)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!long.TryParse(userIdStr, out long userId))
+                return Unauthorized(new ApiResponse<string>(false, "Invalid User."));
+
+            try
+            {
+                var preview = await _bookingService.PreviewCancelAsync(userId, id);
+                return Ok(new ApiResponse<AirlineCancelPreviewDto>(preview, "Cancellation preview generated successfully."));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string>(false, ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new ApiResponse<string>(false, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResponse<string>(false, ex.Message));
+            }
+        }
+
+        // =============================
         // Cancel Booking
         // =============================
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Cancel(long id)
+        public async Task<IActionResult> Cancel(long id, [FromBody] CancelBookingRefundRequest? request = null)
         {
-            await _bookingService.CancelAsync(id);
+            await _bookingService.CancelAsync(id, request?.RefundMethod);
 
             return Ok(new ApiResponse<string>(
                 "Booking cancelled successfully."

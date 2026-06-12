@@ -11,10 +11,12 @@ namespace TravAi.Airline.Services.BookingService
     public class BookingService : IBookingService
     {
         private readonly ApplicationDbContext _context;
+        private readonly TravAi.Options.StripeOptions _stripeOptions;
 
-        public BookingService(ApplicationDbContext context)
+        public BookingService(ApplicationDbContext context, Microsoft.Extensions.Options.IOptions<TravAi.Options.StripeOptions> stripeOptions)
         {
             _context = context;
+            _stripeOptions = stripeOptions.Value;
         }
 
         public async Task<BookingResponseDto> BookFlightAsync(long userId, BookingRequestDto dto)
@@ -148,12 +150,25 @@ namespace TravAi.Airline.Services.BookingService
                 query = query.Where(b => b.Status == "Cancelled");
 
             var bookings = await query.ToListAsync();
-            return bookings.Select(MapToResponse).ToList();
+            var userAirlineReviews = await _context.AirlineReviews
+                .Where(r => r.UserId == userId)
+                .ToListAsync();
+
+            return bookings.Select(b => MapToResponse(b, userAirlineReviews)).ToList();
         }
 
         private BookingResponseDto MapToResponse(Booking b)
         {
+            return MapToResponse(b, null);
+        }
+
+        private BookingResponseDto MapToResponse(Booking b, List<TravAi.Airline.Models.Review>? userReviews)
+        {
             var departureTime = b.Flight?.DepartureTime ?? b.BookingDate;
+            var existingReview = userReviews?.FirstOrDefault(r => r.FlightId == b.FlightId);
+            bool hasReviewed = existingReview != null;
+            bool canReview = !string.Equals(b.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) && departureTime <= DateTime.UtcNow && !hasReviewed;
+
             return new BookingResponseDto
             {
                 Id = b.Id,
@@ -173,8 +188,13 @@ namespace TravAi.Airline.Services.BookingService
                 RouteTitle = $"{b.Flight?.DepartureAirportCode} to {b.Flight?.ArrivalAirportCode}",
                 UiBadge = b.Status == "Cancelled" ? "Cancelled" : (departureTime > DateTime.UtcNow ? "Upcoming" : "Completed"),
                 CanCancel = b.Status != "Cancelled" && departureTime > DateTime.UtcNow.AddHours(24),
-                CanReview = b.Status == "Completed" || (b.Status == "Confirmed" && departureTime <= DateTime.UtcNow),
-                BoardingTime = departureTime.AddMinutes(-45).ToString("HH:mm")
+                CanReview = canReview,
+                HasReviewed = hasReviewed,
+                ReviewId = existingReview?.Id,
+                ReviewRating = existingReview?.Rating,
+                ReviewComment = existingReview?.Comment,
+                BoardingTime = departureTime.AddMinutes(-45).ToString("HH:mm"),
+                FlightClass = b.Flight?.FlightClass
             };
         }
 
@@ -212,7 +232,7 @@ namespace TravAi.Airline.Services.BookingService
             return booking != null ? MapToResponse(booking) : null;
         }
 
-        public async Task CancelAsync(long bookingId)
+        public async Task CancelAsync(long bookingId, string? refundMethod = null)
         {
             var booking = await _context.Bookings
                 .Include(b => b.Flight)
@@ -236,17 +256,52 @@ namespace TravAi.Airline.Services.BookingService
                 // Refund money to wallet
                 if (booking.User != null)
                 {
-                    booking.User.WalletBalance += booking.TotalPrice;
-                    
-                    _context.WalletTransactions.Add(new WalletTransaction
+                    decimal refundPercentage = 0.0m; // Economy and Premium are non-refundable
+
+                    if (booking.Flight?.FlightClass == "Business")
                     {
-                        UserId = booking.User.Id,
-                        Amount = booking.TotalPrice,
-                        Type = "Booking Refund",
-                        Description = $"Refund for flight booking #{booking.Id}",
-                        ReferenceId = booking.Id.ToString(),
-                        CreatedAt = DateTime.UtcNow
-                    });
+                        refundPercentage = 0.90m; // 90% refund, 10% fee
+                    }
+
+                    decimal refundAmount = booking.TotalPrice * refundPercentage;
+
+                    var transactionItem = await _context.PaymentTransactionItems
+                        .Include(pti => pti.PaymentTransaction)
+                        .FirstOrDefaultAsync(pti => pti.BookingType == "Airline" && pti.BookingId == booking.Id && pti.Status == "Paid");
+
+                    if (refundAmount > 0)
+                    {
+                        if (refundMethod == "OriginalPaymentMethod" && transactionItem != null && transactionItem.PaymentTransaction.Provider == "Stripe")
+                        {
+                            Stripe.StripeConfiguration.ApiKey = _stripeOptions.SecretKey;
+                            var refundService = new Stripe.RefundService();
+                            await refundService.CreateAsync(new Stripe.RefundCreateOptions
+                            {
+                                PaymentIntent = transactionItem.PaymentTransaction.ProviderTransactionId,
+                                Amount = (long)(refundAmount * 100),
+                                Reason = "requested_by_customer"
+                            });
+                        }
+                        else
+                        {
+                            booking.User.WalletBalance += refundAmount;
+                            
+                            _context.WalletTransactions.Add(new WalletTransaction
+                            {
+                                UserId = booking.User.Id,
+                                Amount = refundAmount,
+                                Type = "Refund",
+                                Description = $"Refund for flight booking #{booking.Id}",
+                                ReferenceId = $"Refund-Airline-{booking.Id}",
+                                CreatedAt = DateTime.UtcNow
+                            });
+                        }
+                    }
+
+                    if (transactionItem != null)
+                    {
+                        transactionItem.Status = "Refunded";
+                    }
                 }
 
                 await _context.SaveChangesAsync();
@@ -323,6 +378,52 @@ namespace TravAi.Airline.Services.BookingService
                                                !string.IsNullOrWhiteSpace(p.Gender) &&
                                                p.PassportExpiryDate.HasValue &&
                                                p.LastName != "(Account Holder)"); // placeholder check
+        }
+
+        public async Task<AirlineCancelPreviewDto> PreviewCancelAsync(long userId, long bookingId)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Flight).ThenInclude(f => f.Airline)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null) throw new KeyNotFoundException("Flight booking not found.");
+            
+            if (booking.UserId != userId) 
+                throw new UnauthorizedAccessException("You are not authorized to preview cancellation for this booking.");
+
+            decimal refundPercentage = 0.0m;
+            string flightClass = booking.Flight?.FlightClass ?? "Economy";
+            
+            if (flightClass == "Business")
+            {
+                refundPercentage = 0.90m;
+            }
+
+            decimal refundAmount = booking.TotalPrice * refundPercentage;
+            decimal serviceFee = booking.TotalPrice - refundAmount;
+
+            string policyDesc = flightClass == "Business" 
+                ? "Business class bookings receive a 90% refund. A 10% service fee is deducted." 
+                : $"{flightClass} class bookings are strictly non-refundable (0% refund).";
+
+            var isStripePayment = await _context.PaymentTransactionItems
+                .Include(pti => pti.PaymentTransaction)
+                .AnyAsync(pti => pti.BookingType == "Airline" && pti.BookingId == booking.Id && pti.Status == "Paid" && pti.PaymentTransaction.Provider == "Stripe");
+
+            return new AirlineCancelPreviewDto
+            {
+                BookingId = booking.Id,
+                BookingType = "Airline",
+                FlightName = $"{booking.Flight?.Airline?.Name ?? "Airline"} - {booking.Flight?.FlightNumber ?? "FL"}",
+                FlightClass = flightClass,
+                PaidAmount = booking.TotalPrice,
+                ServiceFee = serviceFee,
+                RefundAmount = refundAmount,
+                RefundDestination = "Wallet",
+                PolicyDescription = policyDesc,
+                OriginalPaymentMethodAvailable = isStripePayment
+            };
         }
     }
 }

@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout & Payment API Docs - TravAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151f32;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #6366f1; /* Changed style brand to TravAi Indigo */
+            --accent-green: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --method-get: #38bdf8;
+            --method-post: #34d399;
+            --method-put: #fbbf24;
+            --method-delete: #f87171;
+            --method-guide: #a78bfa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: #0f172a;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1 i {
+            color: var(--gold);
+        }
+
+        .search-container {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px 10px 38px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-container input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .endpoints-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .category-title {
+            padding: 20px 24px 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .endpoint-link {
+            padding: 10px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .endpoint-link:hover, .endpoint-link.active {
+            background: rgba(255, 255, 255, 0.04);
+            border-left-color: var(--gold);
+        }
+
+        .method-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
+            min-width: 50px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .method-GET { background: rgba(56, 189, 248, 0.15); color: var(--method-get); }
+        .method-POST { background: rgba(52, 211, 153, 0.15); color: var(--method-post); }
+        .method-PUT { background: rgba(251, 191, 36, 0.15); color: var(--method-put); }
+        .method-DELETE { background: rgba(248, 113, 113, 0.15); color: var(--method-delete); }
+        .method-GUIDE { background: rgba(167, 139, 250, 0.15); color: var(--method-guide); }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .url-box {
+            background: #0b0f19;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        h2 { color: var(--text-main); font-size: 1.8rem; margin-top: 0; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 15px;}
+        h3 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 35px; color: #cbd5e1; font-weight: 600;}
+
+        pre {
+            background: #0a0e17;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: #a5b4fc;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 120px 50px;
+            color: var(--text-muted);
+        }
+
+        .hl-req { color: #fca5a5; font-weight: 600; }
+        .hl-res { color: #34d399; font-weight: 600; }
+        .hl-guide { color: #c084fc; font-weight: 600; }
+
+        code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .alert-box {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 4px solid var(--gold);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .alert-box.warning {
+            background: rgba(239, 68, 68, 0.08);
+            border-left-color: var(--method-delete);
+        }
+        
+        .alert-box.success {
+            background: rgba(16, 185, 129, 0.08);
+            border-left-color: var(--accent-green);
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 25px;
+            line-height: 1.6;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fas fa-wallet"></i> TravAi Checkout</h1>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 6px;">Unified Checkout & Payment Specs</p>
+        </div>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchSidebar" placeholder="Search categories or endpoints..." oninput="filterSidebar()">
+        </div>
+        <div class="endpoints-list" id="sidebarList">
+            <!-- Rendered Dynamically -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="empty-state">
+            <i class="fas fa-receipt fa-4x" style="color: var(--gold); margin-bottom: 25px; opacity: 0.6;"></i>
+            <h2 style="color: #fff; margin-bottom: 10px;">TravAi Checkout & Payment Specs</h2>
+            <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto; line-height: 1.6;">Select a documentation category or API endpoint from the sidebar to view detailed parameters, payload structures, Flutter templates, and confirmation states.</p>
+        </div>
+    </div>
+
+    <script>
+        const apiData = [
+            {
+                category: "1. Integration Overview",
+                endpoints: [
+                    {
+                        title: "Workflow Overview", method: "GUIDE", url: "Overview",
+                        desc: "Understand the end-to-end user checkout experience across different travel domains (Flights, Hotels, Tours).",
+                        isGuide: true,
+                        content: `
+                            <div class="alert-box">
+                                <strong>System Goal:</strong> Enable users to secure flights, hotel rooms, and local tours under a unified checkout cart, handling dynamic seat locks, safety passenger records, and payment processing securely via Stripe.
+                            </div>
+                            <h3>Core Lifecycle Workflow</h3>
+                            <ol>
+                                <li><strong>Pre-booking Phase</strong>: Users search and book flights (Airline), room options (Hotel), or tour guide plans (Tour). These reservations are written to the database with a <code>Pending</code> reservation state and <code>Pending</code> payment status.</li>
+                                <li><strong>Cart Expiration Constraints</strong>: Unpaid inventory blocks seats or rooms. Strict expiry windows are enforced:
+                                    <ul>
+                                        <li><strong>Airline flight booking</strong>: Expires and is deleted after <strong>10 minutes</strong>.</li>
+                                        <li><strong>Hotel stay booking</strong>: Expires and is deleted after <strong>60 minutes</strong>.</li>
+                                        <li><strong>Guided tour booking</strong>: Expires and is deleted after <strong>60 minutes</strong>.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Passenger Identification</strong>: Flight reservations require passenger details (First Name, Last Name, Date of Birth, Gender, Passport Number, and Passport Expiry Date) to change state from <code>Incomplete</code> to <code>Complete</code> before they become ready for payment.</li>
+                                <li><strong>Unified Transaction Processing</strong>: Users load the unified checkout list, select ready items, and request a Stripe payment session.</li>
+                                <li><strong>Stripe Redirection</strong>: The user completes their transaction inside a Stripe hosted card form, redirecting back to the app success page or fallback cancelling screen.</li>
+                                <li><strong>State Synchronization</strong>: The backend processes local transactions to mark items as <code>Paid</code> / <code>Confirmed</code> using payment callbacks and Stripe webhook callbacks.</li>
+                            </ol>
+                        `
+                    }
+                ]
+            },
+            {
+                category: "2. Authentication Setup",
+                endpoints: [
+                    {
+                        title: "Login Endpoint", method: "POST", url: "/api/Users/login",
+                        desc: "Authenticates client credentials and returns JWT bearer token.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            email: "passenger@travai.com",
+                            password: "SecurePassword123"
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Login successful",
+                            data: {
+                                token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0Iiwi...",
+                                userId: 4,
+                                userName: "passenger123",
+                                role: "User"
+                            }
+                        }, null, 2),
+                        notes: `
+                            <h3>Secure Token Management</h3>
+                            <p>Once the bearer token is received, the client must store it securely and attach it to the header of all checkout calls.</p>
+                            <ul>
+                                <li><strong>Flutter Secure Storage</strong>: Use the <code>flutter_secure_storage</code> package to store the token in the device keychain (iOS) or keystore (Android).</li>
+                            </ul>
+                            <h3>Header Construction Template</h3>
+                            <pre><code>{
+  "Authorization": "Bearer \${storedToken}",
+  "Content-Type": "application/json"
+}</code></pre>
+                        `
+                    },
+                    {
+                        title: "Register Endpoint", method: "POST", url: "/api/Users/register",
+                        desc: "Create a new user account profile.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            name: "John Doe",
+                            userName: "johndoe",
+                            email: "passenger@travai.com",
+                            password: "SecurePassword123",
+                            phoneNumber: "+123456789",
+                            passportNumber: "A000111222",
+                            nationality: "Egyptian",
+                            dateOfBirth: "1994-06-15",
+                            gender: "Male"
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Registration successful"
+                        }, null, 2)
+                    }
+                ]
+            },
+            {
+                category: "3. Booking Creation APIs",
+                endpoints: [
+                    {
+                        title: "Book Flight", method: "POST", url: "/api/airline/bookings",
+                        desc: "Creates a flight reservation. A seat lock is initiated, reserving seats for 10 minutes.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            flightId: 12,
+                            numberOfSeats: 2,
+                            companionIds: [5, 6]
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Flight booked successfully.",
+                            data: {
+                                id: 1045,
+                                flightId: 12,
+                                numberOfSeats: 2,
+                                totalPrice: 560.00,
+                                bookingDate: "2026-06-10T19:40:00Z",
+                                status: "Pending",
+                                paymentStatus: "Pending",
+                                passengerDetailsStatus: "Incomplete"
+                            }
+                        }, null, 2),
+                        notes: `
+                            <h3>Database Record Generation</h3>
+                            <ul>
+                                <li><strong>Booking Status</strong>: Created as <code>Pending</code>.</li>
+                                <li><strong>Payment Status</strong>: Set as <code>Pending</code>.</li>
+                                <li><strong>Passenger Status</strong>: Set as <code>Incomplete</code>. Creates placeholder passenger records.</li>
+                                <li><strong>Seat Lock</strong>: The flight availability count is reduced by <code>numberOfSeats</code>.</li>
+                                <li><strong>Timer</strong>: Booking is canceled and deleted if unpaid after 10 minutes.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "Book Hotel Room", method: "POST", url: "/api/HotelBookings",
+                        desc: "Book hotel rooms for check-in/check-out dates. Reservation is locked for 60 minutes.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            hotelId: 3,
+                            checkInDate: "2026-07-01T14:00:00Z",
+                            checkOutDate: "2026-07-05T12:00:00Z",
+                            rooms: [
+                                { roomId: 42, mealPlan: "HB" }
+                            ]
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Booking created successfully.",
+                            data: {
+                                id: 88,
+                                userId: 4,
+                                hotelId: 3,
+                                checkInDate: "2026-07-01T14:00:00Z",
+                                checkOutDate: "2026-07-05T12:00:00Z",
+                                totalRooms: 1,
+                                totalPrice: 480.00,
+                                paymentStatus: "Pending",
+                                status: "Pending",
+                                createdAt: "2026-06-10T19:40:00Z"
+                            }
+                        }, null, 2),
+                        notes: `
+                            <h3>Database Record Generation</h3>
+                            <ul>
+                                <li><strong>Booking Status</strong>: Initialized to <code>Pending</code> (maps to 0).</li>
+                                <li><strong>Payment Status</strong>: Initialized to <code>Pending</code> (maps to 0).</li>
+                                <li><strong>Timer</strong>: Reservation is canceled and deleted if unpaid after 60 minutes.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "Book Guided Tour", method: "POST", url: "/api/tourguide/bookings/tour/{tourId}",
+                        desc: "Book a guided tour card. Reservation is locked for 60 minutes.",
+                        requestParams: [
+                            { name: "tourId", type: "Path", desc: "Target tour guide card ID" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            id: 76,
+                            userId: 4,
+                            tourId: 8,
+                            tourGuideId: 1,
+                            tourDate: "2026-06-25T00:00:00Z",
+                            participantsCount: 1,
+                            totalPrice: 120.00,
+                            currency: "USD",
+                            paymentStatus: "Pending",
+                            status: "Pending",
+                            createdAt: "2026-06-10T19:40:00Z"
+                        }, null, 2),
+                        notes: `
+                            <h3>Database Record Generation</h3>
+                            <ul>
+                                <li><strong>Booking Status</strong>: Set as <code>Pending</code>.</li>
+                                <li><strong>Payment Status</strong>: Set as <code>Pending</code>.</li>
+                                <li><strong>Timer</strong>: Reservation is canceled and deleted if unpaid after 60 minutes.</li>
+                            </ul>
+                        `
+                    }
+                ]
+            },
+            {
+                category: "4. Airline Passenger Readiness",
+                endpoints: [
+                    {
+                        title: "Submit Passenger Details", method: "POST", url: "/api/airline/bookings/{bookingId}/passenger-details",
+                        desc: "Submit passenger details for all reserved seats. Complete passenger records are required before payment.",
+                        requestParams: [
+                            { name: "bookingId", type: "Path", desc: "Airline booking ID" }
+                        ],
+                        requestBody: JSON.stringify({
+                            passengers: [
+                                {
+                                    id: 1201, // Optional: pass passenger id if updating existing record
+                                    firstName: "John",
+                                    lastName: "Doe",
+                                    dateOfBirth: "1994-06-15",
+                                    gender: "Male",
+                                    passportNumber: "A0001112",
+                                    passportExpiryDate: "2031-12-01",
+                                    passengerType: "Adult",
+                                    ageType: "Adult"
+                                }
+                            ]
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Passenger details saved successfully."
+                        }, null, 2),
+                        notes: `
+                            <h3>Readiness Criteria</h3>
+                            <p>To prepare an airline booking for payment, the count of valid passenger records submitted must equal the reserved <code>NumberOfSeats</code>. If a placeholder account holder profile remains (marked with <code>lastName: "(Account Holder)"</code>), validation will fail.</p>
+                            <div class="alert-box">
+                                <strong>Required Validation Fields (6-Field Rule):</strong><br>
+                                <code>firstName</code> (non-empty), <code>lastName</code> (non-empty, not '(Account Holder)'), <code>passportNumber</code> (non-empty), <code>dateOfBirth</code> (valid date), <code>gender</code> (non-empty), and <code>passportExpiryDate</code> (valid date).
+                            </div>
+                        `
+                    },
+                    {
+                        title: "Get Companions Lookup", method: "GET", url: "/api/airline/companions",
+                        desc: "Retrieve the user's companion list to auto-fill details on passenger forms.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: [
+                                {
+                                    id: 5,
+                                    firstName: "Jane",
+                                    lastName: "Doe",
+                                    ageType: "Adult",
+                                    passportNumber: "P9988221",
+                                    nationality: "Egyptian",
+                                    profilePic: "https://example.com/pic.png",
+                                    passportImage: "https://example.com/passport.png",
+                                    dateOfBirth: "1996-08-20T00:00:00Z",
+                                    passportExpireDate: "2032-05-12T00:00:00Z",
+                                    gender: "Female"
+                                }
+                            ]
+                        }, null, 2)
+                    },
+                    {
+                        title: "Create Companion", method: "POST", url: "/api/airline/companions",
+                        desc: "Add a new travel companion profile.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            firstName: "Jane",
+                            lastName: "Doe",
+                            ageType: "Adult",
+                            passportNumber: "P9988221",
+                            nationality: "Egyptian",
+                            profilePic: "https://example.com/pic.png",
+                            passportImage: "https://example.com/passport.png",
+                            dateOfBirth: "1996-08-20",
+                            passportExpireDate: "2032-05-12",
+                            gender: "Female"
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Companion added successfully."
+                        }, null, 2)
+                    },
+                    {
+                        title: "Delete Companion", method: "DELETE", url: "/api/airline/companions/{id}",
+                        desc: "Delete a companion profile.",
+                        requestParams: [
+                            { name: "id", type: "Path", desc: "Companion record ID" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Companion deleted successfully."
+                        }, null, 2)
+                    }
+                ]
+            },
+            {
+                category: "5. Checkout Cart APIs",
+                endpoints: [
+                    {
+                        title: "Get Pending Items", method: "GET", url: "/api/checkout/pending",
+                        desc: "Fetch all unpaid, non-expired reservations owned by the logged-in user. Automatically filters out items belonging to other users.",
+                        requestParams: [
+                            { name: "userId", type: "Query (Legacy)", desc: "User ID. Note: The backend checks the authenticated JWT claims first." }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Pending bookings retrieved successfully.",
+                            data: [
+                                {
+                                    id: 1045,
+                                    referenceId: 1045,
+                                    itemType: "AirlineBooking",
+                                    displayName: "Flight MS101 (CAI -> DXB)",
+                                    amount: 560.00,
+                                    currency: "usd",
+                                    createdAt: "2026-06-10T19:40:00Z",
+                                    expiresAt: "2026-06-10T19:50:00Z",
+                                    serverNowUtc: "2026-06-10T19:42:00Z",
+                                    remainingSeconds: 480.0,
+                                    paymentStatus: "Pending",
+                                    status: "Pending",
+                                    requiresPassengerDetails: true,
+                                    passengerDetailsStatus: "Complete",
+                                    isReadyForPayment: true,
+                                    readinessMessage: "Ready for payment."
+                                },
+                                {
+                                    id: 1046,
+                                    referenceId: 1046,
+                                    itemType: "AirlineBooking",
+                                    displayName: "Flight MS777 (CAI -> FRA)",
+                                    amount: 600.00,
+                                    currency: "usd",
+                                    createdAt: "2026-06-10T19:41:00Z",
+                                    expiresAt: "2026-06-10T19:51:00Z",
+                                    serverNowUtc: "2026-06-10T19:42:00Z",
+                                    remainingSeconds: 540.0,
+                                    paymentStatus: "Pending",
+                                    status: "Pending",
+                                    requiresPassengerDetails: true,
+                                    passengerDetailsStatus: "Incomplete",
+                                    isReadyForPayment: false,
+                                    readinessMessage: "Complete passenger/passport details before payment."
+                                },
+                                {
+                                    id: 88,
+                                    referenceId: 88,
+                                    itemType: "HotelBooking",
+                                    displayName: "Hotel: Pyramids View Resort",
+                                    amount: 480.00,
+                                    currency: "usd",
+                                    createdAt: "2026-06-10T19:40:00Z",
+                                    expiresAt: "2026-06-10T20:40:00Z",
+                                    serverNowUtc: "2026-06-10T19:42:00Z",
+                                    remainingSeconds: 3480.0,
+                                    paymentStatus: "Pending",
+                                    status: "Pending",
+                                    requiresPassengerDetails: false,
+                                    passengerDetailsStatus: "Complete",
+                                    isReadyForPayment: true,
+                                    readinessMessage: "Ready for payment."
+                                },
+                                {
+                                    id: 76,
+                                    referenceId: 76,
+                                    itemType: "TourBooking",
+                                    displayName: "Tour: Historic Cairo Sites",
+                                    amount: 120.00,
+                                    currency: "usd",
+                                    createdAt: "2026-06-10T19:40:00Z",
+                                    expiresAt: "2026-06-10T20:40:00Z",
+                                    serverNowUtc: "2026-06-10T19:42:00Z",
+                                    remainingSeconds: 3480.0,
+                                    paymentStatus: "Pending",
+                                    status: "Pending",
+                                    requiresPassengerDetails: false,
+                                    passengerDetailsStatus: "Complete",
+                                    isReadyForPayment: true,
+                                    readinessMessage: "Ready for payment."
+                                }
+                            ]
+                        }, null, 2),
+                        notes: `
+                            <h3>Client Selection Constraints</h3>
+                            <ul>
+                                <li><strong>Selectable Items</strong>: Only items with <code>isReadyForPayment = true</code> can be checked for payment.</li>
+                                <li><strong>Disabled Items</strong>: If <code>isReadyForPayment = false</code>, the UI checkbox must be disabled. Direct the user to the passenger form modal.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "Create Checkout Session", method: "POST", url: "/api/checkout/create",
+                        desc: "Creates a Stripe session for selected booking items.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            userId: 4,
+                            items: [
+                                { itemType: "AirlineBooking", referenceId: 1045 },
+                                { itemType: "HotelBooking", referenceId: 88 }
+                            ]
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Checkout session created successfully.",
+                            data: {
+                                checkoutSessionId: 2051,
+                                stripeCheckoutSessionId: "cs_test_a1b2c3d4e5...",
+                                checkoutUrl: "https://checkout.stripe.com/pay/cs_test_a1b2c3d4e5..."
+                            }
+                        }, null, 2),
+                        notes: `
+                            <h3>Validation and Processing Steps</h3>
+                            <ul>
+                                <li><strong>Validation</strong>: The backend verifies database states (e.g. flight passenger details completed, non-expired status, and correct item owner ID).</li>
+                                <li><strong>Timer Allocation</strong>: Calculates the transaction expiration time using the earliest <code>expiresAt</code> date among selected items.</li>
+                                <li><strong>Ledger Logs</strong>: Creates database records for the checkout session, items, and pending transaction.</li>
+                                <li><strong>Redirect URL</strong>: Returns the <code>checkoutUrl</code> to redirect the client.</li>
+                            </ul>
+                        `
+                    },
+                    {
+                        title: "Get Checkout Details", method: "GET", url: "/api/checkout/session/{id}",
+                        desc: "Retrieve payment details and status for a local checkout session.",
+                        requestParams: [
+                            { name: "id", type: "Path", desc: "Local checkout session ID" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            checkoutSessionId: 2051,
+                            status: "Paid",
+                            totalAmount: 1040.00,
+                            currency: "usd",
+                            stripeCheckoutSessionId: "cs_test_a1b2c3d4e5...",
+                            items: [
+                                { itemType: "AirlineBooking", referenceId: 1045, displayName: "Flight MS101", amount: 560.00 },
+                                { itemType: "HotelBooking", referenceId: 88, displayName: "Hotel: Pyramids View Resort", amount: 480.00 }
+                            ],
+                            paymentTransactionId: 4002,
+                            providerTransactionId: "pi_3MtwL2LkdIwHu7ix1...",
+                            paidAt: "2026-06-10T19:45:00Z"
+                        }, null, 2)
+                    }
+                ]
+            },
+            {
+                category: "6. Payment & Hooks",
+                endpoints: [
+                    {
+                        title: "Confirm Payment", method: "GET", url: "/api/checkout/confirm",
+                        desc: "Verifies the status of a Stripe session and updates the database. Call this endpoint when the user returns to the success page.",
+                        requestParams: [
+                            { name: "session_id", type: "Query", desc: "The Stripe Checkout Session ID returned in the success URL" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Payment confirmed successfully.",
+                            data: {
+                                checkoutSessionId: 2051,
+                                paymentTransactionId: 4002,
+                                amount: 1040.00,
+                                currency: "usd",
+                                status: "Paid",
+                                paidAt: "2026-06-10T19:45:00Z"
+                            }
+                        }, null, 2),
+                        notes: `
+                            <h3>Expiry Check</h3>
+                            <p>If the local checkout session expires in the database before the confirm call, the backend will reject the confirmation and return a validation error.</p>
+                        `
+                    },
+                    {
+                        title: "Stripe Webhook", method: "POST", url: "/api/checkout/stripe/webhook",
+                        desc: "Asynchronous webhook endpoint for Stripe events. Processes event callbacks securely.",
+                        requestParams: null,
+                        requestBody: "// Stripe Webhook Event Schema Structure",
+                        response: JSON.stringify({
+                            received: true,
+                            processed: true
+                        }, null, 2),
+                        notes: `
+                            <h3>Handled Webhook Events</h3>
+                            <ul>
+                                <li><code>checkout.session.completed</code>: Confirms transaction payment and sets the corresponding booking records as <code>Paid</code> / <code>Confirmed</code>.</li>
+                                <li><code>checkout.session.expired</code>: Marks the transaction and any expired reservations as <code>Expired</code>.</li>
+                            </ul>
+                            <div class="alert-box warning">
+                                <strong>Stripe-Signature Validation:</strong> The backend verifies webhook payloads using the configured Stripe signing secret to prevent spoofing.
+                            </div>
+                        `
+                    },
+                    {
+                        title: "Get Payment Details", method: "GET", url: "/api/checkout/payments/{paymentTransactionId}",
+                        desc: "Retrieves the unified payment transaction details and sub-item bookings list.",
+                        requestParams: [
+                            { name: "paymentTransactionId", type: "Path", desc: "The ID of the local payment transaction" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Payment transaction retrieved successfully.",
+                            data: {
+                                paymentTransactionId: 4002,
+                                userId: 4,
+                                checkoutSessionId: 2051,
+                                stripeSessionId: "cs_test_a1b2c3d4e5...",
+                                stripePaymentIntentId: "pi_3MtwL2LkdIwHu7ix1...",
+                                totalAmount: 1040.00,
+                                currency: "usd",
+                                paymentMethod: "Stripe",
+                                status: "Paid",
+                                paidAt: "2026-06-10T19:45:00Z",
+                                createdAt: "2026-06-10T19:40:00Z",
+                                updatedAt: "2026-06-10T19:45:00Z",
+                                items: [
+                                    {
+                                        paymentTransactionItemId: 5001,
+                                        bookingType: "Airline",
+                                        bookingId: 1045,
+                                        amount: 560.00,
+                                        status: "Paid",
+                                        createdAt: "2026-06-10T19:45:00Z"
+                                    },
+                                    {
+                                        paymentTransactionItemId: 5002,
+                                        bookingType: "Hotel",
+                                        bookingId: 88,
+                                        amount: 480.00,
+                                        status: "Paid",
+                                        createdAt: "2026-06-10T19:45:00Z"
+                                    }
+                                ]
+                            }
+                        }, null, 2),
+                        notes: `
+                            <h3>Unified Payment Structures</h3>
+                            <ul>
+                                <li><strong>Items List</strong>: Represents all separate bookings paid in a single Stripe transaction.</li>
+                                <li><strong>Idempotency</strong>: Each sub-item has its own payment status, resolved securely without duplication when processing payment callbacks.</li>
+                            </ul>
+                        `
+                    }
+                ]
+            },
+            {
+                category: "7. Client Expiry & Timers",
+                endpoints: [
+                    {
+                        title: "Timer Calculation Specs", method: "GUIDE", url: "Timers",
+                        desc: "Understand how to implement accurate client-side timers using backend timestamps.",
+                        isGuide: true,
+                        content: `
+                            <p>To prevent device clock mismatch from causing timer desynchronization, client applications must calculate the time remaining using the server’s current time.</p>
+                            <h3>Calculation Flow</h3>
+                            <pre><code>// 1. Calculate device-to-server clock offset
+DateTime serverTime = DateTime.parse(serverNowUtc);
+Duration clockOffset = serverTime.difference(DateTime.now().toUtc());
+
+// 2. Adjust device time to align with the server clock
+DateTime adjustedNow = DateTime.now().toUtc().add(clockOffset);
+
+// 3. Calculate time remaining for the item
+Duration itemRemaining = expiresAt.difference(adjustedNow);
+int remainingSeconds = itemRemaining.inSeconds;</code></pre>
+                            <h3>Group Expiration Rules</h3>
+                            <p>When checkouts contain multiple reservations, the group expiration timer is set to the earliest expiration date among the selected items:</p>
+                            <pre><code>selectedGroupExpiresAt = min(selectedItems.expiresAt)
+groupRemainingSeconds = selectedGroupExpiresAt.difference(adjustedNow).inSeconds;</code></pre>
+                        `
+                    }
+                ]
+            },
+            {
+                category: "8. Flutter Integration Guide",
+                endpoints: [
+                    {
+                        title: "Dart Models", method: "GUIDE", url: "DartModels",
+                        desc: "Sample Dart class definitions for the TravAi checkout models.",
+                        isGuide: true,
+                        content: `
+                            <h3>1. PendingCheckoutItem Model</h3>
+                            <pre><code>class PendingCheckoutItem {
+  final int id;
+  final int referenceId;
+  final String itemType;
+  final String displayName;
+  final double amount;
+  final String currency;
+  final DateTime createdAt;
+  final DateTime expiresAt;
+  final DateTime serverNowUtc;
+  final int remainingSeconds;
+  final String paymentStatus;
+  final String status;
+  final bool requiresPassengerDetails;
+  final String? passengerDetailsStatus;
+  final bool isReadyForPayment;
+  final String readinessMessage;
+
+  PendingCheckoutItem({
+    required this.id,
+    required this.referenceId,
+    required this.itemType,
+    required this.displayName,
+    required this.amount,
+    required this.currency,
+    required this.createdAt,
+    required this.expiresAt,
+    required this.serverNowUtc,
+    required this.remainingSeconds,
+    required this.paymentStatus,
+    required this.status,
+    required this.requiresPassengerDetails,
+    this.passengerDetailsStatus,
+    required this.isReadyForPayment,
+    required this.readinessMessage,
+  });
+
+  factory PendingCheckoutItem.fromJson(Map&lt;String, dynamic&gt; json) {
+    return PendingCheckoutItem(
+      id: json['id'],
+      referenceId: json['referenceId'],
+      itemType: json['itemType'],
+      displayName: json['displayName'],
+      amount: (json['amount'] as num).toDouble(),
+      currency: json['currency'],
+      createdAt: DateTime.parse(json['createdAt']),
+      expiresAt: DateTime.parse(json['expiresAt']),
+      serverNowUtc: DateTime.parse(json['serverNowUtc']),
+      remainingSeconds: json['remainingSeconds'],
+      paymentStatus: json['paymentStatus'],
+      status: json['status'],
+      requiresPassengerDetails: json['requiresPassengerDetails'],
+      passengerDetailsStatus: json['passengerDetailsStatus'],
+      isReadyForPayment: json['isReadyForPayment'],
+      readinessMessage: json['readinessMessage'],
+    );
+  }
+}</code></pre>
+                        `
+                    },
+                    {
+                        title: "Client UI Timer Logic", method: "GUIDE", url: "TimerLogic",
+                        desc: "Implementation guide for client-side timers in Flutter.",
+                        isGuide: true,
+                        content: `
+                            <h3>Using a Periodic Timer</h3>
+                            <p>Use a periodic timer to update the remaining time displayed in the UI once per second:</p>
+                            <pre><code>Timer? _timer;
+Duration _offset = Duration.zero;
+
+void initializeServerTimer(DateTime serverNow) {
+  _offset = serverNow.difference(DateTime.now().toUtc());
+  _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    updateTimers();
+  });
+}
+
+void updateTimers() {
+  final adjustedNow = DateTime.now().toUtc().add(_offset);
+  setState(() {
+    for (var item in pendingItems) {
+      item.remainingSeconds = item.expiresAt.difference(adjustedNow).inSeconds;
+      if (item.remainingSeconds <= 0) {
+        handleExpiredItem(item);
+      }
+    }
+    
+    // Update group timer if items are selected
+    if (selectedItems.isNotEmpty) {
+      final minExpiresAt = selectedItems.map((e) => e.expiresAt).reduce((a, b) => a.isBefore(b) ? a : b);
+      groupRemainingSeconds = minExpiresAt.difference(adjustedNow).inSeconds;
+      if (groupRemainingSeconds <= 0) {
+        disablePayButton();
+        refreshCart();
+      }
+    }
+  });
+}</code></pre>
+                        `
+                    },
+                    {
+                        title: "Stripe WebView Redirects", method: "GUIDE", url: "WebViewRedirects",
+                        desc: "Interceptive redirection logic for Flutter Stripe integrations.",
+                        isGuide: true,
+                        content: `
+                            <p>To process payments in a mobile app, launch the <code>checkoutUrl</code> in a WebView (using <code>flutter_inappwebview</code>) and listen for the checkout success or cancel redirect URLs.</p>
+                            <h3>URL Interception Pattern</h3>
+                            <pre><code>InAppWebView(
+  initialUrlRequest: URLRequest(url: WebUri(checkoutUrl)),
+  onNavigationResponse: (controller, navigationResponse) async {
+    final url = navigationResponse.request.url.toString();
+    
+    if (url.contains("checkout-success.html")) {
+      // 1. Intercept the redirect and extract the session_id
+      final uri = Uri.parse(url);
+      final sessionId = uri.queryParameters['session_id'];
+      
+      // 2. Call the confirm payment endpoint
+      await confirmPaymentOnBackend(sessionId);
+      
+      // 3. Navigate the user to the success screen
+      showSuccessRoute();
+      return NavigationResponseAction.CANCEL;
+    }
+    
+    if (url.contains("checkout-cancel.html")) {
+      showCancelRoute();
+      return NavigationResponseAction.CANCEL;
+    }
+    
+    return NavigationResponseAction.ALLOW;
+  },
+)</code></pre>
+                        `
+                    }
+                ]
+            },
+            {
+                category: "9. Travel History (My Trips)",
+                endpoints: [
+                    {
+                        title: "Get Hotel Trips", method: "GET", url: "/api/user/trips/hotels",
+                        desc: "Fetch the user's paid and confirmed hotel reservations.",
+                        requestParams: [
+                            { name: "tab", type: "Query", desc: "Values: 'upcoming', 'past', 'cancelled'" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Trips retrieved.",
+                            data: [
+                                {
+                                    id: 88,
+                                    hotelId: 3,
+                                    hotelName: "Pyramids View Resort",
+                                    roomName: "Standard Bed Room",
+                                    checkInDate: "2026-07-01T00:00:00Z",
+                                    checkOutDate: "2026-07-05T00:00:00Z",
+                                    totalPrice: 480.00,
+                                    status: "Confirmed",
+                                    canCancel: true,
+                                    canReview: false,
+                                    canRebook: false
+                                }
+                            ]
+                        }, null, 2)
+                    },
+                    {
+                        title: "Get Flight Trips", method: "GET", url: "/api/airline/bookings/my-trips",
+                        desc: "Fetch the user's paid and confirmed flight bookings.",
+                        requestParams: [
+                            { name: "tab", type: "Query", desc: "Values: 'upcoming', 'past', 'cancelled'" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Flight trips retrieved successfully.",
+                            data: [
+                                {
+                                    id: 1045,
+                                    flightNumber: "FL-12",
+                                    airlineName: "SkyLine Airlines",
+                                    routeTitle: "CAI to DXB",
+                                    departureTime: "2026-06-25T14:30:00Z",
+                                    boardingTime: "13:45",
+                                    totalPrice: 560.00,
+                                    status: "Confirmed",
+                                    uiBadge: "Upcoming",
+                                    canCancel: true
+                                }
+                            ]
+                        }, null, 2)
+                    },
+                    {
+                        title: "Get Tour Trips", method: "GET", url: "/api/tourguide/bookings/my-trips",
+                        desc: "Fetch the user's paid and confirmed tour reservations.",
+                        requestParams: [
+                            { name: "tab", type: "Query", desc: "Values: 'upcoming', 'past', 'cancelled'" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Retrieved upcoming tour trips.",
+                            data: [
+                                {
+                                    id: 76,
+                                    tourId: 8,
+                                    tourTitle: "Historic Cairo Sites",
+                                    tourDate: "2026-06-25T00:00:00Z",
+                                    tourTime: "09:00",
+                                    participantsCount: 1,
+                                    totalPrice: 120.00,
+                                    status: "Confirmed",
+                                    paymentStatus: "Completed",
+                                    uiBadge: "Upcoming",
+                                    canCancel: true,
+                                    canReview: false
+                                }
+                            ]
+                        }, null, 2),
+                        notes: `
+                            <div class="alert-box success">
+                                <strong>Paid-Only Enforcements:</strong> The travel history endpoints only return bookings with paid confirmation statuses. Unpaid items are kept in the checkout cart.
+                            </div>
+                        `
+                    }
+                ]
+            }
+        ];
+
+        // --- Render Sidebar ---
+        function renderSidebar(filterQuery = "") {
+            const sidebarList = document.getElementById('sidebarList');
+            let html = '';
+            const query = filterQuery.toLowerCase().trim();
+
+            apiData.forEach((cat, catIdx) => {
+                // Filter endpoints
+                const filteredEndpoints = cat.endpoints.filter(ep => {
+                    return ep.title.toLowerCase().includes(query) || 
+                           ep.url.toLowerCase().includes(query) || 
+                           ep.desc.toLowerCase().includes(query);
+                });
+
+                if (filteredEndpoints.length > 0) {
+                    html += `<div class="category-title">${cat.category}</div>`;
+                    filteredEndpoints.forEach((ep) => {
+                        // Find index of ep in original cat array
+                        const originalEpIdx = cat.endpoints.indexOf(ep);
+                        html += `
+                            <div class="endpoint-link" onclick="showDetails(${catIdx}, ${originalEpIdx}, this)">
+                                <span class="method-badge method-${ep.method}">${ep.method}</span>
+                                <span style="font-size: 0.85rem;">${ep.title}</span>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            sidebarList.innerHTML = html || `<div style="padding: 24px; color: var(--text-muted); font-size: 0.9rem; text-align: center;">No matches found</div>`;
+        }
+
+        function filterSidebar() {
+            const query = document.getElementById('searchSidebar').value;
+            renderSidebar(query);
+        }
+
+        // --- Show Details ---
+        function showDetails(catIdx, epIdx, el) {
+            document.querySelectorAll('.endpoint-link').forEach(link => link.classList.remove('active'));
+            if(el) el.classList.add('active');
+
+            const ep = apiData[catIdx].endpoints[epIdx];
+            const content = document.getElementById('mainContent');
+
+            if (ep.isGuide) {
+                // Render Guide Document style
+                content.innerHTML = `
+                    <div class="card">
+                        <h2>${ep.title}</h2>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.5; margin-bottom: 25px;">${ep.desc}</p>
+                        <div style="border-top: 1px solid var(--border); padding-top: 25px;">
+                            ${ep.content}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let paramsHtml = '';
+            if (ep.requestParams && ep.requestParams.length > 0) {
+                paramsHtml = `
+                    <h3><span style="color:#38bdf8; font-weight:600;"><i class="fas fa-filter"></i> Request Parameters</span> (Query/Path)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type / Location</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ep.requestParams.map(p => `
+                                <tr>
+                                    <td style="color:var(--text-main);"><code>${p.name}</code></td>
+                                    <td style="color:var(--text-muted);">${p.type}</td>
+                                    <td>${p.desc}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            let bodyHtml = '';
+            if (ep.requestBody) {
+                bodyHtml = `
+                    <h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span> (JSON Format)</h3>
+                    <pre><code>${ep.requestBody}</code></pre>
+                `;
+            } else {
+                bodyHtml = `
+                    <h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span></h3>
+                    <pre><code style="color: #64748b; font-style: italic;">// No JSON body payload is required for this request.</code></pre>
+                `;
+            }
+
+            let notesHtml = '';
+            if (ep.notes) {
+                notesHtml = `
+                    <div style="margin-top: 30px;">
+                        ${ep.notes}
+                    </div>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="card">
+                    <h2>${ep.title}</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.5;">${ep.desc}</p>
+                    
+                    <div class="url-box">
+                        <span class="method-badge method-${ep.method}" style="font-size: 0.85rem; padding: 6px 12px; margin-right: 10px;">${ep.method}</span>
+                        <span style="color: #a5b4fc; font-weight: 600;">http://localhost:5210</span>${ep.url}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 25px; padding-left: 5px;">
+                        <i class="fas fa-globe"></i> Production base URL placeholder: <code>https://YOUR_BACKEND_BASE_URL${ep.url}</code>
+                    </div>
+
+                    ${paramsHtml}
+                    ${bodyHtml}
+
+                    <h3><span class="hl-res"><i class="fas fa-file-import"></i> Response Payload</span></h3>
+                    <pre><code>${ep.response}</code></pre>
+
+                    ${notesHtml}
+                </div>
+            `;
+        }
+
+        // Initialize
+        renderSidebar();
+    </script>
+</body>
+</html>

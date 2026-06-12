@@ -18,11 +18,15 @@ namespace TravAi.Services.HotelService
     {
         private readonly ApplicationDbContext _context;
         private readonly IFileService _fileService;
+        private readonly TravAi.Services.Common.IWalletService _walletService;
+        private readonly TravAi.Options.StripeOptions _stripeOptions;
 
-        public HotelService(ApplicationDbContext context, IFileService fileService)
+        public HotelService(ApplicationDbContext context, IFileService fileService, TravAi.Services.Common.IWalletService walletService, Microsoft.Extensions.Options.IOptions<TravAi.Options.StripeOptions> stripeOptions)
         {
             _context = context;
             _fileService = fileService;
+            _walletService = walletService;
+            _stripeOptions = stripeOptions.Value;
         }
 
         // --- Active Hotel Operations ---
@@ -1127,10 +1131,117 @@ namespace TravAi.Services.HotelService
             return MapBookingToDto(booking);
         }
 
-        public async Task<BookingDto> CancelBookingAsync(long userId, long bookingId, string reason)
+        public async Task<CancelPreviewDto> PreviewCancelBookingAsync(long userId, long bookingId)
         {
             var booking = await _context.HotelBookings
                 .Include(b => b.Hotel)
+                    .ThenInclude(h => h.Policy)
+                        .ThenInclude(p => p.CancellationRules)
+                .FirstOrDefaultAsync(b => b.Id == bookingId);
+
+            if (booking == null) throw new KeyNotFoundException("Booking not found.");
+            
+            if (booking.UserId != userId && booking.Hotel.UserId != userId) 
+                throw new UnauthorizedAccessException("You are not authorized to preview cancellation for this booking.");
+
+            if (booking.Status == BookingStatus.Cancelled) 
+                throw new InvalidOperationException("Booking is already cancelled.");
+            
+            if (booking.Status == BookingStatus.Completed) 
+                throw new InvalidOperationException("Cannot cancel a completed booking.");
+
+            decimal refundPercentage = 100m;
+            var strategy = booking.Hotel?.Policy?.CancellationStrategy ?? CancellationStrategy.FreeAll;
+            string appliedRuleText = "";
+            
+            if (strategy == CancellationStrategy.NonRefundable)
+            {
+                refundPercentage = 0m;
+                appliedRuleText = "Non-Refundable Policy Applied: This booking is non-refundable. You will not receive any refund upon cancellation.";
+            }
+            else if (strategy == CancellationStrategy.FreeAll)
+            {
+                refundPercentage = 100m;
+                appliedRuleText = "Free Cancellation Policy Applied: You are eligible for a 100% refund.";
+            }
+            else if (strategy == CancellationStrategy.WindowBased && booking.Hotel?.Policy?.CancellationRules != null && booking.CheckInDate.HasValue)
+            {
+                var hoursBeforeCheckin = (booking.CheckInDate.Value - DateTime.UtcNow).TotalHours;
+                
+                var applicableRule = booking.Hotel.Policy.CancellationRules
+                    .Where(r => (!r.FromHoursBeforeCheckIn.HasValue || hoursBeforeCheckin >= r.FromHoursBeforeCheckIn.Value) &&
+                                (!r.ToHoursBeforeCheckIn.HasValue || hoursBeforeCheckin <= r.ToHoursBeforeCheckIn.Value))
+                    .OrderByDescending(r => r.PenaltyPct)
+                    .FirstOrDefault();
+                    
+                if (applicableRule != null)
+                {
+                    refundPercentage = 100m - applicableRule.PenaltyPct;
+                    appliedRuleText = $"Window-Based Policy Match: The rule matching the window has a penalty of {applicableRule.PenaltyPct}%, resulting in a {refundPercentage}% refund.";
+                }
+                else
+                {
+                    refundPercentage = 100m;
+                    appliedRuleText = $"Window-Based Policy: No penalty rule is configured for this time window. You are eligible for a 100% refund.";
+                }
+            }
+            
+            if (refundPercentage < 0) refundPercentage = 0;
+            if (refundPercentage > 100) refundPercentage = 100;
+
+            decimal refundAmount = booking.TotalPrice * (refundPercentage / 100m);
+            decimal cancellationFee = booking.TotalPrice - refundAmount;
+
+            if (booking.PaymentStatus != PaymentStatus.Paid && booking.PaymentStatus != PaymentStatus.Refunded)
+            {
+                refundAmount = 0m;
+                cancellationFee = 0m;
+                refundPercentage = 0m;
+                appliedRuleText = "Payment Status Check: The booking has not been marked as Paid, so no refund can be processed.";
+            }
+
+            var rulesList = booking.Hotel?.Policy?.CancellationRules?
+                .OrderBy(r => r.FromHoursBeforeCheckIn)
+                .Select(r => new HotelCancellationRuleDto
+                {
+                    Id = r.Id,
+                    FromHoursBeforeCheckIn = r.FromHoursBeforeCheckIn,
+                    ToHoursBeforeCheckIn = r.ToHoursBeforeCheckIn,
+                    PenaltyPct = r.PenaltyPct
+                }).ToList() ?? new List<HotelCancellationRuleDto>();
+
+            // Determine if Stripe refund is possible
+            bool hasStripePayment = await _context.PaymentTransactionItems
+                .Include(pti => pti.PaymentTransaction)
+                .AnyAsync(pti => pti.BookingType == "Hotel" && pti.BookingId == bookingId && pti.PaymentTransaction.Provider == "Stripe" && pti.Status == "Paid");
+
+            var availableRefundMethods = new List<string> { "Wallet" };
+            if (hasStripePayment)
+            {
+                availableRefundMethods.Add("OriginalPaymentMethod");
+            }
+
+            return new CancelPreviewDto
+            {
+                BookingId = booking.Id,
+                TotalPrice = booking.TotalPrice,
+                RefundAmount = refundAmount,
+                CancellationFee = cancellationFee,
+                RefundPercentage = refundPercentage,
+                PolicyStrategy = strategy.ToString(),
+                CancellationRules = rulesList,
+                AppliedRuleText = appliedRuleText,
+                OriginalPaymentMethodAvailable = hasStripePayment,
+                AvailableRefundMethods = availableRefundMethods
+            };
+        }
+
+        public async Task<BookingDto> CancelBookingAsync(long userId, long bookingId, string reason, string? refundMethod = null)
+        {
+            var booking = await _context.HotelBookings
+                .Include(b => b.Hotel)
+                    .ThenInclude(h => h.Policy)
+                        .ThenInclude(p => p.CancellationRules)
                 .Include(b => b.BookingRooms)
                 .FirstOrDefaultAsync(b => b.Id == bookingId);
 
@@ -1145,6 +1256,78 @@ namespace TravAi.Services.HotelService
             
             if (booking.Status == BookingStatus.Completed) 
                 throw new InvalidOperationException("Cannot cancel a completed booking.");
+
+            // Calculate refund if paid
+            if (booking.PaymentStatus == PaymentStatus.Paid || booking.PaymentStatus == PaymentStatus.Refunded) 
+            {
+                if (booking.PaymentStatus != PaymentStatus.Refunded)
+                {
+                    decimal refundPercentage = 100m;
+                    var strategy = booking.Hotel?.Policy?.CancellationStrategy ?? CancellationStrategy.FreeAll;
+                    
+                    if (strategy == CancellationStrategy.NonRefundable)
+                    {
+                        refundPercentage = 0m;
+                    }
+                    else if (strategy == CancellationStrategy.WindowBased && booking.Hotel?.Policy?.CancellationRules != null && booking.CheckInDate.HasValue)
+                    {
+                        var hoursBeforeCheckin = (booking.CheckInDate.Value - DateTime.UtcNow).TotalHours;
+                        
+                        var applicableRule = booking.Hotel.Policy.CancellationRules
+                            .Where(r => (!r.FromHoursBeforeCheckIn.HasValue || hoursBeforeCheckin >= r.FromHoursBeforeCheckIn.Value) &&
+                                        (!r.ToHoursBeforeCheckIn.HasValue || hoursBeforeCheckin <= r.ToHoursBeforeCheckIn.Value))
+                            .OrderByDescending(r => r.PenaltyPct) // get highest applicable penalty
+                            .FirstOrDefault();
+                            
+                        if (applicableRule != null)
+                        {
+                            refundPercentage = 100m - applicableRule.PenaltyPct;
+                        }
+                    }
+                    
+                    if (refundPercentage < 0) refundPercentage = 0;
+                    if (refundPercentage > 100) refundPercentage = 100;
+
+                    decimal refundAmount = booking.TotalPrice * (refundPercentage / 100m);
+                    decimal cancellationFee = booking.TotalPrice - refundAmount;
+
+                    booking.RefundAmount = refundAmount;
+                    booking.CancellationFee = cancellationFee;
+
+                    if (refundAmount > 0)
+                    {
+                        var transactionItem = await _context.PaymentTransactionItems
+                            .Include(pti => pti.PaymentTransaction)
+                            .FirstOrDefaultAsync(pti => pti.BookingType == "Hotel" && pti.BookingId == booking.Id && pti.Status == "Paid");
+
+                        if (refundMethod == "OriginalPaymentMethod" && transactionItem != null && transactionItem.PaymentTransaction.Provider == "Stripe") 
+                        {
+                            Stripe.StripeConfiguration.ApiKey = _stripeOptions.SecretKey;
+                            var refundService = new Stripe.RefundService();
+                            await refundService.CreateAsync(new Stripe.RefundCreateOptions
+                            {
+                                PaymentIntent = transactionItem.PaymentTransaction.ProviderTransactionId,
+                                Amount = (long)(refundAmount * 100),
+                                Reason = "requested_by_customer"
+                            });
+                        }
+                        else
+                        {
+                            await _walletService.RefundToWalletAsync(booking.UserId, refundAmount, $"Refund-Hotel-{booking.Id}", $"Refund for cancelled hotel booking #{booking.Id}");
+                        }
+                    }
+                    
+                    // Prevent payout for this item
+                    var itemToRefund = await _context.PaymentTransactionItems
+                        .FirstOrDefaultAsync(pti => pti.BookingType == "Hotel" && pti.BookingId == booking.Id);
+                    if (itemToRefund != null)
+                    {
+                        itemToRefund.Status = "Refunded";
+                    }
+
+                    booking.PaymentStatus = PaymentStatus.Refunded;
+                }
+            } // Added missing bracket
 
             booking.Status = BookingStatus.Cancelled;
             booking.CancellationReason = reason;
@@ -2269,9 +2452,10 @@ namespace TravAi.Services.HotelService
                 .Where(b => b.UserId == userId &&
                             b.Hotel.Verified &&
                             (b.Hotel.VerificationStatus == VerificationStatus.Verified || b.Hotel.VerificationStatus == VerificationStatus.Approved) &&
-                            b.PaymentStatus == PaymentStatus.Paid);
+                            (b.PaymentStatus == PaymentStatus.Paid || b.PaymentStatus == PaymentStatus.Refunded));
 
-            DateTime today = DateTime.UtcNow.Date;
+            // Use Egypt time (+3) to ensure dates roll over correctly at local midnight
+            DateTime today = DateTime.UtcNow.AddHours(3).Date;
 
             if (tab.Equals("upcoming", StringComparison.OrdinalIgnoreCase))
             {
@@ -2279,7 +2463,9 @@ namespace TravAi.Services.HotelService
             }
             else if (tab.Equals("past", StringComparison.OrdinalIgnoreCase))
             {
-                query = query.Where(b => b.Status == BookingStatus.CheckedOut && b.CheckOutDate < today && _context.HotelPayments.Any(p => p.BookingId == b.Id && p.Status == HotelPaymentStatus.Paid));
+                query = query.Where(b => 
+                    (b.Status == BookingStatus.CheckedOut || b.Status == BookingStatus.Completed || ((b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.CheckedIn) && b.CheckOutDate < today)) 
+                    && b.Status != BookingStatus.Cancelled);
             }
             else if (tab.Equals("cancelled", StringComparison.OrdinalIgnoreCase))
             {
@@ -2292,9 +2478,8 @@ namespace TravAi.Services.HotelService
 
             var bookings = await query.OrderByDescending(b => b.CreatedAt).ToListAsync();
 
-            var reviewedHotelIds = await _context.HotelReviews
+            var userHotelReviews = await _context.HotelReviews
                 .Where(r => r.UserId == userId)
-                .Select(r => r.HotelId)
                 .ToListAsync();
 
             var trips = bookings.Select(b =>
@@ -2302,8 +2487,10 @@ namespace TravAi.Services.HotelService
                 var primaryImg = b.Hotel.Images?.FirstOrDefault(i => i.IsPrimary)?.ImageUrl;
                 var roomName = b.BookingRooms?.FirstOrDefault()?.RoomName ?? "Standard Room";
 
-                bool isPast = b.Status == BookingStatus.CheckedOut || b.Status == BookingStatus.Completed;
-                bool canReview = isPast && !reviewedHotelIds.Contains(b.HotelId);
+                bool isPast = b.Status == BookingStatus.CheckedOut || b.Status == BookingStatus.Completed || b.CheckOutDate < today;
+                var existingReview = userHotelReviews.FirstOrDefault(r => r.HotelId == b.HotelId);
+                bool hasReviewed = existingReview != null;
+                bool canReview = isPast && !hasReviewed;
 
                 return new MyTripHotelDto
                 {
@@ -2320,7 +2507,11 @@ namespace TravAi.Services.HotelService
                     CancellationFee = b.CancellationFee,
                     CanCancel = (b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.Pending) && b.CheckInDate > today,
                     CanRebook = true,
-                    CanReview = canReview
+                    CanReview = canReview,
+                    HasReviewed = hasReviewed,
+                    ReviewId = existingReview?.Id,
+                    ReviewRating = existingReview?.Rating,
+                    ReviewComment = existingReview?.Comment
                 };
             }).ToList();
 

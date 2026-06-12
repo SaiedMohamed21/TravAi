@@ -946,6 +946,35 @@ namespace TravAi.Services
                 var session = stripeEvent.Data.Object as Session;
                 if (session != null)
                 {
+                    if (session.Metadata != null && session.Metadata.TryGetValue("type", out string type) && type == "wallet_topup")
+                    {
+                        if (session.Metadata.TryGetValue("userId", out string userIdStr) && long.TryParse(userIdStr, out long userId))
+                        {
+                            var amount = session.AmountTotal.GetValueOrDefault() / 100m;
+                            var user = await _context.Users.FindAsync(userId);
+                            if (user != null)
+                            {
+                                string safeRef = session.Id.Length > 50 ? session.Id.Substring(session.Id.Length - 50) : session.Id;
+                                bool alreadyProcessed = await _context.WalletTransactions.AnyAsync(w => w.ReferenceId == safeRef);
+                                if (!alreadyProcessed)
+                                {
+                                    user.WalletBalance += amount;
+                                    _context.WalletTransactions.Add(new TravAi.Airline.Models.WalletTransaction
+                                    {
+                                        UserId = userId,
+                                        Amount = amount,
+                                        Type = "Deposit",
+                                        Description = "Wallet top-up via Stripe",
+                                        ReferenceId = safeRef,
+                                        CreatedAt = DateTime.UtcNow
+                                    });
+                                    await _context.SaveChangesAsync();
+                                }
+                            }
+                        }
+                        return true;
+                    }
+
                     var rawJson = JsonSerializer.Serialize(stripeEvent);
                     await CompleteCheckoutSessionAsync(session.Id, session.PaymentIntentId, rawJson);
                     return true;
@@ -962,6 +991,294 @@ namespace TravAi.Services
                 }
             }
 
+            return false;
+        }
+
+        // --- Wallet Features ---
+
+        public async Task<bool> PayWithWalletAsync(CreateUnifiedCheckoutRequest request, long userId)
+        {
+            var now = DateTime.UtcNow;
+            
+            // Re-fetch user to get current WalletBalance
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) throw new UnauthorizedAccessException("User not found.");
+
+            decimal totalAmount = 0;
+            var bookingsToUpdate = new List<object>();
+
+            // 1. Airline Bookings
+            var airlineBookingIds = request.Items?.Where(i => i.ItemType == "AirlineBooking").Select(i => i.ReferenceId).ToList() ?? new List<long>();
+            if (airlineBookingIds.Any())
+            {
+                var airlineBookings = await _context.Bookings
+                    .Include(b => b.Flight)
+                    .Where(b => airlineBookingIds.Contains(b.Id) && b.UserId == userId)
+                    .ToListAsync();
+
+                foreach (var b in airlineBookings)
+                {
+                    if (b.PaymentStatus == "Paid") throw new InvalidOperationException($"Flight booking #{b.Id} already paid.");
+                    if (b.PassengerDetailsStatus != "Complete") throw new InvalidOperationException($"Flight booking #{b.Id} passenger details incomplete.");
+                    if (b.BookingDate.AddMinutes(AirlineExpirationMinutes) < now) throw new InvalidOperationException($"Flight booking #{b.Id} expired.");
+                    
+                    totalAmount += b.TotalPrice;
+                    bookingsToUpdate.Add(b);
+                }
+            }
+
+            // 2. Hotel Bookings
+            var hotelBookingIds = request.Items?.Where(i => i.ItemType == "HotelBooking").Select(i => i.ReferenceId).ToList() ?? new List<long>();
+            if (hotelBookingIds.Any())
+            {
+                var hotelBookings = await _context.HotelBookings
+                    .Include(b => b.Hotel)
+                    .Where(b => hotelBookingIds.Contains(b.Id) && b.UserId == userId)
+                    .ToListAsync();
+
+                foreach (var b in hotelBookings)
+                {
+                    if (b.PaymentStatus == PaymentStatus.Paid) throw new InvalidOperationException($"Hotel booking #{b.Id} already paid.");
+                    if (b.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now) throw new InvalidOperationException($"Hotel booking #{b.Id} expired.");
+                    
+                    totalAmount += b.TotalPrice;
+                    bookingsToUpdate.Add(b);
+                }
+            }
+
+            // 3. Tour Bookings
+            var tourBookingIds = request.Items?.Where(i => i.ItemType == "TourBooking").Select(i => i.ReferenceId).ToList() ?? new List<long>();
+            if (tourBookingIds.Any())
+            {
+                var tourBookings = await _context.TourBookings
+                    .Include(b => b.Tour)
+                    .Where(b => tourBookingIds.Contains(b.Id) && b.UserId == userId)
+                    .ToListAsync();
+
+                foreach (var b in tourBookings)
+                {
+                    if (b.PaymentStatus == TourGuidePaymentStatus.Completed) throw new InvalidOperationException($"Tour booking #{b.Id} already paid.");
+                    if (b.CreatedAt.AddMinutes(HotelTourExpirationMinutes) < now) throw new InvalidOperationException($"Tour booking #{b.Id} expired.");
+                    
+                    totalAmount += b.TotalPrice;
+                    bookingsToUpdate.Add(b);
+                }
+            }
+
+            if (totalAmount <= 0) throw new InvalidOperationException("No valid bookings selected for checkout.");
+            if (user.WalletBalance < totalAmount) throw new InvalidOperationException("Insufficient wallet balance.");
+
+            using (var dbTransaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    // Deduct balance
+                    user.WalletBalance -= totalAmount;
+                    
+                    // Create CheckoutSession to link transactions
+                    var checkoutSession = new CheckoutSession
+                    {
+                        UserId = userId,
+                        CheckoutType = "Unified",
+                        Status = "Completed",
+                        TotalAmount = totalAmount,
+                        Currency = "usd",
+                        CreatedAt = now,
+                        ExpiresAt = now.AddMinutes(30)
+                    };
+                    _context.CheckoutSessions.Add(checkoutSession);
+                    await _context.SaveChangesAsync();
+
+                    // Create PaymentTransaction
+                    var paymentTransaction = new PaymentTransaction
+                    {
+                        CheckoutSessionId = checkoutSession.Id,
+                        UserId = userId,
+                        Provider = "Wallet",
+                        Amount = totalAmount,
+                        TotalAmount = totalAmount,
+                        Currency = "usd",
+                        Status = "Paid",
+                        PaymentMethod = "Wallet",
+                        CreatedAt = now
+                    };
+                    _context.PaymentTransactions.Add(paymentTransaction);
+                    await _context.SaveChangesAsync();
+
+                    // Process each booking
+                    foreach (var bookingObj in bookingsToUpdate)
+                    {
+                        if (bookingObj is TravAi.Airline.Models.Booking airlineBooking)
+                        {
+                            airlineBooking.PaymentStatus = "Paid";
+                            airlineBooking.Status = "Confirmed";
+                            _context.PaymentTransactionItems.Add(new PaymentTransactionItem
+                            {
+                                PaymentTransactionId = paymentTransaction.Id,
+                                BookingType = "Airline",
+                                BookingId = airlineBooking.Id,
+                                Amount = airlineBooking.TotalPrice,
+                                Currency = "usd",
+                                Status = "Paid",
+                                CreatedAt = now
+                            });
+                            _context.WalletTransactions.Add(new TravAi.Airline.Models.WalletTransaction
+                            {
+                                UserId = userId,
+                                Amount = -airlineBooking.TotalPrice,
+                                Type = "Payment",
+                                Description = $"Payment for flight booking #{airlineBooking.Id}",
+                                ReferenceId = $"Pay-Airline-{airlineBooking.Id}",
+                                CreatedAt = now
+                            });
+                        }
+                        else if (bookingObj is HotelBooking hotelBooking)
+                        {
+                            hotelBooking.PaymentStatus = PaymentStatus.Paid;
+                            hotelBooking.Status = BookingStatus.Confirmed;
+                            _context.PaymentTransactionItems.Add(new PaymentTransactionItem
+                            {
+                                PaymentTransactionId = paymentTransaction.Id,
+                                BookingType = "Hotel",
+                                BookingId = hotelBooking.Id,
+                                Amount = hotelBooking.TotalPrice,
+                                Currency = "usd",
+                                Status = "Paid",
+                                CreatedAt = now
+                            });
+                            _context.WalletTransactions.Add(new TravAi.Airline.Models.WalletTransaction
+                            {
+                                UserId = userId,
+                                Amount = -hotelBooking.TotalPrice,
+                                Type = "Payment",
+                                Description = $"Payment for hotel booking #{hotelBooking.Id}",
+                                ReferenceId = $"Pay-Hotel-{hotelBooking.Id}",
+                                CreatedAt = now
+                            });
+                        }
+                        else if (bookingObj is TourBooking tourBooking)
+                        {
+                            tourBooking.PaymentStatus = TourGuidePaymentStatus.Completed;
+                            tourBooking.Status = TourGuideBookingStatus.Confirmed;
+                            _context.PaymentTransactionItems.Add(new PaymentTransactionItem
+                            {
+                                PaymentTransactionId = paymentTransaction.Id,
+                                BookingType = "Tour",
+                                BookingId = tourBooking.Id,
+                                Amount = tourBooking.TotalPrice,
+                                Currency = tourBooking.Currency?.ToLower() ?? "usd",
+                                Status = "Paid",
+                                CreatedAt = now
+                            });
+                            _context.WalletTransactions.Add(new TravAi.Airline.Models.WalletTransaction
+                            {
+                                UserId = userId,
+                                Amount = -tourBooking.TotalPrice,
+                                Type = "Payment",
+                                Description = $"Payment for tour booking #{tourBooking.Id}",
+                                ReferenceId = $"Pay-Tour-{tourBooking.Id}",
+                                CreatedAt = now
+                            });
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await dbTransaction.CommitAsync();
+                    return true;
+                }
+                catch
+                {
+                    await dbTransaction.RollbackAsync();
+                    throw;
+                }
+            }
+        }
+
+        public async Task<CheckoutResponse> CreateWalletTopupCheckoutAsync(long userId, decimal amount, string baseUrl)
+        {
+            var now = DateTime.UtcNow;
+            var generatedExpiresAt = now.AddMinutes(30);
+
+            var options = new SessionCreateOptions
+            {
+                PaymentMethodTypes = new List<string> { "card" },
+                LineItems = new List<SessionLineItemOptions>
+                {
+                    new SessionLineItemOptions
+                    {
+                        PriceData = new SessionLineItemPriceDataOptions
+                        {
+                            UnitAmount = (long)(amount * 100),
+                            Currency = _stripeOptions.Currency.ToLower(),
+                            ProductData = new SessionLineItemPriceDataProductDataOptions
+                            {
+                                Name = "Wallet Top-up"
+                            }
+                        },
+                        Quantity = 1
+                    }
+                },
+                Mode = "payment",
+                Metadata = new Dictionary<string, string>
+                {
+                    { "type", "wallet_topup" },
+                    { "userId", userId.ToString() }
+                },
+                SuccessUrl = $"{baseUrl}/user/wallet.html?success=true&session_id={{CHECKOUT_SESSION_ID}}",
+                CancelUrl = $"{baseUrl}/user/wallet.html?canceled=true",
+                ExpiresAt = generatedExpiresAt
+            };
+
+            var service = new SessionService();
+            var session = await service.CreateAsync(options);
+
+            return new CheckoutResponse
+            {
+                CheckoutSessionId = session.Id,
+                StripeSessionId = session.Id,
+                StripePublicKey = _stripeOptions.PublishableKey,
+                CheckoutUrl = session.Url
+            };
+        }
+
+        public async Task<bool> ConfirmWalletTopupAsync(string stripeSessionId)
+        {
+            Stripe.StripeConfiguration.ApiKey = _stripeOptions.SecretKey;
+            var stripeService = new SessionService();
+            var session = await stripeService.GetAsync(stripeSessionId);
+
+            if (session == null || session.PaymentStatus != "paid") return false;
+
+            if (session.Metadata != null && session.Metadata.TryGetValue("type", out string type) && type == "wallet_topup")
+            {
+                if (session.Metadata.TryGetValue("userId", out string userIdStr) && long.TryParse(userIdStr, out long userId))
+                {
+                    // Truncate session.Id because WalletTransaction.ReferenceId has MaxLength(50)
+                    string safeRef = session.Id.Length > 50 ? session.Id.Substring(session.Id.Length - 50) : session.Id;
+
+                    // Check if already processed
+                    bool alreadyProcessed = await _context.WalletTransactions.AnyAsync(w => w.ReferenceId == safeRef);
+                    if (alreadyProcessed) return true;
+
+                    var amount = session.AmountTotal.GetValueOrDefault() / 100m;
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user != null)
+                    {
+                        user.WalletBalance += amount;
+                        _context.WalletTransactions.Add(new TravAi.Airline.Models.WalletTransaction
+                        {
+                            UserId = userId,
+                            Amount = amount,
+                            Type = "Deposit",
+                            Description = "Wallet top-up via Stripe",
+                            ReferenceId = safeRef,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        await _context.SaveChangesAsync();
+                        return true;
+                    }
+                }
+            }
             return false;
         }
 
@@ -993,6 +1310,9 @@ namespace TravAi.Services
                 });
             }
 
+            var generatedExpiresAt = DateTime.UtcNow.AddMinutes(30);
+            _logger.LogInformation("Creating Stripe session. Current UTC: {Now}, Generated ExpiresAt UTC: {ExpiresAt}", DateTime.UtcNow, generatedExpiresAt);
+
             var options = new SessionCreateOptions
             {
                 PaymentMethodTypes = new List<string> { "card" },
@@ -1001,7 +1321,7 @@ namespace TravAi.Services
                 ClientReferenceId = checkoutSessionId.ToString(),
                 SuccessUrl = $"{baseUrl}/checkout-success.html?session_id={{CHECKOUT_SESSION_ID}}",
                 CancelUrl = $"{baseUrl}/checkout-cancel.html",
-                ExpiresAt = expiresAt
+                ExpiresAt = generatedExpiresAt
             };
 
             var service = new SessionService();

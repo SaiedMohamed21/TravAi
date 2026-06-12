@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
 
@@ -45,6 +45,22 @@ namespace TravAi.TourGuide.Services
             };
 
             _context.UrgentRequests.Add(request);
+
+            // Deactivate the tour immediately to prevent new bookings
+            tour.Active = false;
+            tour.UpdatedAt = DateTime.UtcNow;
+
+            // Immediately mark existing bookings as pending user decision
+            var bookings = await _context.TourBookings
+                .Where(b => b.TourId == tour.Id && b.Status != BookingStatus.Cancelled && b.Status != BookingStatus.Completed)
+                .ToListAsync();
+
+            foreach (var booking in bookings)
+            {
+                booking.Status = BookingStatus.PendingUserDecision;
+                booking.UpdatedAt = DateTime.UtcNow;
+            }
+
             await _context.SaveChangesAsync();
 
             return await MapToDto(request);
@@ -108,72 +124,8 @@ namespace TravAi.TourGuide.Services
             request.AdminNotes = model.AdminNotes;
             request.ProcessedAt = DateTime.UtcNow;
 
-            // Handle the logic for approved cancellations
-            if (request.Status == UrgentRequestStatus.Approved)
-            {
-                if (request.Tour != null)
-                {
-                    var originalTour = request.Tour;
-                    
-                    // Find an alternative tour with the same specifications and time
-                    var alternativeTour = await _context.Tours.FirstOrDefaultAsync(t => 
-                        t.Id != originalTour.Id && 
-                        t.Active == true &&
-                        t.AvailableDateTime == originalTour.AvailableDateTime &&
-                        t.City == originalTour.City &&
-                        t.TourTitle == originalTour.TourTitle &&
-                        t.TourType == originalTour.TourType &&
-                        t.TourDescription == originalTour.TourDescription &&
-                        t.BasePriceUsd == originalTour.BasePriceUsd &&
-                        t.DurationHours == originalTour.DurationHours &&
-                        t.GroupSizeMax == originalTour.GroupSizeMax &&
-                        t.SitesCovered == originalTour.SitesCovered &&
-                        t.StartingPoint == originalTour.StartingPoint &&
-                        t.AgeRestriction == originalTour.AgeRestriction &&
-                        t.TransportIncluded == originalTour.TransportIncluded &&
-                        t.MealsIncluded == originalTour.MealsIncluded &&
-                        t.IsAccessible == originalTour.IsAccessible &&
-                        t.Accessibility == originalTour.Accessibility &&
-                        t.Customizable == originalTour.Customizable &&
-                        t.Season == originalTour.Season &&
-                        t.IncludedServices == originalTour.IncludedServices &&
-                        t.ExcludedServices == originalTour.ExcludedServices &&
-                        t.SafetyMeasures == originalTour.SafetyMeasures &&
-                        t.BestTimeToVisit == originalTour.BestTimeToVisit &&
-                        t.PickupDetails == originalTour.PickupDetails &&
-                        t.CancellationPolicy == originalTour.CancellationPolicy
-                    );
-
-                    var bookings = await _context.TourBookings
-                        .Where(b => b.TourId == originalTour.Id && b.Status != BookingStatus.Cancelled)
-                        .ToListAsync();
-
-                    if (bookings.Any())
-                    {
-                        foreach (var booking in bookings)
-                        {
-                            if (alternativeTour != null)
-                            {
-                                // Rebook to the alternative tour
-                                booking.TourId = alternativeTour.Id;
-                                booking.TourGuideId = alternativeTour.TourGuideId;
-                                booking.UpdatedAt = DateTime.UtcNow;
-                            }
-                            else
-                            {
-                                // Refund the money paid (by updating statuses)
-                                booking.Status = BookingStatus.Cancelled;
-                                booking.PaymentStatus = PaymentStatus.Refunded;
-                                booking.UpdatedAt = DateTime.UtcNow;
-                            }
-                        }
-                    }
-
-                    // Deactivate the original tour
-                    originalTour.Active = false;
-                    originalTour.UpdatedAt = DateTime.UtcNow;
-                }
-            }
+            // Admin processing just sets the status and admin notes for guide penalty logic later.
+            // Users are already choosing alternatives or refunds because bookings were set to PendingUserDecision immediately.
 
             await _context.SaveChangesAsync();
 

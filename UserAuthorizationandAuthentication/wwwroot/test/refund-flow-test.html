@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Testing Guide - Refund & Wallet Flow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/refund-flow-test.css">
+</head>
+<body>
+    <nav>
+        <a href="../index.html" class="logo">
+            <i class="fas fa-route"></i> Travai Unified
+        </a>
+    </nav>
+
+    <div class="container">
+        <header class="page-header">
+            <h1>Manual Testing Guide</h1>
+            <p class="subtitle">Step-by-step checklist to verify the Refund, Cancellation, and User Wallet flows</p>
+        </header>
+
+        <div class="test-dashboard">
+            <!-- Sidebar Navigation -->
+            <div class="sidebar">
+                <h3>Quick Links</h3>
+                <a href="../tourguide/emergency-cancel.html" target="_blank" class="quick-link">
+                    <i class="fas fa-exclamation-triangle"></i> Tour Guide Cancel
+                </a>
+                <a href="../user/tour-cancellations.html" target="_blank" class="quick-link">
+                    <i class="fas fa-list-ul"></i> User Decisions
+                </a>
+                <a href="../user/wallet.html" target="_blank" class="quick-link">
+                    <i class="fas fa-wallet"></i> User Wallet
+                </a>
+                <a href="../admin/tour-guide-cancellations.html" target="_blank" class="quick-link">
+                    <i class="fas fa-shield-alt"></i> Admin Reviews
+                </a>
+                <a href="../hotel/hotel-bookings.html" target="_blank" class="quick-link">
+                    <i class="fas fa-hotel"></i> Hotel Bookings
+                </a>
+                <a href="../airline/my-flights.html" target="_blank" class="quick-link">
+                    <i class="fas fa-plane"></i> Airline Bookings
+                </a>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <section class="test-section">
+                    <h2>1. Setup Requirements</h2>
+                    <ul>
+                        <li>Have 3 accounts ready: <strong>User</strong>, <strong>Tour Guide</strong>, <strong>Admin</strong>.</li>
+                        <li>Have at least 2 paid Tour Bookings (to test Refund & Alternative).</li>
+                        <li>Have an Airline Booking (Economy/Premium/Business).</li>
+                        <li>Have a Hotel Booking.</li>
+                    </ul>
+                </section>
+
+                <section class="test-section">
+                    <h2>2. Tour Guide Cancels a Tour</h2>
+                    <div class="test-details">
+                        <p><strong>Page:</strong> <a href="../tourguide/emergency-cancel.html" target="_blank">/tourguide/emergency-cancel.html</a></p>
+                        <p><strong>API:</strong> <code>POST /api/tourguide/urgent-requests/submit</code></p>
+                        <p><strong>Action:</strong> Login as Guide -> Enter Tour ID and Reason -> Submit</p>
+                        <p><strong>Verify:</strong> Success message appears. Affected bookings become PendingUserDecision.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>3. User Chooses Refund</h2>
+                    <div class="test-details">
+                        <p><strong>Page:</strong> <a href="../user/tour-cancellations.html" target="_blank">/user/tour-cancellations.html</a></p>
+                        <p><strong>API:</strong> <code>GET /api/users/tour-cancellations</code> <br> <code>POST /api/users/tour-cancellations/{id}/refund</code></p>
+                        <p><strong>Action:</strong> Login as User -> View affected booking -> Click "Take Full Refund"</p>
+                        <p><strong>Verify:</strong> Booking disappears from pending list. Wallet balance increases by 100% of price.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>4. User Checks Wallet</h2>
+                    <div class="test-details">
+                        <p><strong>Page:</strong> <a href="../user/wallet.html" target="_blank">/user/wallet.html</a></p>
+                        <p><strong>API:</strong> <code>GET /api/users/wallet</code></p>
+                        <p><strong>Action:</strong> Open Wallet page</p>
+                        <p><strong>Verify:</strong> Balance includes refund. A "Refund" transaction appears in the history.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>5. User Chooses Alternative Tour</h2>
+                    <div class="test-details">
+                        <p><strong>Page:</strong> <a href="../user/tour-cancellations.html" target="_blank">/user/tour-cancellations.html</a></p>
+                        <p><strong>API:</strong> <code>GET .../alternatives</code> <br> <code>POST .../choose-alternative</code></p>
+                        <p><strong>Action:</strong> Open pending booking -> View Alternatives -> Select an alternative</p>
+                        <p><strong>Verify:</strong> Modal closes, booking removed from pending list. Wallet does NOT increase.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>6. Admin Reviews Guide Reason</h2>
+                    <div class="test-details">
+                        <p><strong>Page:</strong> <a href="../admin/tour-guide-cancellations.html" target="_blank">/admin/tour-guide-cancellations.html</a></p>
+                        <p><strong>API:</strong> <code>GET /api/admin/tour-guide-cancellations/pending-review</code></p>
+                        <p><strong>Action:</strong> Login Admin -> View review list -> Accept/Reject reason</p>
+                        <p><strong>Verify:</strong> Review disappears from pending list.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>7. Duplicate Refund Check</h2>
+                    <div class="test-details">
+                        <p><strong>Action:</strong> Attempt to manually fire the POST refund endpoint twice using Postman or console.</p>
+                        <p><strong>Verify:</strong> The second request returns "Refund has already been processed" and wallet balance only increases once.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>8. Airline Cancellation Test</h2>
+                    <div class="test-details">
+                        <p><strong>Action:</strong> Cancel an airline booking.</p>
+                        <p><strong>Verify:</strong> Economy/Premium = $0 refund. Business = 90% refund added to Wallet.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>9. Hotel Cancellation Test</h2>
+                    <div class="test-details">
+                        <p><strong>Action:</strong> Cancel a hotel booking.</p>
+                        <p><strong>Verify:</strong> Refund matches policy. Money goes to Wallet.</p>
+                    </div>
+                </section>
+
+                <section class="test-section">
+                    <h2>10. Tour User Cancellation (Normal)</h2>
+                    <div class="test-details">
+                        <p><strong>Action:</strong> User cancels a normal tour booking (not guide initiated).</p>
+                        <p><strong>Verify:</strong> Before 24h = 100% refund. Within 24h = Error/Rejected.</p>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

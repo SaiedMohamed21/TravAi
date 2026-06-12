@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Payout - TravAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin-payout.css">
+</head>
+<body>
+    <div class="max-width-container">
+        <!-- Back navigation link -->
+        <a href="../index.html" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Main Platform
+        </a>
+
+        <!-- Horizontal navigation tabs -->
+        <div class="tabs-container" id="tabs-container">
+            <button class="tab-btn active" data-tab="Hotels">Hotels</button>
+            <button class="tab-btn" data-tab="Airlines">Airlines</button>
+            <button class="tab-btn" data-tab="Tour Guides">Tour Guides</button>
+        </div>
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 id="page-title-text">Admin Payout</h1>
+            <p>Payouts are generated based on completed bookings and provider balances.</p>
+        </div>
+
+        <h2 class="section-title">Hotel Payout Management</h2>
+
+        <!-- Summary Cards Grid -->
+        <div class="summary-grid">
+            <!-- Total Pending Card -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Pending</span>
+                    <select class="stat-select" id="select-stat-pending" onchange="onPendingRangeChange(event)">
+                        <option value="Today">Today</option>
+                        <option value="This Week" selected>This Week</option>
+                        <option value="This Month">This Month</option>
+                        <option value="Last 30 Days">Last 30 Days</option>
+                        <option value="All Time">All Time</option>
+                    </select>
+                </div>
+                <div class="stat-value" id="stat-pending-text">0$</div>
+            </div>
+
+            <!-- Total Paid Card -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Total Paid</span>
+                    <select class="stat-select" id="select-stat-paid" onchange="onPaidRangeChange(event)">
+                        <option value="Today">Today</option>
+                        <option value="This Week">This Week</option>
+                        <option value="This Month" selected>This Month</option>
+                        <option value="Last 30 Days">Last 30 Days</option>
+                        <option value="All Time">All Time</option>
+                    </select>
+                </div>
+                <div class="stat-value" id="stat-paid-text">0$</div>
+            </div>
+
+            <!-- Failed Card -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Failed</span>
+                    <select class="stat-select" id="select-stat-failed" onchange="onFailedRangeChange(event)">
+                        <option value="Today">Today</option>
+                        <option value="This Week">This Week</option>
+                        <option value="This Month">This Month</option>
+                        <option value="Last 30 Days">Last 30 Days</option>
+                        <option value="All Time" selected>All Time</option>
+                    </select>
+                </div>
+                <div class="stat-value" id="stat-failed-text">0$</div>
+            </div>
+
+            <!-- Pending Hotels Card -->
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-title">Pending Hotels</span>
+                    <select class="stat-select" id="select-stat-pending-hotels" onchange="onPendingHotelsRangeChange(event)">
+                        <option value="Today">Today</option>
+                        <option value="This Week">This Week</option>
+                        <option value="This Month">This Month</option>
+                        <option value="Last 30 Days">Last 30 Days</option>
+                        <option value="All Time" selected>All Time</option>
+                    </select>
+                </div>
+                <div class="stat-value" id="stat-pending-hotels-text">0</div>
+            </div>
+        </div>
+
+        <!-- Main Content Table Card -->
+        <div class="content-card">
+            <!-- Filter Actions Bar -->
+            <div class="filters-grid">
+                <!-- Search Hotel Name -->
+                <div class="filter-group">
+                    <label class="filter-label">Search</label>
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" class="input-field" id="search-input" placeholder="Search by hotel/provider name...">
+                    </div>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="input-field" id="select-status">
+                        <option value="All Status">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Failed">Failed</option>
+                    </select>
+                </div>
+
+                <!-- Date Range filter -->
+                <div class="filter-group">
+                    <label class="filter-label">Date Range</label>
+                    <select class="input-field" id="select-date">
+                        <option value="Today">Today</option>
+                        <option value="This Week">This Week</option>
+                        <option value="This Month" selected>This Month</option>
+                        <option value="All Time">All Time</option>
+                    </select>
+                </div>
+
+                <!-- Sorting filter -->
+                <div class="filter-group">
+                    <label class="filter-label">Sort By</label>
+                    <select class="input-field" id="select-sort">
+                        <option value="Oldest Due">Oldest Due</option>
+                        <option value="Newest">Newest</option>
+                        <option value="Highest Amount">Highest Amount</option>
+                        <option value="Lowest Amount">Lowest Amount</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Custom Table -->
+            <div class="table-wrapper">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Hotel / Provider</th>
+                            <th>Amount</th>
+                            <th>Due Since</th>
+                            <th>Status</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Filled Dynamically by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Pagination Controls -->
+            <div class="pagination-row">
+                <div class="pagination-info" id="pagination-info">Showing 0-0 of 0 results</div>
+                <div class="pagination-controls">
+                    <button class="btn-action btn-outline" id="btn-prev"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                    <button class="btn-action btn-outline" id="btn-next">Next <i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Payout Modal -->
+    <div class="modal-overlay" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Create Payout</div>
+            </div>
+            <div class="modal-body" id="confirm-modal-message">
+                Are you sure you want to create this payout? Please confirm to proceed.
+            </div>
+            <div class="modal-footer">
+                <button class="btn-action btn-outline" id="btn-confirm-cancel">Cancel</button>
+                <button class="btn-action btn-primary" id="btn-confirm-action">Yes, Create Payout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="js/admin-payout.js"></script>
+</body>
+</html>

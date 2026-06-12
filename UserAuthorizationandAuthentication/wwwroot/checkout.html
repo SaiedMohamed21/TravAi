@@ -517,6 +517,34 @@
                     <div class="total-amount" id="totalAmount">$0.00</div>
                 </div>
 
+                <!-- Payment Method Selection -->
+                <div class="booking-section" style="margin-bottom: 35px;">
+                    <div class="booking-section-header">
+                        <div class="booking-section-title">
+                            <i class="fas fa-money-check-alt"></i> Payment Method
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <label class="item-row selectable" style="cursor: pointer; justify-content: flex-start; gap: 15px;">
+                            <input type="radio" name="paymentMethod" value="Stripe" checked style="accent-color: var(--primary); transform: scale(1.2);">
+                            <div style="display: flex; flex-direction: column; text-align: left;">
+                                <span style="font-weight: 600; font-size: 1.05rem;"><i class="fab fa-stripe" style="color: #6366f1; margin-right: 5px;"></i> Pay with Stripe (Credit Card)</span>
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Secure payment via Stripe</span>
+                            </div>
+                        </label>
+                        <label id="walletOptionLabel" class="item-row selectable" style="cursor: pointer; justify-content: flex-start; gap: 15px;">
+                            <input type="radio" id="walletRadio" name="paymentMethod" value="Wallet" style="accent-color: var(--primary); transform: scale(1.2);">
+                            <div style="display: flex; flex-direction: column; text-align: left; width: 100%;">
+                                <div style="display: flex; justify-content: space-between; width: 100%;">
+                                    <span style="font-weight: 600; font-size: 1.05rem;"><i class="fas fa-wallet" style="color: #10b981; margin-right: 5px;"></i> Pay from Wallet</span>
+                                    <span id="walletBalanceDisplay" style="font-weight: 700; color: var(--accent);">Balance: $0.00</span>
+                                </div>
+                                <span id="walletDesc" style="font-size: 0.85rem; color: var(--text-muted);">Instant payment from your account balance</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="actions-box">
                     <button class="btn btn-primary" id="payBtn" onclick="paySelected()">
                         <i class="fas fa-credit-card"></i> Pay Selected (0 Items)
@@ -575,6 +603,7 @@
         let countdownInterval = null;
         let selectedItems = new Set();
         let itemsData = [];
+        let currentWalletBalance = 0;
 
         function toggleSelection(type, id) {
             const item = itemsData.find(x => x.itemType === type && x.id === id);
@@ -638,6 +667,29 @@
                 payBtn.style.opacity = '1';
                 payBtn.innerHTML = `<i class="fas fa-credit-card"></i> Pay Selected ($${total.toFixed(2)})`;
                 document.getElementById('groupTimerBox').style.display = 'flex';
+            }
+
+            // Wallet Check
+            const walletRadio = document.getElementById('walletRadio');
+            const walletOptionLabel = document.getElementById('walletOptionLabel');
+            const walletDesc = document.getElementById('walletDesc');
+            if (walletRadio && walletOptionLabel && walletDesc) {
+                if (currentWalletBalance < total || total === 0) {
+                    walletRadio.disabled = true;
+                    if (walletRadio.checked) {
+                        document.querySelector('input[name="paymentMethod"][value="Stripe"]').checked = true;
+                    }
+                    walletOptionLabel.style.opacity = '0.5';
+                    walletOptionLabel.style.cursor = 'not-allowed';
+                    walletDesc.innerText = 'Insufficient wallet balance. Please add funds or use Stripe.';
+                    walletDesc.style.color = 'var(--danger)';
+                } else {
+                    walletRadio.disabled = false;
+                    walletOptionLabel.style.opacity = '1';
+                    walletOptionLabel.style.cursor = 'pointer';
+                    walletDesc.innerText = 'Instant payment from your account balance';
+                    walletDesc.style.color = 'var(--text-muted)';
+                }
             }
         }
 
@@ -887,6 +939,9 @@
                         </div>
                     `;
 
+                    // Fetch Wallet Balance
+                    fetchWalletBalance();
+
                     updateSelectedSummary();
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('errorView').style.display = 'none';
@@ -900,42 +955,89 @@
             }
         }
 
+        async function fetchWalletBalance() {
+            try {
+                const response = await fetch('/api/airline/wallet/balance', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+                if (result.success && result.data) {
+                    currentWalletBalance = result.data.balance;
+                    document.getElementById('walletBalanceDisplay').innerText = `Balance: $${result.data.balance.toFixed(2)}`;
+                    updateSelectedSummary(); // re-check if balance affects radio
+                }
+            } catch (err) {
+                console.error("Failed to load wallet balance:", err);
+            }
+        }
+
         async function paySelected() {
             if (selectedItems.size === 0) return;
             
             const payBtn = document.getElementById('payBtn');
             payBtn.style.pointerEvents = 'none';
             payBtn.style.opacity = '0.5';
-            payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Initializing payment...';
+            payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing payment...';
 
             const itemsPayload = [];
+            const airlineBookingIds = [];
+            const hotelBookingIds = [];
+            const tourBookingIds = [];
+
             selectedItems.forEach(key => {
                 const parts = key.split('_');
-                itemsPayload.push({
-                    itemType: parts[0],
-                    referenceId: parseInt(parts[1])
-                });
+                const type = parts[0];
+                const id = parseInt(parts[1]);
+                itemsPayload.push({ itemType: type, referenceId: id });
+                if (type === 'AirlineBooking') airlineBookingIds.push(id);
+                if (type === 'HotelBooking') hotelBookingIds.push(id);
+                if (type === 'TourBooking') tourBookingIds.push(id);
             });
 
-            try {
-                const response = await fetch('/api/checkout/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        userId: parseInt(userId),
-                        items: itemsPayload
-                    })
-                });
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
 
-                const result = await response.json();
-                if (result.success && result.data && result.data.checkoutUrl) {
-                    window.location.href = result.data.checkoutUrl;
+            try {
+                if (paymentMethod === 'Wallet') {
+                    const response = await fetch('/api/checkout/wallet-pay', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            userId: parseInt(userId),
+                            items: itemsPayload
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Payment successful using Wallet!');
+                        window.location.href = 'my-trips.html';
+                    } else {
+                        alert(result.message || 'Payment failed. Insufficient balance?');
+                        loadSummary();
+                    }
                 } else {
-                    alert(result.message || 'Failed to create payment session.');
-                    loadSummary();
+                    const response = await fetch('/api/checkout/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            userId: parseInt(userId),
+                            items: itemsPayload
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.checkoutUrl) {
+                        window.location.href = result.data.checkoutUrl;
+                    } else {
+                        alert(result.message || 'Failed to create payment session.');
+                        loadSummary();
+                    }
                 }
             } catch (err) {
                 alert('Connection error. Please try again.');

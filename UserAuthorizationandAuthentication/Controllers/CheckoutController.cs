@@ -179,6 +179,54 @@ namespace TravAi.Controllers
             }
         }
 
+        [HttpPost("wallet-pay")]
+        public async Task<IActionResult> PayWithWallet([FromBody] CreateUnifiedCheckoutRequest request)
+        {
+            try
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userIdStr))
+                {
+                    if (long.TryParse(userIdStr, out long parsedUserId))
+                    {
+                        request.UserId = parsedUserId;
+                    }
+                    else
+                    {
+                        return Unauthorized(new ApiResponse<string>(false, "Invalid user ID in token."));
+                    }
+                }
+                else if (Request.Headers.ContainsKey("Authorization"))
+                {
+                    return Unauthorized(new ApiResponse<string>(false, "Invalid or expired authorization token."));
+                }
+
+                var success = await _checkoutService.PayWithWalletAsync(request, request.UserId);
+                if (success)
+                {
+                    return Ok(new ApiResponse<object>(new { success = true }, "Paid successfully using wallet."));
+                }
+                return BadRequest(new ApiResponse<string>(false, "Payment failed."));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new ApiResponse<string>(false, ex.Message));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return StatusCode(403, new ApiResponse<string>(false, ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new ApiResponse<string>(false, ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error paying with wallet for user {UserId}", request.UserId);
+                return BadRequest(new ApiResponse<string>(false, ex.Message));
+            }
+        }
+
         [HttpGet("session/{id}")]
         public async Task<IActionResult> GetSessionDetails(long id)
         {

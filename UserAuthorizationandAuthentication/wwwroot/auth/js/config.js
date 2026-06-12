@@ -51,8 +51,18 @@ const API = {
                 return { success: false, message: 'Session expired', data: null };
             }
 
-            // Parse JSON response
-            const jsonData = await response.json();
+            // Parse JSON response or text
+            let jsonData;
+            try {
+                const textData = await response.text();
+                try {
+                    jsonData = JSON.parse(textData);
+                } catch {
+                    jsonData = { message: textData || 'Error occurred' };
+                }
+            } catch (e) {
+                jsonData = { message: 'Error parsing response' };
+            }
 
             if (!response.ok) {
                 return {

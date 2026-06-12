@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cancellation Reviews - Admin Panel - Travai Unified</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/tour-guide-cancellations.css">
+    <script>
+        // Check auth
+        if (!localStorage.getItem('token')) {
+            window.location.href = '../auth/login.html';
+        }
+    </script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav>
+        <a href="../index.html" class="logo">
+            <i class="fas fa-route"></i> Travai Unified <span class="badge-admin">Admin</span>
+        </a>
+        <div id="navRight" style="display: flex; align-items: center; gap: 15px;">
+            <a href="../admin-payout/admin-payout.html" class="nav-link"><i class="fas fa-coins"></i> Payouts</a>
+            <a href="../admin-payout/admin-commission-settings.html" class="nav-link"><i class="fas fa-cog"></i> Commissions</a>
+            <button onclick="Auth.logout()" class="btn-outline">Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <header class="page-header">
+            <h1>Emergency Cancellation Reviews</h1>
+            <p class="subtitle">Review pending tour guide emergency cancellations and decide Provider Penalties</p>
+        </header>
+
+        <!-- Loading State -->
+        <div id="loader" class="loader-container">
+            <div class="spinner"></div>
+            <p>Fetching cancellation reports from database...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="error-message" class="error-container" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3 id="error-title">Error Loading Reviews</h3>
+            <p id="error-text">Failed to fetch the cancellations data. Please retry.</p>
+            <button onclick="loadPendingReviews()" class="btn-primary" style="margin-top: 15px;">Retry</button>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="empty-card" style="display: none;">
+            <div class="empty-icon">🛡️</div>
+            <h2>Zero Pending Reviews</h2>
+            <p>All tour guide cancellation requests have been reviewed and resolved.</p>
+        </div>
+
+        <!-- Review Grid -->
+        <div id="review-grid" class="review-grid" style="display: none;">
+            <!-- Cancellation reviews injected dynamically -->
+        </div>
+    </div>
+
+    <!-- API Config and Script -->
+    <script src="../auth/js/config.js"></script>
+    <script src="js/tour-guide-cancellations.js"></script>
+</body>
+</html>

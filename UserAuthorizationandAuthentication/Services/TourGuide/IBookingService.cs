@@ -20,7 +20,8 @@ namespace TravAi.TourGuide.Services
         Task<BookingResponseDto> ProcessPaymentAsync(long userId, ProcessPaymentDto model);
         
         // Cancel booking (before or after payment)
-        Task<bool> CancelBookingAsync(long userId, long bookingId);
+        Task<bool> CancelBookingAsync(long userId, long bookingId, string? refundMethod = null);
+        Task<TourCancelPreviewDto> PreviewCancelBookingAsync(long userId, long bookingId);
         
         // Get user's bookings (all statuses or specific status)
         Task<List<BookingResponseDto>> GetUserBookingsAsync(long userId, BookingStatus? status = null);

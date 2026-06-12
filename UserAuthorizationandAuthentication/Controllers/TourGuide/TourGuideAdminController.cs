@@ -1,9 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using TravAi.TourGuide.DTOs.TourGuide;
 using TravAi.TourGuide.Services;
 using TravAi.TourGuide.DTOs.WithdrawRequest;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
+using System;
+using TravAi.TourGuide.Models.Enums;
 
 namespace TravAi.TourGuide.Controllers
 {
@@ -122,6 +127,59 @@ namespace TravAi.TourGuide.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("/api/admin/tour-guide-cancellations/pending-review")]
+        public async Task<IActionResult> GetPendingCancellationsForAdmin([FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var requests = await context.UrgentRequests
+                .Include(r => r.TourGuide)
+                .Include(r => r.Tour)
+                .Where(r => r.Status == UrgentRequestStatus.Pending)
+                .OrderBy(r => r.CreatedAt)
+                .ToListAsync();
+
+            var result = new List<object>();
+            foreach (var r in requests)
+            {
+                var affectedCount = await context.TourBookings
+                    .CountAsync(b => b.TourId == r.TourId && b.Status == BookingStatus.PendingUserDecision);
+
+                result.Add(new
+                {
+                    Id = r.Id,
+                    TourGuideName = r.TourGuide?.Name ?? "Unknown Guide",
+                    TourName = r.Tour?.TourTitle ?? "Unknown Tour",
+                    Destination = r.Tour?.City ?? "Unknown Destination",
+                    Reason = r.Reason,
+                    CreatedAt = r.CreatedAt,
+                    AffectedBookingsCount = affectedCount,
+                    Status = r.Status.ToString()
+                });
+            }
+
+            return Ok(result);
+        }
+
+        [HttpPost("/api/admin/tour-guide-cancellations/{id}/review")]
+        public async Task<IActionResult> ReviewCancellation(long id, [FromBody] AdminReviewCancellationDto dto, [FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var request = await context.UrgentRequests.FindAsync(id);
+            if (request == null) return NotFound("Cancellation request not found.");
+
+            request.Status = dto.IsReasonAccepted ? UrgentRequestStatus.Approved : UrgentRequestStatus.Rejected;
+            request.AdminNotes = dto.AdminNotes;
+            request.ProcessedAt = DateTime.UtcNow;
+
+            await context.SaveChangesAsync();
+
+            return Ok(new { Message = "Review submitted successfully." });
+        }
+    }
+
+    public class AdminReviewCancellationDto
+    {
+        public bool IsReasonAccepted { get; set; }
+        public string? AdminNotes { get; set; }
     }
 }
 

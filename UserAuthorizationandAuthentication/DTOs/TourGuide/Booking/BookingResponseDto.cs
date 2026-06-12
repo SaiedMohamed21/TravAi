@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models;
+using TravAi.TourGuide.Models;
 using System;
 using System.Collections.Generic;
 using TravAi.Models.Enums;
@@ -32,6 +32,10 @@ namespace TravAi.TourGuide.DTOs.Booking
         public string? UiBadge { get; set; }
         public bool CanCancel { get; set; }
         public bool CanReview { get; set; }
+        public bool HasReviewed { get; set; }
+        public long? ReviewId { get; set; }
+        public int? ReviewRating { get; set; }
+        public string? ReviewComment { get; set; }
 
         public List<ParticipantResponseDto> Participants { get; set; } = new List<ParticipantResponseDto>();
     }
@@ -60,6 +64,22 @@ namespace TravAi.TourGuide.DTOs.Booking
         public long Id { get; set; }
         public string EmergencyName { get; set; }
         public string PhoneNumber { get; set; }
+    }
+
+    public class TourCancelPreviewDto
+    {
+        public long BookingId { get; set; }
+        public string BookingType { get; set; } = "Tour";
+        public string? TourName { get; set; }
+        public string? City { get; set; }
+        public DateTime? TourDateTime { get; set; }
+        public decimal PaidAmount { get; set; }
+        public decimal CancellationFee { get; set; }
+        public decimal RefundAmount { get; set; }
+        public bool CanCancel { get; set; }
+        public string RefundDestination { get; set; } = "Wallet";
+        public string? PolicyDescription { get; set; }
+        public bool OriginalPaymentMethodAvailable { get; set; }
     }
 }
 

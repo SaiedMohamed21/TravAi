@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TravAi.DTOs.Common;
@@ -39,6 +39,50 @@ namespace TravAi.Airline.Controllers
             return Ok(new ApiResponse<ReviewResponseDto>(
                 review,
                 "Review added successfully."
+            ));
+        }
+
+        // =============================
+        // Update Review
+        // =============================
+        [Authorize]
+        [HttpPut("{id:long}")]
+        public async Task<IActionResult> UpdateReview(long id, [FromBody] UpdateReviewRequestDto dto)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr))
+                return Unauthorized(new ApiResponse<string>(false, "User ID not found in token."));
+
+            if (!long.TryParse(userIdStr, out long userId))
+                return Unauthorized(new ApiResponse<string>(false, "Invalid User ID in token."));
+
+            var review = await _reviewService.UpdateReviewAsync(userId, id, dto);
+
+            return Ok(new ApiResponse<ReviewResponseDto>(
+                review,
+                "Review updated successfully."
+            ));
+        }
+
+        // =============================
+        // Delete Review
+        // =============================
+        [Authorize]
+        [HttpDelete("{id:long}")]
+        public async Task<IActionResult> DeleteReview(long id)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdStr))
+                return Unauthorized(new ApiResponse<string>(false, "User ID not found in token."));
+
+            if (!long.TryParse(userIdStr, out long userId))
+                return Unauthorized(new ApiResponse<string>(false, "Invalid User ID in token."));
+
+            await _reviewService.DeleteReviewAsync(userId, id);
+
+            return Ok(new ApiResponse<bool>(
+                true,
+                "Review deleted successfully."
             ));
         }
 

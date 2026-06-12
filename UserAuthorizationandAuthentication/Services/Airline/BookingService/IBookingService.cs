@@ -12,8 +12,9 @@ namespace TravAi.Airline.Services.BookingService
         Task<List<BookingResponseDto>> GetFlightBookingsAsync(long flightId);
         Task<List<BookingResponseDto>> GetAllBookingsAsync();
         Task<BookingResponseDto?> GetByIdAsync(long bookingId);
-        Task CancelAsync(long bookingId);
+        Task CancelAsync(long bookingId, string? refundMethod = null);
         Task<ETicketDto> GetETicketAsync(long bookingId);
+        Task<AirlineCancelPreviewDto> PreviewCancelAsync(long userId, long bookingId);
         
         // Review Methods
         Task UpdateBookingStatusAsync(long bookingId, string status, string? reason = null);

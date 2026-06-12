@@ -2596,6 +2596,50 @@ namespace TravAi.Migrations
                     b.ToTable("tourguide_TourBookingPayments", (string)null);
                 });
 
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBookingResolution", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long?>("NewBookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("OriginalBookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal?>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ResolutionType")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("ResolvedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("SelectedAlternativeTourId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NewBookingId");
+
+                    b.HasIndex("OriginalBookingId");
+
+                    b.HasIndex("SelectedAlternativeTourId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("tourguide_TourBookingResolutions", (string)null);
+                });
+
             modelBuilder.Entity("TravAi.TourGuide.Models.TourGuide", b =>
                 {
                     b.Property<long>("Id")
@@ -2860,6 +2904,46 @@ namespace TravAi.Migrations
                     b.HasIndex("TourId");
 
                     b.ToTable("tourguide_UrgentRequests", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.TourGuide.Models.UserTourCompensationCoupon", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("CouponCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("DiscountPercentage")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("TriggeringBookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TriggeringBookingId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("tourguide_UserTourCompensationCoupons", (string)null);
                 });
 
             modelBuilder.Entity("TravAi.TourGuide.Models.WithdrawRequest", b =>
@@ -3683,6 +3767,37 @@ namespace TravAi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TravAi.TourGuide.Models.TourBookingResolution", b =>
+                {
+                    b.HasOne("TravAi.TourGuide.Models.TourBooking", "NewBooking")
+                        .WithMany()
+                        .HasForeignKey("NewBookingId");
+
+                    b.HasOne("TravAi.TourGuide.Models.TourBooking", "OriginalBooking")
+                        .WithMany()
+                        .HasForeignKey("OriginalBookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.TourGuide.Models.Tour", "SelectedAlternativeTour")
+                        .WithMany()
+                        .HasForeignKey("SelectedAlternativeTourId");
+
+                    b.HasOne("TravAi.Models.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("NewBooking");
+
+                    b.Navigation("OriginalBooking");
+
+                    b.Navigation("SelectedAlternativeTour");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("TravAi.TourGuide.Models.TourGuide", b =>
                 {
                     b.HasOne("TravAi.Models.Auth.User", "User")
@@ -3788,6 +3903,25 @@ namespace TravAi.Migrations
                     b.Navigation("Tour");
 
                     b.Navigation("TourGuide");
+                });
+
+            modelBuilder.Entity("TravAi.TourGuide.Models.UserTourCompensationCoupon", b =>
+                {
+                    b.HasOne("TravAi.TourGuide.Models.TourBooking", "TriggeringBooking")
+                        .WithMany()
+                        .HasForeignKey("TriggeringBookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Auth.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TriggeringBooking");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("TravAi.TourGuide.Models.WithdrawRequest", b =>

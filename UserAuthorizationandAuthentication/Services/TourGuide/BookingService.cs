@@ -19,10 +19,12 @@ namespace TravAi.TourGuide.Services
     public class BookingService : IBookingService
     {
         private readonly ApplicationDbContext _context;
+        private readonly TravAi.Options.StripeOptions _stripeOptions;
 
-        public BookingService(ApplicationDbContext context)
+        public BookingService(ApplicationDbContext context, Microsoft.Extensions.Options.IOptions<TravAi.Options.StripeOptions> stripeOptions)
         {
             _context = context;
+            _stripeOptions = stripeOptions.Value;
         }
 
         public async Task<BookingResponseDto> CreateBookingAsync(long userId, long tourId)
@@ -187,7 +189,7 @@ namespace TravAi.TourGuide.Services
             return await MapToDto(booking);
         }
 
-        public async Task<bool> CancelBookingAsync(long userId, long bookingId)
+        public async Task<bool> CancelBookingAsync(long userId, long bookingId, string? refundMethod = null)
         {
             var booking = await _context.TourBookings
                 .Include(b => b.Tour)
@@ -198,7 +200,8 @@ namespace TravAi.TourGuide.Services
             // Check cancellation policy with AvailableDateTime
             if (booking.Tour != null && booking.Tour.AvailableDateTime.HasValue)
             {
-                int policyHours = (int)booking.Tour.CancellationPolicy;
+                int policyHours = 24; // Strictly 24-hour rule for tours
+
                 var timeUntilTour = booking.Tour.AvailableDateTime.Value - DateTime.UtcNow;
 
                 if (timeUntilTour.TotalHours < policyHours && timeUntilTour.TotalHours > 0)
@@ -215,6 +218,51 @@ namespace TravAi.TourGuide.Services
             // For now, we'll just mark it as cancelled
             if (booking.Status == BookingStatus.Confirmed)
             {
+                if (booking.PaymentStatus == PaymentStatus.Completed) 
+                {
+                    var user = await _context.Users.FindAsync(userId);
+                    var transactionItem = await _context.PaymentTransactionItems
+                        .Include(pti => pti.PaymentTransaction)
+                        .FirstOrDefaultAsync(pti => pti.BookingType == "Tour" && pti.BookingId == booking.Id && pti.Status == "Paid");
+
+                    if (user != null)
+                    {
+                        if (refundMethod == "OriginalPaymentMethod" && transactionItem != null && transactionItem.PaymentTransaction.Provider == "Stripe")
+                        {
+                            Stripe.StripeConfiguration.ApiKey = _stripeOptions.SecretKey;
+                            var refundService = new Stripe.RefundService();
+                            await refundService.CreateAsync(new Stripe.RefundCreateOptions
+                            {
+                                PaymentIntent = transactionItem.PaymentTransaction.ProviderTransactionId,
+                                Amount = (long)(booking.TotalPrice * 100),
+                                Reason = "requested_by_customer"
+                            });
+                        }
+                        else
+                        {
+                            user.WalletBalance += booking.TotalPrice;
+                            _context.WalletTransactions.Add(new TravAi.Airline.Models.WalletTransaction
+                            {
+                                UserId = userId,
+                                Amount = booking.TotalPrice,
+                                Type = "Refund",
+                                Description = $"Refund for cancelled tour booking #{booking.Id}",
+                                ReferenceId = $"Refund-Tour-{booking.Id}",
+                                CreatedAt = DateTime.UtcNow
+                            });
+                        }
+                    }
+                    
+                    var itemToUpdate = await _context.PaymentTransactionItems
+                        .FirstOrDefaultAsync(pti => pti.BookingType == "Tour" && pti.BookingId == booking.Id);
+                    if (itemToUpdate != null)
+                    {
+                        itemToUpdate.Status = "Refunded";
+                    }
+                    
+                    booking.PaymentStatus = PaymentStatus.Refunded;
+                }
+
                 booking.Status = BookingStatus.Cancelled;
                 booking.UpdatedAt = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
@@ -372,7 +420,7 @@ namespace TravAi.TourGuide.Services
                 .Include(b => b.Tour)
                 .Include(b => b.TourGuide)
                 .Include(b => b.Participants)
-                .Where(b => b.UserId == userId && b.PaymentStatus == PaymentStatus.Completed)
+                .Where(b => b.UserId == userId && (b.PaymentStatus == PaymentStatus.Completed || b.PaymentStatus == PaymentStatus.Refunded))
                 .AsQueryable();
 
             if (tab == "upcoming")
@@ -406,6 +454,11 @@ namespace TravAi.TourGuide.Services
 
             var tourDate = booking.TourDate ?? booking.Tour?.AvailableDateTime ?? booking.BookingDate ?? DateTime.Now;
 
+            var existingReview = await _context.TourReviews
+                .FirstOrDefaultAsync(r => r.UserId == booking.UserId && r.TourId == booking.TourId);
+            bool hasReviewed = existingReview != null;
+            bool canReview = booking.Status != BookingStatus.Cancelled && tourDate <= DateTime.UtcNow && !hasReviewed;
+
             return new BookingResponseDto
             {
                 Id = booking.Id,
@@ -428,8 +481,12 @@ namespace TravAi.TourGuide.Services
                 UpdatedAt = booking.UpdatedAt,
                 PrimaryImageUrl = booking.Tour?.TourImages?.FirstOrDefault()?.ImageUrl,
                 UiBadge = booking.Status == BookingStatus.Cancelled ? "Cancelled" : (tourDate > DateTime.UtcNow ? "Upcoming" : "Completed"),
-                CanCancel = booking.Status != BookingStatus.Cancelled && tourDate > DateTime.UtcNow.AddHours(48),
-                CanReview = booking.Status == BookingStatus.Completed || (booking.Status == BookingStatus.Confirmed && tourDate <= DateTime.UtcNow),
+                CanCancel = booking.Status != BookingStatus.Cancelled && tourDate > DateTime.UtcNow.AddHours(24),
+                CanReview = canReview,
+                HasReviewed = hasReviewed,
+                ReviewId = existingReview?.Id,
+                ReviewRating = existingReview?.Rating,
+                ReviewComment = existingReview?.Comment,
                 Participants = booking.Participants.Select(p => new ParticipantResponseDto
                 {
                     Id = p.Id,
@@ -452,6 +509,55 @@ namespace TravAi.TourGuide.Services
                         PhoneNumber = e.PhoneNumber
                     }).ToList()
                 }).ToList()
+            };
+        }
+
+        public async Task<TourCancelPreviewDto> PreviewCancelBookingAsync(long userId, long bookingId)
+        {
+            var booking = await _context.TourBookings
+                .Include(b => b.Tour)
+                .FirstOrDefaultAsync(b => b.Id == bookingId && b.UserId == userId);
+
+            if (booking == null) throw new KeyNotFoundException("Tour booking not found.");
+
+            bool canCancel = true;
+            string policyDesc = "Free cancellation until 24 hours before tour start.";
+
+            if (booking.Tour != null && booking.Tour.AvailableDateTime.HasValue)
+            {
+                int policyHours = 24; // Strictly 24-hour rule for tours
+
+                var timeUntilTour = booking.Tour.AvailableDateTime.Value - DateTime.UtcNow;
+
+                if (timeUntilTour.TotalHours < policyHours)
+                {
+                    canCancel = false;
+                    policyDesc = $"This tour cannot be cancelled because it starts in less than {policyHours} hours.";
+                }
+            }
+
+            decimal paidAmount = booking.TotalPrice;
+            decimal refundAmount = canCancel ? paidAmount : 0m;
+            decimal cancellationFee = paidAmount - refundAmount;
+
+            var isStripePayment = await _context.PaymentTransactionItems
+                .Include(pti => pti.PaymentTransaction)
+                .AnyAsync(pti => pti.BookingType == "Tour" && pti.BookingId == booking.Id && pti.Status == "Paid" && pti.PaymentTransaction.Provider == "Stripe");
+
+            return new TourCancelPreviewDto
+            {
+                BookingId = booking.Id,
+                BookingType = "Tour",
+                TourName = booking.Tour?.TourTitle ?? "Tour",
+                City = booking.Tour?.City ?? "TBD",
+                TourDateTime = booking.Tour?.AvailableDateTime,
+                PaidAmount = paidAmount,
+                CancellationFee = cancellationFee,
+                RefundAmount = refundAmount,
+                CanCancel = canCancel,
+                RefundDestination = "Wallet",
+                PolicyDescription = policyDesc,
+                OriginalPaymentMethodAvailable = isStripePayment
             };
         }
     }
