@@ -64,11 +64,13 @@ namespace TravAi.Services.HotelService
         Task<bool> RejectApplicationAsync(long hotelId, string reason);
 
         // 10. Complaints
-        Task<List<UserBookingMinimalDto>> GetEligibleBookingsForComplaintAsync(long userId);
+        Task<List<UserBookingMinimalDto>> GetEligibleBookingsForComplaintAsync(long userId, ComplaintType type);
         Task<long> CreateComplaintAsync(long userId, ComplaintCreateDto dto);
         Task<bool> UpdateComplaintAsync(long userId, long complaintId, ComplaintCreateDto dto);
         Task<List<ComplaintSummaryDto>> GetMyComplaintsAsync(long userId);
         Task<ComplaintDetailsDto> GetComplaintDetailsAsync(long userId, long complaintId);
+        Task<bool> DeleteComplaintAttachmentAsync(long userId, long complaintId, long attachmentId);
+        Task<bool> UserReplyToComplaintAsync(long userId, long complaintId, AdminReplyCreateDto dto);
         // 11. Admin Complaints
         Task<List<AdminComplaintSummaryDto>> GetAdminComplaintsAsync(string? type, string? status, string? search, long? bookingId, string? hotelName);
         Task<AdminComplaintDetailsDto> GetAdminComplaintDetailsAsync(long complaintId);

@@ -8,6 +8,7 @@ namespace TravAi.Models.Enums
         Hotel = 4,
         Service = 5,
         Tour = 6
+       
     }
 
     public enum ComplaintStatus

@@ -1798,25 +1798,84 @@ namespace TravAi.Services.HotelService
             return $"{prop} - {acc}";
         }
 
-        public async Task<List<UserBookingMinimalDto>> GetEligibleBookingsForComplaintAsync(long userId)
+        public async Task<List<UserBookingMinimalDto>> GetEligibleBookingsForComplaintAsync(long userId, ComplaintType type)
         {
-            var bookings = await _context.HotelBookings
-                .Include(b => b.Hotel)
-                .Include(b => b.BookingRooms).ThenInclude(br => br.Room)
-                .Where(b => b.UserId == userId)
-                .OrderByDescending(b => b.CheckInDate)
-                .ToListAsync();
+            var result = new List<UserBookingMinimalDto>();
 
-            return bookings.Select(b => new UserBookingMinimalDto
+            if (type == ComplaintType.Hotel || type == ComplaintType.Service)
             {
-                BookingId = b.Id,
-                HotelId = b.HotelId,
-                HotelName = b.Hotel?.HotelName ?? "Unknown Hotel",
-                City = b.Hotel?.CityArea ?? (b.Hotel?.Governorate ?? "N/A"),
-                RoomName = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
-                Dates = $"{(b.CheckInDate?.ToString("dd MMM yyyy") ?? "N/A")} - {(b.CheckOutDate?.ToString("dd MMM yyyy") ?? "N/A")}",
-                TotalPrice = $"${b.TotalPrice:N2}"
-            }).ToList();
+                var bookings = await _context.HotelBookings
+                    .Include(b => b.Hotel)
+                    .Include(b => b.BookingRooms).ThenInclude(br => br.Room)
+                    .Where(b => b.UserId == userId)
+                    .OrderByDescending(b => b.CheckInDate)
+                    .ToListAsync();
+
+                result.AddRange(bookings.Select(b => new UserBookingMinimalDto
+                {
+                    BookingId = b.Id,
+                    HotelId = b.HotelId,
+                    HotelName = b.Hotel?.HotelName ?? "Unknown Hotel",
+                    City = b.Hotel?.CityArea ?? (b.Hotel?.Governorate ?? "N/A"),
+                    RoomName = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
+                    Dates = $"{(b.CheckInDate?.ToString("dd MMM yyyy") ?? "N/A")} - {(b.CheckOutDate?.ToString("dd MMM yyyy") ?? "N/A")}",
+                    TotalPrice = $"${b.TotalPrice:N2}",
+                    Type = "Hotel",
+                    ProviderName = b.Hotel?.HotelName ?? "Unknown Hotel",
+                    Title = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
+                    Status = b.Status.ToString(),
+                    ExtraInfo = b.Hotel?.CityArea ?? "N/A"
+                }));
+            }
+            else if (type == ComplaintType.Tour)
+            {
+                var tourBookings = await _context.TourBookings
+                    .Include(b => b.Tour)
+                    .Where(b => b.UserId == userId)
+                    .OrderByDescending(b => b.BookingDate)
+                    .ToListAsync();
+
+                result.AddRange(tourBookings.Select(b => new UserBookingMinimalDto
+                {
+                    BookingId = b.Id,
+                    Dates = b.TourDate?.ToString("dd MMM yyyy") ?? "N/A",
+                    TotalPrice = $"${b.TotalPrice:N2}",
+                    Type = "Tour",
+                    ProviderName = b.Tour?.TourTitle ?? "Unknown Tour",
+                    Title = b.Tour?.TourTitle ?? "Tour",
+                    Status = b.Status.ToString(),
+                    ExtraInfo = $"{b.ParticipantsCount} Participants",
+                    HotelName = b.Tour?.TourTitle ?? "Unknown Tour",
+                    City = b.Tour?.City ?? "N/A",
+                    RoomName = $"{b.ParticipantsCount} Participants"
+                }));
+            }
+            else if (type == ComplaintType.Airline)
+            {
+                var airlineBookings = await _context.Bookings
+                    .Include(b => b.Flight).ThenInclude(f => f.DepartureAirport)
+                    .Include(b => b.Flight).ThenInclude(f => f.ArrivalAirport)
+                    .Where(b => b.UserId == userId)
+                    .OrderByDescending(b => b.BookingDate)
+                    .ToListAsync();
+
+                result.AddRange(airlineBookings.Select(b => new UserBookingMinimalDto
+                {
+                    BookingId = b.Id,
+                    Dates = b.Flight?.DepartureTime?.ToString("dd MMM yyyy HH:mm") ?? "N/A",
+                    TotalPrice = $"${b.TotalPrice:N2}",
+                    Type = "Airline",
+                    ProviderName = b.Flight?.FlightNumber ?? "Unknown Airline",
+                    Title = $"{b.Flight?.DepartureAirport?.City} to {b.Flight?.ArrivalAirport?.City}",
+                    Status = b.Status.ToString(),
+                    ExtraInfo = $"Class: {b.Flight?.FlightClass}",
+                    HotelName = b.Flight?.FlightNumber ?? "Unknown Airline",
+                    City = $"{b.Flight?.DepartureAirport?.City} - {b.Flight?.ArrivalAirport?.City}",
+                    RoomName = $"Class: {b.Flight?.FlightClass}"
+                }));
+            }
+
+            return result;
         }
 
         public async Task<long> CreateComplaintAsync(long userId, ComplaintCreateDto dto)
@@ -1833,10 +1892,10 @@ namespace TravAi.Services.HotelService
                 UpdatedAt = DateTime.UtcNow
             };
 
-            if (dto.ComplaintType == ComplaintType.Booking)
+            if (dto.ComplaintType == ComplaintType.Hotel)
             {
                 if (!dto.BookingId.HasValue) 
-                    throw new ArgumentException("Booking ID is required for booking complaints.");
+                    throw new ArgumentException("Booking ID is required for hotel complaints.");
                 
                 var booking = await _context.HotelBookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
                 if (booking == null) 
@@ -1845,13 +1904,33 @@ namespace TravAi.Services.HotelService
                 complaint.BookingId = dto.BookingId;
                 complaint.HotelId = booking.HotelId;
             }
-            else // Platform Complaint
+            else if (dto.ComplaintType == ComplaintType.Tour)
+            {
+                if (!dto.BookingId.HasValue) 
+                    throw new ArgumentException("Booking ID is required for tour complaints.");
+                var booking = await _context.TourBookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
+                if (booking == null) 
+                    throw new UnauthorizedAccessException("Tour booking not found or does not belong to you.");
+                complaint.TourBookingId = dto.BookingId;
+            }
+            else if (dto.ComplaintType == ComplaintType.Airline)
+            {
+                if (!dto.BookingId.HasValue) 
+                    throw new ArgumentException("Booking ID is required for airline complaints.");
+                var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
+                if (booking == null) 
+                    throw new UnauthorizedAccessException("Airline booking not found or does not belong to you.");
+                complaint.AirlineBookingId = dto.BookingId;
+            }
+            else // Service Complaint
             {
                 if (dto.BookingId.HasValue)
-                    throw new ArgumentException("Booking ID should not be provided for platform complaints.");
+                    throw new ArgumentException("Booking ID should not be provided for service complaints.");
 
                 complaint.BookingId = null;
                 complaint.HotelId = null;
+                complaint.TourBookingId = null;
+                complaint.AirlineBookingId = null;
             }
 
             // Handling attachments before SaveChanges to ensure Atomicity
@@ -1874,7 +1953,42 @@ namespace TravAi.Services.HotelService
             }
 
             _context.Complaints.Add(complaint);
-            await _context.SaveChangesAsync();
+
+            var conn = _context.Database.GetDbConnection();
+            Console.WriteLine($"[Diagnostics] Runtime DB: {conn.DataSource} / {conn.Database}");
+            Console.WriteLine($"[Diagnostics] ComplaintType: {dto.ComplaintType}");
+            Console.WriteLine($"[Diagnostics] BookingId: {dto.BookingId}");
+            Console.WriteLine($"[Diagnostics] UserId: {userId}");
+            Console.WriteLine($"[Diagnostics] Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}");
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Diagnostics] SaveChanges Failed!");
+                Console.WriteLine($"[Diagnostics] ex.Message: {ex.Message}");
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    Console.WriteLine($"[Diagnostics] Inner: {inner.Message}");
+                    if (inner is Microsoft.Data.SqlClient.SqlException sqlEx)
+                    {
+                        Console.WriteLine($"[Diagnostics] SqlException details:");
+                        Console.WriteLine($"  Number: {sqlEx.Number}");
+                        Console.WriteLine($"  State: {sqlEx.State}");
+                        Console.WriteLine($"  Class: {sqlEx.Class}");
+                        Console.WriteLine($"  Server: {sqlEx.Server}");
+                        foreach (Microsoft.Data.SqlClient.SqlError err in sqlEx.Errors)
+                        {
+                            Console.WriteLine($"  SqlError: {err.Message}");
+                        }
+                    }
+                    inner = inner.InnerException;
+                }
+                throw;
+            }
 
             return complaint.Id;
         }
@@ -1892,18 +2006,40 @@ namespace TravAi.Services.HotelService
             complaint.ComplaintType = dto.ComplaintType;
             complaint.UpdatedAt = DateTime.UtcNow;
 
-            if (dto.ComplaintType == ComplaintType.Booking && dto.BookingId.HasValue)
+            if (dto.ComplaintType == ComplaintType.Hotel && dto.BookingId.HasValue)
             {
                 var booking = await _context.HotelBookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
                 if (booking == null) throw new UnauthorizedAccessException("Booking not found or does not belong to you.");
                 
                 complaint.BookingId = dto.BookingId;
                 complaint.HotelId = booking.HotelId;
+                complaint.TourBookingId = null;
+                complaint.AirlineBookingId = null;
+            }
+            else if (dto.ComplaintType == ComplaintType.Tour && dto.BookingId.HasValue)
+            {
+                var booking = await _context.TourBookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
+                if (booking == null) throw new UnauthorizedAccessException("Tour booking not found or does not belong to you.");
+                complaint.TourBookingId = dto.BookingId;
+                complaint.BookingId = null;
+                complaint.HotelId = null;
+                complaint.AirlineBookingId = null;
+            }
+            else if (dto.ComplaintType == ComplaintType.Airline && dto.BookingId.HasValue)
+            {
+                var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == dto.BookingId && b.UserId == userId);
+                if (booking == null) throw new UnauthorizedAccessException("Airline booking not found or does not belong to you.");
+                complaint.AirlineBookingId = dto.BookingId;
+                complaint.BookingId = null;
+                complaint.HotelId = null;
+                complaint.TourBookingId = null;
             }
             else
             {
                 complaint.BookingId = null;
                 complaint.HotelId = null;
+                complaint.TourBookingId = null;
+                complaint.AirlineBookingId = null;
             }
 
             // Optional: Remove existing attachments
@@ -1938,7 +2074,38 @@ namespace TravAi.Services.HotelService
                 }
             }
 
-            await _context.SaveChangesAsync();
+            var conn = _context.Database.GetDbConnection();
+            Console.WriteLine($"[Diagnostics Update] Runtime DB: {conn.DataSource} / {conn.Database}");
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Diagnostics Update] SaveChanges Failed!");
+                Console.WriteLine($"[Diagnostics Update] ex.Message: {ex.Message}");
+                var inner = ex.InnerException;
+                while (inner != null)
+                {
+                    Console.WriteLine($"[Diagnostics Update] Inner: {inner.Message}");
+                    if (inner is Microsoft.Data.SqlClient.SqlException sqlEx)
+                    {
+                        Console.WriteLine($"[Diagnostics Update] SqlException details:");
+                        Console.WriteLine($"  Number: {sqlEx.Number}");
+                        Console.WriteLine($"  State: {sqlEx.State}");
+                        Console.WriteLine($"  Class: {sqlEx.Class}");
+                        Console.WriteLine($"  Server: {sqlEx.Server}");
+                        foreach (Microsoft.Data.SqlClient.SqlError err in sqlEx.Errors)
+                        {
+                            Console.WriteLine($"  SqlError: {err.Message}");
+                        }
+                    }
+                    inner = inner.InnerException;
+                }
+                throw;
+            }
+
             return true;
         }
 
@@ -1962,6 +2129,9 @@ namespace TravAi.Services.HotelService
             var complaint = await _context.Complaints
                 .Include(c => c.Booking).ThenInclude(b => b.Hotel)
                 .Include(c => c.Booking).ThenInclude(b => b.BookingRooms)
+                .Include(c => c.TourBooking).ThenInclude(b => b.Tour)
+                .Include(c => c.AirlineBooking).ThenInclude(b => b.Flight).ThenInclude(f => f.DepartureAirport)
+                .Include(c => c.AirlineBooking).ThenInclude(b => b.Flight).ThenInclude(f => f.ArrivalAirport)
                 .Include(c => c.Attachments)
                 .Include(c => c.Replies).ThenInclude(r => r.AdminUser)
                 .Include(c => c.Replies).ThenInclude(r => r.Attachments)
@@ -1969,22 +2139,10 @@ namespace TravAi.Services.HotelService
 
             if (complaint == null) throw new KeyNotFoundException("Complaint not found.");
 
-            return new ComplaintDetailsDto
+            var dto = new ComplaintDetailsDto
             {
                 Id = complaint.Id,
                 ComplaintType = complaint.ComplaintType.ToString(),
-                BookingId = complaint.BookingId,
-                HotelName = complaint.Booking?.Hotel?.HotelName ?? "Platform/Unknown",
-                HotelCity = complaint.Booking?.Hotel != null 
-                    ? (complaint.Booking.Hotel.CityArea ?? complaint.Booking.Hotel.Governorate ?? "N/A") 
-                    : "N/A",
-                RoomName = (complaint.Booking?.BookingRooms != null && complaint.Booking.BookingRooms.Any()) 
-                    ? string.Join(", ", complaint.Booking.BookingRooms.Select(br => br.RoomName ?? "Room")) 
-                    : null,
-                BookingDates = complaint.Booking != null 
-                    ? $"{(complaint.Booking.CheckInDate?.ToString("dd MMM yyyy") ?? "N/A")} - {(complaint.Booking.CheckOutDate?.ToString("dd MMM yyyy") ?? "N/A")}" 
-                    : "N/A",
-                TotalPrice = complaint.Booking != null ? $"${complaint.Booking.TotalPrice:N2}" : null,
                 Subject = complaint.Subject,
                 Message = complaint.Message,
                 Status = complaint.Status.ToString(),
@@ -1992,24 +2150,85 @@ namespace TravAi.Services.HotelService
                 CreatedAt = complaint.CreatedAt,
                 Attachments = complaint.Attachments?
                     .Where(a => a.ReplyId == null)
-                    .Select(a => new ComplaintAttachmentDto
-                    {
-                        Id = a.Id,
-                        FileUrl = a.FileUrl
-                    }).ToList() ?? new List<ComplaintAttachmentDto>(),
+                    .Select(a => new ComplaintAttachmentDto { Id = a.Id, FileUrl = a.FileUrl }).ToList() ?? new List<ComplaintAttachmentDto>(),
                 Replies = complaint.Replies?.Select(r => new ComplaintReplyDto
                 {
                     Id = r.Id,
                     SenderName = r.AdminUser?.UserName ?? "Support Team",
                     ReplyMessage = r.ReplyMessage,
                     CreatedAt = r.CreatedAt,
-                    Attachments = r.Attachments?.Select(ra => new ComplaintAttachmentDto
-                    {
-                        Id = ra.Id,
-                        FileUrl = ra.FileUrl
-                    }).ToList() ?? new List<ComplaintAttachmentDto>()
+                    Attachments = r.Attachments?.Select(ra => new ComplaintAttachmentDto { Id = ra.Id, FileUrl = ra.FileUrl }).ToList() ?? new List<ComplaintAttachmentDto>()
                 }).ToList() ?? new List<ComplaintReplyDto>()
             };
+
+            if (complaint.ComplaintType == ComplaintType.Hotel && complaint.Booking != null)
+            {
+                dto.BookingId = complaint.BookingId;
+                dto.HotelName = complaint.Booking.Hotel?.HotelName ?? "Unknown Hotel";
+                dto.HotelCity = complaint.Booking.Hotel?.CityArea ?? complaint.Booking.Hotel?.Governorate ?? "N/A";
+                dto.RoomName = (complaint.Booking.BookingRooms != null && complaint.Booking.BookingRooms.Any()) 
+                    ? string.Join(", ", complaint.Booking.BookingRooms.Select(br => br.RoomName ?? "Room")) : null;
+                dto.BookingDates = $"{(complaint.Booking.CheckInDate?.ToString("dd MMM yyyy") ?? "N/A")} - {(complaint.Booking.CheckOutDate?.ToString("dd MMM yyyy") ?? "N/A")}";
+                dto.TotalPrice = $"${complaint.Booking.TotalPrice:N2}";
+            }
+            else if (complaint.ComplaintType == ComplaintType.Tour && complaint.TourBooking != null)
+            {
+                dto.BookingId = complaint.TourBookingId;
+                dto.HotelName = complaint.TourBooking.Tour?.TourTitle ?? "Unknown Tour";
+                dto.HotelCity = complaint.TourBooking.Tour?.City ?? "N/A";
+                dto.RoomName = $"{complaint.TourBooking.ParticipantsCount} Participants";
+                dto.BookingDates = complaint.TourBooking.TourDate?.ToString("dd MMM yyyy") ?? "N/A";
+                dto.TotalPrice = $"${complaint.TourBooking.TotalPrice:N2}";
+            }
+            else if (complaint.ComplaintType == ComplaintType.Airline && complaint.AirlineBooking != null)
+            {
+                dto.BookingId = complaint.AirlineBookingId;
+                dto.HotelName = complaint.AirlineBooking.Flight?.FlightNumber ?? "Unknown Airline";
+                dto.HotelCity = $"{complaint.AirlineBooking.Flight?.DepartureAirport?.City} - {complaint.AirlineBooking.Flight?.ArrivalAirport?.City}";
+                dto.RoomName = $"Class: {complaint.AirlineBooking.Flight?.FlightClass}";
+                dto.BookingDates = complaint.AirlineBooking.Flight?.DepartureTime?.ToString("dd MMM yyyy HH:mm") ?? "N/A";
+                dto.TotalPrice = $"${complaint.AirlineBooking.TotalPrice:N2}";
+            }
+            else
+            {
+                dto.HotelName = "Platform/Service";
+                dto.HotelCity = "N/A";
+                dto.BookingDates = "N/A";
+            }
+
+            return dto;
+        }
+
+        public async Task<bool> DeleteComplaintAttachmentAsync(long userId, long complaintId, long attachmentId)
+        {
+            var complaint = await _context.Complaints
+                .Include(c => c.Attachments)
+                .FirstOrDefaultAsync(c => c.Id == complaintId && c.UserId == userId);
+
+            if (complaint == null)
+                throw new KeyNotFoundException("Complaint not found or you don't have access.");
+
+            var attachment = complaint.Attachments.FirstOrDefault(a => a.Id == attachmentId);
+            if (attachment == null)
+                throw new KeyNotFoundException("Attachment not found in this complaint.");
+
+            if (attachment.ReplyId.HasValue)
+                throw new UnauthorizedAccessException("Cannot delete admin reply attachments.");
+
+            _context.Set<ComplaintAttachment>().Remove(attachment);
+            
+            try
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", attachment.FileUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+            catch { /* ignore physical deletion errors */ }
+
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<List<AdminComplaintSummaryDto>> GetAdminComplaintsAsync(string? type, string? status, string? search, long? bookingId, string? hotelName)
@@ -2028,12 +2247,11 @@ namespace TravAi.Services.HotelService
             if (!string.IsNullOrEmpty(search))
             {
                 query = query.Where(c => c.Subject.Contains(search) || 
-                                         (c.User != null && c.User.UserName.Contains(search)) || 
-                                         (c.Booking != null && c.Booking.Hotel.HotelName.Contains(search)));
+                                         (c.User != null && c.User.UserName.Contains(search)));
             }
 
             if (bookingId.HasValue)
-                query = query.Where(c => c.BookingId == bookingId);
+                query = query.Where(c => c.BookingId == bookingId || c.TourBookingId == bookingId || c.AirlineBookingId == bookingId);
 
             if (!string.IsNullOrEmpty(hotelName))
                 query = query.Where(c => c.Booking != null && c.Booking.Hotel.HotelName.Contains(hotelName));
@@ -2046,11 +2264,11 @@ namespace TravAi.Services.HotelService
             {
                 Id = c.Id,
                 ComplaintType = c.ComplaintType.ToString(),
-                BookingId = c.BookingId,
+                BookingId = c.BookingId ?? c.TourBookingId ?? c.AirlineBookingId,
                 FromUser = c.User?.UserName ?? "Unknown",
-                Regarding = c.ComplaintType == ComplaintType.Booking && c.Booking?.Hotel != null 
-                    ? (c.Booking.Hotel.HotelName ?? "Unknown Hotel") 
-                    : "Platform",
+                Regarding = c.ComplaintType == ComplaintType.Hotel && c.Booking?.Hotel != null ? (c.Booking.Hotel.HotelName ?? "Unknown Hotel") :
+                            c.ComplaintType == ComplaintType.Tour ? "Tour" :
+                            c.ComplaintType == ComplaintType.Airline ? "Airline" : "Service",
                 Subject = c.Subject,
                 Status = c.Status.ToString(),
                 CreatedAt = c.CreatedAt
@@ -2067,6 +2285,9 @@ namespace TravAi.Services.HotelService
                 .Include(c => c.Booking).ThenInclude(b => b.Hotel)
                 .Include(c => c.Booking).ThenInclude(b => b.BookingRooms)
                 .Include(c => c.Booking).ThenInclude(b => b.Payments)
+                .Include(c => c.TourBooking).ThenInclude(b => b.Tour)
+                .Include(c => c.AirlineBooking).ThenInclude(b => b.Flight).ThenInclude(f => f.DepartureAirport)
+                .Include(c => c.AirlineBooking).ThenInclude(b => b.Flight).ThenInclude(f => f.ArrivalAirport)
                 .FirstOrDefaultAsync(c => c.Id == complaintId);
 
             if (c == null) throw new KeyNotFoundException("Complaint not found.");
@@ -2105,20 +2326,21 @@ namespace TravAi.Services.HotelService
                     }).ToList()
             };
 
-            if (c.ComplaintType == ComplaintType.Booking && c.Booking != null)
+            if (c.ComplaintType == ComplaintType.Hotel && c.Booking != null)
             {
                 var b = c.Booking;
                 var paidPayment = b.Payments.Where(p => p.Status == HotelPaymentStatus.Paid).OrderByDescending(p => p.CreatedAt).FirstOrDefault();
 
                 dto.BookingContext = new AdminBookingContextDto
                 {
+                    Type = "Hotel",
                     BookingId = b.Id,
+                    ProviderName = b.Hotel?.HotelName ?? "Unknown Hotel",
                     HotelName = b.Hotel?.HotelName ?? "Unknown Hotel",
                     City = b.Hotel?.CityArea ?? b.Hotel?.Governorate ?? "N/A",
                     RoomName = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
-                    BookingDates = (b.CheckInDate.HasValue && b.CheckOutDate.HasValue)
-                        ? b.CheckInDate.Value.ToString("dd MMM yyyy") + " - " + b.CheckOutDate.Value.ToString("dd MMM yyyy")
-                        : "N/A",
+                    Title = string.Join(", ", b.BookingRooms.Select(br => br.RoomName ?? "Room")),
+                    BookingDates = (b.CheckInDate.HasValue && b.CheckOutDate.HasValue) ? b.CheckInDate.Value.ToString("dd MMM yyyy") + " - " + b.CheckOutDate.Value.ToString("dd MMM yyyy") : "N/A",
                     Nights = b.Nights ?? 0,
                     TotalRooms = b.TotalRooms,
                     TotalPrice = "$" + b.TotalPrice.ToString("N2"),
@@ -2130,28 +2352,69 @@ namespace TravAi.Services.HotelService
                     RefundAmount = b.RefundAmount
                 };
             }
+            else if (c.ComplaintType == ComplaintType.Tour && c.TourBooking != null)
+            {
+                var b = c.TourBooking;
+                dto.BookingContext = new AdminBookingContextDto
+                {
+                    Type = "Tour",
+                    BookingId = b.Id,
+                    ProviderName = b.Tour?.TourTitle ?? "Unknown Tour",
+                    HotelName = b.Tour?.TourTitle ?? "Unknown Tour",
+                    City = b.Tour?.City ?? "N/A",
+                    RoomName = $"{b.ParticipantsCount} Participants",
+                    Title = b.Tour?.TourTitle ?? "Tour",
+                    BookingDates = b.TourDate?.ToString("dd MMM yyyy") ?? "N/A",
+                    TotalPrice = "$" + b.TotalPrice.ToString("N2"),
+                    BookingStatus = b.Status.ToString(),
+                    PaymentStatus = b.PaymentStatus.ToString()
+                };
+            }
+            else if (c.ComplaintType == ComplaintType.Airline && c.AirlineBooking != null)
+            {
+                var b = c.AirlineBooking;
+                dto.BookingContext = new AdminBookingContextDto
+                {
+                    Type = "Airline",
+                    BookingId = b.Id,
+                    ProviderName = b.Flight?.FlightNumber ?? "Unknown Airline",
+                    HotelName = b.Flight?.FlightNumber ?? "Unknown Airline",
+                    City = $"{b.Flight?.DepartureAirport?.City} - {b.Flight?.ArrivalAirport?.City}",
+                    RoomName = $"Class: {b.Flight?.FlightClass}",
+                    Title = $"{b.Flight?.DepartureAirport?.City} - {b.Flight?.ArrivalAirport?.City}",
+                    BookingDates = b.Flight?.DepartureTime?.ToString("dd MMM yyyy HH:mm") ?? "N/A",
+                    TotalPrice = "$" + b.TotalPrice.ToString("N2"),
+                    BookingStatus = b.Status.ToString(),
+                    PaymentStatus = b.PaymentStatus.ToString()
+                };
+            }
 
             return dto;
         }
 
-        public async Task<bool> AdminReplyToComplaintAsync(long adminUserId, long complaintId, AdminReplyCreateDto dto)
+        public async Task<bool> UserReplyToComplaintAsync(long userId, long complaintId, AdminReplyCreateDto dto)
         {
             var complaint = await _context.Complaints.FindAsync(complaintId);
-            if (complaint == null) return false;
+            if (complaint == null) throw new KeyNotFoundException("Complaint not found.");
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            // Guard: Must belong to the user
+            if (complaint.UserId != userId)
+                throw new UnauthorizedAccessException("You can only reply to your own complaints.");
+
+            // Guard: Cannot reply if already resolved or closed or rejected
+            if (complaint.Status == ComplaintStatus.Resolved || complaint.Status == ComplaintStatus.Closed || complaint.Status == ComplaintStatus.Rejected)
+                throw new InvalidOperationException("Cannot reply to a resolved, closed, or rejected complaint.");
+
+            var writtenFiles = new List<string>();
             try
             {
                 var reply = new ComplaintReply
                 {
                     ComplaintId = complaintId,
-                    AdminUserId = adminUserId,
+                    AdminUserId = userId, // Store user's own ID as sender
                     ReplyMessage = dto.Message,
                     CreatedAt = DateTime.UtcNow
                 };
-
-                _context.ComplaintReplies.Add(reply);
-                await _context.SaveChangesAsync(); 
 
                 if (dto.Attachments != null && dto.Attachments.Count > 0)
                 {
@@ -2168,17 +2431,93 @@ namespace TravAi.Services.HotelService
                         {
                             await file.CopyToAsync(stream);
                         }
+                        writtenFiles.Add(filePath);
 
                         // ATTACHMENT INTEGRITY: Link to ReplyId ONLY (not both)
-                        _context.ComplaintAttachments.Add(new ComplaintAttachment
+                        reply.Attachments.Add(new ComplaintAttachment
                         {
-                            ReplyId = reply.Id,
-                            ComplaintId = null, // Global Integrity Rule
+                            ComplaintId = null,
                             FileUrl = $"/uploads/complaints/{fileName}",
                             CreatedAt = DateTime.UtcNow
                         });
                     }
                 }
+
+                _context.ComplaintReplies.Add(reply);
+
+                // Set status back to Pending when user replies so Admin knows they need to review it again
+                if (complaint.Status == ComplaintStatus.InReview)
+                {
+                    complaint.Status = ComplaintStatus.Pending;
+                }
+                complaint.UpdatedAt = DateTime.UtcNow;
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Cleanup written physical files if DB transaction failed
+                foreach (var filePath in writtenFiles)
+                {
+                    try
+                    {
+                        if (File.Exists(filePath)) File.Delete(filePath);
+                    }
+                    catch (Exception fileEx)
+                    {
+                        Console.WriteLine($"[Diagnostics] Failed to clean up file {filePath}: {fileEx.Message}");
+                    }
+                }
+                Console.WriteLine($"[Diagnostics] UserReplyToComplaintAsync failed: {ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<bool> AdminReplyToComplaintAsync(long adminUserId, long complaintId, AdminReplyCreateDto dto)
+        {
+            var complaint = await _context.Complaints.FindAsync(complaintId);
+            if (complaint == null) return false;
+
+            var writtenFiles = new List<string>();
+            try
+            {
+                var reply = new ComplaintReply
+                {
+                    ComplaintId = complaintId,
+                    AdminUserId = adminUserId,
+                    ReplyMessage = dto.Message,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                if (dto.Attachments != null && dto.Attachments.Count > 0)
+                {
+                    var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "complaints");
+                    if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+                    foreach (var file in dto.Attachments)
+                    {
+                        if (file.Length == 0) continue;
+
+                        var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                        var filePath = Path.Combine(uploadPath, fileName);
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                        writtenFiles.Add(filePath);
+
+                        // ATTACHMENT INTEGRITY: Link to ReplyId ONLY (not both)
+                        reply.Attachments.Add(new ComplaintAttachment
+                        {
+                            ComplaintId = null, // Global Integrity Rule: admin reply evidence has no complaint id
+                            FileUrl = $"/uploads/complaints/{fileName}",
+                            CreatedAt = DateTime.UtcNow
+                        });
+                    }
+                }
+
+                _context.ComplaintReplies.Add(reply);
 
                 if (complaint.Status == ComplaintStatus.Pending || complaint.Status == ComplaintStatus.Resolved)
                 {
@@ -2187,12 +2526,23 @@ namespace TravAi.Services.HotelService
                 complaint.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                // Cleanup written physical files if DB transaction failed
+                foreach (var filePath in writtenFiles)
+                {
+                    try
+                    {
+                        if (File.Exists(filePath)) File.Delete(filePath);
+                    }
+                    catch (Exception fileEx)
+                    {
+                        Console.WriteLine($"[Diagnostics] Failed to clean up file {filePath}: {fileEx.Message}");
+                    }
+                }
+                Console.WriteLine($"[Diagnostics] AdminReplyToComplaintAsync failed: {ex.Message}");
                 throw;
             }
         }

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Complaints - Lumière</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #070708;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-gold: #e2b45b;
+            --gold-gradient: linear-gradient(135deg, #e2b45b 0%, #a67c37 100%);
+        }
+
+        body { 
+            background-color: var(--admin-bg); 
+            color: #d1d1d1; 
+            font-family: 'Outfit', sans-serif; 
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            color: #fff;
+            margin-bottom: 30px;
+        }
+
+        .complaint-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-Pending { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+        .badge-Resolved { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+
+        .btn-view {
+            background: var(--accent-gold);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .btn-view:hover {
+            box-shadow: 0 0 15px rgba(226, 180, 91, 0.4);
+        }
+
+        .filter-input {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="../index.html" style="color: #fff; text-decoration: none; display: inline-block; margin-bottom: 20px;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        <h1>Admin Complaints Management</h1>
+        <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+            <select id="filterType" class="filter-input" onchange="loadComplaints()">
+                <option value="">All Types</option>
+                <option value="Hotel">Hotel</option>
+                <option value="Tour">Tour</option>
+                <option value="Airline">Airline</option>
+                <option value="Service">Service</option>
+            </select>
+            <select id="filterStatus" class="filter-input" onchange="loadComplaints()">
+                <option value="">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="Resolved">Resolved</option>
+            </select>
+            <input type="text" id="filterSearch" class="filter-input" placeholder="Search subject..." oninput="debounceSearch()">
+        </div>
+        <div id="complaintsList">Loading...</div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script>
+        if (!Auth.isLoggedIn()) window.location.href = 'login.html';
+
+        let searchTimeout;
+        function debounceSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadComplaints, 500);
+        }
+
+        async function loadComplaints() {
+            const type = document.getElementById('filterType').value;
+            const status = document.getElementById('filterStatus').value;
+            const search = document.getElementById('filterSearch').value;
+            
+            let query = [];
+            if (type) query.push(`type=${type}`);
+            if (status) query.push(`status=${status}`);
+            if (search) query.push(`search=${encodeURIComponent(search)}`);
+            
+            const queryString = query.length > 0 ? '?' + query.join('&') : '';
+            const res = await API.get('/admin/complaints' + queryString);
+            const container = document.getElementById('complaintsList');
+            
+            if (res.success) {
+                if (!res.data || res.data.length === 0) {
+                    container.innerHTML = '<p>No complaints found.</p>';
+                    return;
+                }
+
+                container.innerHTML = res.data.map(c => `
+                    <div class="complaint-card">
+                        <div>
+                            <div style="font-size: 0.8rem; color: var(--accent-gold); font-weight: 700; text-transform: uppercase;">
+                                ${c.complaintType} - ${c.userName}
+                            </div>
+                            <h3 style="margin: 8px 0; color: #fff;">${c.subject}</h3>
+                            <div style="font-size: 0.85rem; color: #888;">
+                                <i class="far fa-clock"></i> ${new Date(c.createdAt).toLocaleString()}
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                            <span class="badge badge-${c.status}">${c.status}</span>
+                            <a href="admin-complaint-details.html?id=${c.id}" class="btn-view">View Details</a>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = `<p style="color: #ef4444;">Error loading complaints: ${res.message}</p>`;
+            }
+        }
+
+        loadComplaints();
+    </script>
+</body>
+</html>
