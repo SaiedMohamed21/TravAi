@@ -641,7 +641,7 @@ namespace TravAi.Services.AI
                 hotelApiRequestJsonStr = JsonSerializer.Serialize(hotelReq, new JsonSerializerOptions { WriteIndented = true });
                 
                 var client = _httpClientFactory.CreateClient();
-                var hotelBaseUrl = _config["HotelRecommendationApi:BaseUrl"] ?? "https://travai-python-hotel.onrender.com";
+                var hotelBaseUrl = _config["HotelRecommendationApi:BaseUrl"] ?? "https://travai-python-hotel-production.up.railway.app";
                 
                 var content = new StringContent(hotelApiRequestJsonStr, System.Text.Encoding.UTF8, "application/json");
                 try {
@@ -1639,58 +1639,68 @@ namespace TravAi.Services.AI
 
             if (!req.ExcludeHotels)
             {
-                if (req.IsHotelFixed && req.FixedHotelId.HasValue)
+                var fixedHotelsMap = new Dictionary<string, PlannedHotelDto>(StringComparer.OrdinalIgnoreCase);
+                decimal fixedHotelsCost = 0;
+
+                if (req.FixedHotels != null && req.FixedHotels.Any())
                 {
-                    var h = await _db.Hotels
+                    var fixedHotelIds = req.FixedHotels.Select(fh => fh.HotelId).Distinct().ToList();
+                    var dbFixedHotels = await _db.Hotels
                         .Include(h => h.Rooms).Include(h => h.Images)
-                        .FirstOrDefaultAsync(hot => hot.Id == req.FixedHotelId.Value);
-                    if (h != null)
+                        .Where(h => fixedHotelIds.Contains(h.Id))
+                        .ToDictionaryAsync(h => h.Id);
+
+                    foreach (var fh in req.FixedHotels)
                     {
-                        var city = itinerary.FirstOrDefault(c => c.City.Equals(h.Governorate, StringComparison.OrdinalIgnoreCase) 
-                                                              || c.City.Equals(h.CityArea, StringComparison.OrdinalIgnoreCase));
-                        int nights = city?.Days ?? 1;
-
-                        var singleRoomsList = h.Rooms.Where(r => r.BedType == BedType.Single && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
-                        var doubleRoomsList = h.Rooms.Where(r => r.BedType == BedType.Double && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
-
-                        decimal singlePrice = singleRoomsList.Any() ? singleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
-                        decimal doublePrice = doubleRoomsList.Any() ? doubleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
-                        decimal total = (singlePrice * req.SingleRooms + doublePrice * req.DoubleRooms) * nights;
-
-                        var pHotel = new PlannedHotelDto
+                        if (dbFixedHotels.TryGetValue(fh.HotelId, out var h))
                         {
-                            Id = h.Id,
-                            HotelName = h.HotelName,
-                            City = h.CityArea ?? h.Governorate ?? "",
-                            Country = h.Country ?? "Egypt",
-                            StarRating = h.StarRating,
-                            AvgReviewScore = h.AvgReviewScore,
-                            NumReviews = h.NumReviews,
-                            ImageUrl = h.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl ?? h.Images.FirstOrDefault()?.ImageUrl,
-                            Nights = nights,
-                            SingleRooms = req.SingleRooms,
-                            DoubleRooms = req.DoubleRooms,
-                            SingleRoomPricePerNight = singlePrice,
-                            DoubleRoomPricePerNight = doublePrice,
-                            TotalPrice = Math.Round(total, 2)
-                        };
+                            var city = itinerary.FirstOrDefault(c => c.City.Equals(h.Governorate, StringComparison.OrdinalIgnoreCase) 
+                                                                  || c.City.Equals(h.CityArea, StringComparison.OrdinalIgnoreCase)
+                                                                  || c.City.Equals(fh.City, StringComparison.OrdinalIgnoreCase));
+                            int nights = city?.Days ?? 1;
 
-                        actualHotelsCost += pHotel.TotalPrice;
+                            var singleRoomsList = h.Rooms.Where(r => r.BedType == BedType.Single && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
+                            var doubleRoomsList = h.Rooms.Where(r => r.BedType == BedType.Double && r.FBPrice.HasValue && r.State == RoomState.Active).ToList();
 
-                        var cityPlan = cityPlans.FirstOrDefault(cp => 
-                            cp.City.Equals(h.CityArea, StringComparison.OrdinalIgnoreCase) || 
-                            cp.City.Equals(h.Governorate, StringComparison.OrdinalIgnoreCase) || 
-                            cp.City.Equals(pHotel.City, StringComparison.OrdinalIgnoreCase));
-                        
-                        if (cityPlan != null)
-                        {
-                            cityPlan.Hotel = pHotel;
-                            cityPlan.CityHotelBudget = pHotel.TotalPrice;
+                            decimal singlePrice = singleRoomsList.Any() ? singleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                            decimal doublePrice = doubleRoomsList.Any() ? doubleRoomsList.Select(r => r.FBPrice!.Value).Min() : 0;
+                            decimal total = (singlePrice * req.SingleRooms + doublePrice * req.DoubleRooms) * nights;
+
+                            var pHotel = new PlannedHotelDto
+                            {
+                                Id = h.Id,
+                                HotelName = h.HotelName,
+                                City = h.CityArea ?? h.Governorate ?? fh.City ?? "",
+                                Country = h.Country ?? "Egypt",
+                                StarRating = h.StarRating,
+                                AvgReviewScore = h.AvgReviewScore,
+                                NumReviews = h.NumReviews,
+                                ImageUrl = h.Images.FirstOrDefault(img => img.IsPrimary)?.ImageUrl ?? h.Images.FirstOrDefault()?.ImageUrl,
+                                Nights = nights,
+                                SingleRooms = req.SingleRooms,
+                                DoubleRooms = req.DoubleRooms,
+                                SingleRoomPricePerNight = singlePrice,
+                                DoubleRoomPricePerNight = doublePrice,
+                                TotalPrice = Math.Round(total, 2)
+                            };
+
+                            fixedHotelsMap[fh.City] = pHotel;
+                            fixedHotelsCost += pHotel.TotalPrice;
                         }
                     }
                 }
-                else
+
+                // Add all fixed hotels costs to actual cost
+                actualHotelsCost += fixedHotelsCost;
+
+                // Identify cities that need regeneration
+                var fixedCities = fixedHotelsMap.Keys.ToList();
+                var citiesToRegen = itinerary.Where(c => !fixedCities.Contains(c.City, StringComparer.OrdinalIgnoreCase)).ToList();
+
+                if (citiesToRegen.Any())
                 {
+                    decimal remainingHotelBudget = Math.Max(0, hotelBudget - fixedHotelsCost);
+
                     string targetCluster = req.BudgetType.ToLower() switch
                     {
                         "economy" => "economic",
@@ -1701,7 +1711,7 @@ namespace TravAi.Services.AI
 
                     var hotelReq = new HotelRecommendationRequestDto
                     {
-                        TripPlan = itinerary.Select(city => {
+                        TripPlan = citiesToRegen.Select(city => {
                             var ci = GetCityCheckIn(req.DepartureDate, itinerary, city.City);
                             var co = ci.AddDays(city.Days);
                             return new HotelTripPlanItemDto
@@ -1712,7 +1722,7 @@ namespace TravAi.Services.AI
                             };
                         }).ToList(),
                         Cluster = targetCluster,
-                        TotalBudget = (double)hotelBudget,
+                        TotalBudget = (double)remainingHotelBudget,
                         NumPeople = totalPeople,
                         SingleRooms = req.SingleRooms,
                         DoubleRooms = req.DoubleRooms,
@@ -1724,7 +1734,7 @@ namespace TravAi.Services.AI
                     hotelApiRequestJsonStr = JsonSerializer.Serialize(hotelReq, new JsonSerializerOptions { WriteIndented = true });
                     
                     var client = _httpClientFactory.CreateClient();
-                    var hotelBaseUrl = _config["HotelRecommendationApi:BaseUrl"] ?? "https://travai-python-hotel.onrender.com";
+                    var hotelBaseUrl = _config["HotelRecommendationApi:BaseUrl"] ?? "https://travai-python-hotel-production.up.railway.app";
                     
                     var content = new StringContent(hotelApiRequestJsonStr, System.Text.Encoding.UTF8, "application/json");
                     try {
@@ -1810,6 +1820,17 @@ namespace TravAi.Services.AI
                         }
                     } catch (Exception ex) {
                         hotelApiResponseJsonStr = $"Exception: {ex.Message}\n{ex.StackTrace}";
+                    }
+                }
+
+                // Bind fixed hotels to cityPlans
+                foreach (var kvp in fixedHotelsMap)
+                {
+                    var cityPlan = cityPlans.FirstOrDefault(cp => cp.City.Equals(kvp.Key, StringComparison.OrdinalIgnoreCase));
+                    if (cityPlan != null)
+                    {
+                        cityPlan.Hotel = kvp.Value;
+                        cityPlan.CityHotelBudget = kvp.Value.TotalPrice;
                     }
                 }
             }

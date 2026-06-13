@@ -103,6 +103,7 @@ namespace TravAi.DTOs.Hotel
         public string? RejectionReason { get; set; }
         public long UserId { get; set; }
         public string? OwnerName { get; set; }
+        public string? OwnerEmail { get; set; }
         public DateTime CreatedAt { get; set; }
         public string? PropertyType { get; set; }
         public string? AccommodationType { get; set; }

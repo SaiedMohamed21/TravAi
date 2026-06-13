@@ -8,6 +8,7 @@ using TravAi.Services.HotelService;
 
 namespace TravAi.Controllers
 {
+    [ApiExplorerSettings(GroupName = "Common")]
     [Authorize(Roles = "User")]
     [ApiController]
     [Route("api/user/complaints")]

@@ -9,6 +9,7 @@ using TravAi.DTOs.Common;
 
 namespace TravAi.Controllers.Admin
 {
+    [ApiExplorerSettings(GroupName = "Hotel")]
     [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/admin/hotel-reviews")]

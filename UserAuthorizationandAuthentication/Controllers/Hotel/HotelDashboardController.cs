@@ -12,6 +12,7 @@ using TravAi.DTOs.Common;
 
 namespace TravAi.Controllers.Hotel
 {
+    [ApiExplorerSettings(GroupName = "Hotel")]
     [Authorize(Roles = "Hotel,Admin")]
     [ApiController]
     [Route("api/hotel/dashboard")]

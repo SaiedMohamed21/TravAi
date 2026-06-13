@@ -164,6 +164,28 @@ namespace TravAi.TourGuide.Services
             return dtos;
         }
 
+        public async Task<List<GuideManageSummaryDto>> GetGuideManagementListAsync()
+        {
+            var guidesQuery = await _context.TourGuides
+                .Select(g => new GuideManageSummaryDto
+                {
+                    Id = g.Id,
+                    Name = g.Name,
+                    Status = g.Status.ToString(),
+                    Languages = g.TourGuideLanguages.Select(l => l.Language.ToString()).ToList(),
+                    ToursCount = _context.Tours.Count(t => t.TourGuideId == g.Id),
+                    Rating = _context.TourReviews.Where(r => r.TourGuideId == g.Id).Average(r => (double?)r.Rating) ?? 0.0
+                })
+                .ToListAsync();
+
+            foreach (var dto in guidesQuery)
+            {
+                dto.Rating = Math.Round(dto.Rating, 1);
+            }
+
+            return guidesQuery;
+        }
+
         public async Task<TourGuideResponseDto> GetApplicationByIdAsync(long id)
         {
             var app = await _context.TourGuides
@@ -456,6 +478,7 @@ namespace TravAi.TourGuide.Services
                 Status = tg.Status.ToString(),
                 RejectionReason = tg.RejectionReason,
                 ExperienceYears = tg.ExperienceYears,
+                SubmissionDate = tg.User != null ? tg.User.CreatedAt : DateTime.UtcNow,
                 Emails = tg.TourGuideEmails.Select(e => new TourGuideEmailDto { Email = e.Email, Verified = e.EmailVerified }).ToList(),
                 Phones = tg.TourGuidePhones.Select(p => new TourGuidePhoneDto { PhoneNumber = p.PhoneNumber, Verified = p.PhoneVerified }).ToList(),
                 Languages = tg.TourGuideLanguages.Select(l => new TourGuideLanguageDto { Language = l.Language }).ToList(),

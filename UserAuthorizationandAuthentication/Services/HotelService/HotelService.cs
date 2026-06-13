@@ -656,6 +656,7 @@ namespace TravAi.Services.HotelService
                 RejectionReason = hotel.RejectionReason,
                 UserId = hotel.UserId,
                 OwnerName = hotel.User?.Name,
+                OwnerEmail = hotel.User?.Email,
                 CreatedAt = hotel.CreatedAt,
                 PropertyType = hotel.PropertyType?.ToString(),
                 AccommodationType = hotel.AccommodationType?.ToString(),
@@ -1693,33 +1694,55 @@ namespace TravAi.Services.HotelService
 
         public async Task<List<HotelDetailsDto>> GetAllApplicationsAsync()
         {
-            var hotelIds = await _context.Hotels
+            var apps = await _context.Hotels
+                .Include(h => h.User)
                 .OrderByDescending(h => h.CreatedAt)
-                .Select(h => h.Id)
+                .Select(h => new HotelDetailsDto
+                {
+                    Id = h.Id,
+                    HotelName = h.HotelName,
+                    CityArea = h.CityArea,
+                    Governorate = h.Governorate,
+                    Country = h.Country,
+                    TotalRooms = h.Rooms.Sum(r => r.Quantity),
+                    Verified = h.Verified,
+                    VerificationStatus = h.VerificationStatus.ToString(),
+                    RejectionReason = h.RejectionReason,
+                    UserId = h.UserId,
+                    OwnerName = h.User != null ? h.User.Name : null,
+                    OwnerEmail = h.User != null ? h.User.Email : null,
+                    CreatedAt = h.CreatedAt
+                })
                 .ToListAsync();
 
-            var result = new List<HotelDetailsDto>();
-            foreach (var id in hotelIds)
-            {
-                result.Add(await GetHotelDetailsAsync(id));
-            }
-            return result;
+            return apps;
         }
 
         public async Task<List<HotelDetailsDto>> GetPendingApplicationsAsync()
         {
-            var hotelIds = await _context.Hotels
+            var apps = await _context.Hotels
+                .Include(h => h.User)
                 .Where(h => h.VerificationStatus == VerificationStatus.Pending || h.Verified == false)
                 .OrderByDescending(h => h.CreatedAt)
-                .Select(h => h.Id)
+                .Select(h => new HotelDetailsDto
+                {
+                    Id = h.Id,
+                    HotelName = h.HotelName,
+                    CityArea = h.CityArea,
+                    Governorate = h.Governorate,
+                    Country = h.Country,
+                    TotalRooms = h.Rooms.Sum(r => r.Quantity),
+                    Verified = h.Verified,
+                    VerificationStatus = h.VerificationStatus.ToString(),
+                    RejectionReason = h.RejectionReason,
+                    UserId = h.UserId,
+                    OwnerName = h.User != null ? h.User.Name : null,
+                    OwnerEmail = h.User != null ? h.User.Email : null,
+                    CreatedAt = h.CreatedAt
+                })
                 .ToListAsync();
 
-            var result = new List<HotelDetailsDto>();
-            foreach (var id in hotelIds)
-            {
-                result.Add(await GetHotelDetailsAsync(id));
-            }
-            return result;
+            return apps;
         }
 
         public async Task<bool> ApproveApplicationAsync(long hotelId)
@@ -2933,6 +2956,9 @@ namespace TravAi.Services.HotelService
                 RevenueThisMonth = revenueThisMonth,
                 TotalBookings = totalBookings,
                 TotalHotels = await verifiedHotels.CountAsync(),
+                TotalUsers = await _context.Users.CountAsync(),
+                TotalFlights = await _context.Flights.CountAsync(),
+                TotalTours = await _context.Tours.CountAsync(),
                 PlatformCommission = null,
                 PlatformCommissionSupported = false,
                 CommissionThisMonth = null,
@@ -3039,11 +3065,31 @@ namespace TravAi.Services.HotelService
                 new DistributionRangeDto { RangeLabel = "$500+", Count = distributionData?.r500plus ?? 0 }
             };
 
+            var earningsData = await (from p in _context.HotelPayments
+                                      join h in verifiedHotels on p.HotelId equals h.Id
+                                      where p.Status == HotelPaymentStatus.Paid &&
+                                            p.PaidAt != null &&
+                                            p.PaidAt.Value.Year == (selectedYear ?? currentYear)
+                                      group p by p.PaidAt.Value.Month into g
+                                      select new
+                                      {
+                                          MonthNumber = g.Key,
+                                          TotalEarnings = g.Sum(x => (decimal?)x.Amount) ?? 0m
+                                      })
+                                      .ToListAsync();
+
+            var finalEarnings = Enumerable.Range(1, 12).Select(m => new MonthlyEarningsDto
+            {
+                MonthName = new DateTime(currentYear, m, 1).ToString("MMM"),
+                TotalEarnings = earningsData.FirstOrDefault(x => x.MonthNumber == m)?.TotalEarnings ?? 0m
+            }).ToList();
+
             return new AdminChartDataDto
             {
                 PlatformGrowth = finalGrowth,
                 BookingsTrend = finalTrend,
-                BookingValueDistribution = finalDistribution
+                BookingValueDistribution = finalDistribution,
+                EarningsTrend = finalEarnings
             };
         }
 
