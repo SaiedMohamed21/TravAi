@@ -214,11 +214,17 @@
                 <h2 style="margin-bottom: 20px; font-weight: 700;">Submit a Complaint</h2>
                 
                 <div class="type-toggle">
-                    <button class="type-btn active" onclick="switchType('Booking', this)">
-                        <i class="fas fa-hotel"></i> Hotel Booking
+                    <button class="type-btn active" onclick="switchType('Hotel', this)">
+                        <i class="fas fa-hotel"></i> Hotel
                     </button>
-                    <button class="type-btn" onclick="switchType('Platform', this)">
-                        <i class="fas fa-laptop"></i> Platform / Service
+                    <button class="type-btn" onclick="switchType('Tour', this)">
+                        <i class="fas fa-map-marked-alt"></i> Tour
+                    </button>
+                    <button class="type-btn" onclick="switchType('Airline', this)">
+                        <i class="fas fa-plane"></i> Airline
+                    </button>
+                    <button class="type-btn" onclick="switchType('Service', this)">
+                        <i class="fas fa-laptop"></i> Service
                     </button>
                 </div>
 
@@ -298,7 +304,7 @@
 
     <script src="js/config.js"></script>
     <script>
-        let currentType = 'Booking';
+        let currentType = 'Hotel';
         let userBookings = [];
         let selectedFiles = [];
         let editingId = null;
@@ -306,30 +312,55 @@
         if (!Auth.isLoggedIn()) window.location.href = 'login.html';
 
         async function init() {
-            await loadEligibleBookings();
-            await loadComplaints();
-        }
-
-        async function loadEligibleBookings() {
-            const res = await API.get('/user/complaints/bookings');
-            if (res.success) {
-                userBookings = res.data;
-                const select = document.getElementById('bookingSelect');
-                select.innerHTML = '<option value="">-- Choose a Booking --</option>' + 
-                    userBookings.map(b => `<option value="${b.bookingId}">Booking #${b.bookingId} - ${b.hotelName}</option>`).join('');
+            try {
+                await loadEligibleBookings();
+            } catch (err) {
+                console.error("Failed to load eligible bookings:", err);
+            }
+            try {
+                await loadComplaints();
+            } catch (err) {
+                console.error("Failed to load complaints:", err);
+                const container = document.getElementById('complaintsList');
+                if (container) {
+                    container.innerHTML = '<div style="text-align:center; padding:40px; color:#ef4444;">Failed to load history.</div>';
+                }
             }
         }
 
-        function switchType(type, btn) {
+        async function loadEligibleBookings() {
+            if (currentType === 'Service') return;
+            try {
+                const res = await API.get('/user/complaints/bookings?type=' + currentType);
+                const select = document.getElementById('bookingSelect');
+                if (res && res.success && res.data) {
+                    userBookings = res.data;
+                    select.innerHTML = '<option value="">-- Choose a Booking --</option>' + 
+                        userBookings.map(b => `<option value="${b.bookingId}">[${b.type}] #${b.bookingId} - ${b.providerName || b.hotelName}</option>`).join('');
+                } else {
+                    userBookings = [];
+                    if (select) select.innerHTML = '<option value="">-- Choose a Booking --</option>';
+                }
+            } catch (err) {
+                console.error("Error loading eligible bookings:", err);
+                userBookings = [];
+                const select = document.getElementById('bookingSelect');
+                if (select) select.innerHTML = '<option value="">-- Choose a Booking --</option>';
+            }
+        }
+
+        async function switchType(type, btn) {
             currentType = type;
             document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
             const bookingGroup = document.getElementById('bookingSelectorGroup');
-            if (type === 'Platform') {
+            if (type === 'Service') {
                 bookingGroup.style.display = 'none';
             } else {
                 bookingGroup.style.display = 'block';
+                await loadEligibleBookings();
+                document.getElementById('bookingPreview').style.display = 'none';
             }
         }
 
@@ -353,15 +384,28 @@
 
         function onFilesSelected() {
             const input = document.getElementById('fileInput');
-            selectedFiles = Array.from(input.files);
+            for(let file of input.files) {
+                selectedFiles.push(file);
+            }
+            input.value = '';
+            renderFilePreview();
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderFilePreview();
+        }
+
+        function renderFilePreview() {
             const previewList = document.getElementById('filePreviewList');
             const label = document.getElementById('fileLabel');
             
             if (selectedFiles.length > 0) {
                 label.innerText = `${selectedFiles.length} file(s) selected`;
-                previewList.innerHTML = selectedFiles.map(f => `
+                previewList.innerHTML = selectedFiles.map((f, i) => `
                     <div style="background:rgba(255,255,255,0.1); padding:5px 10px; border-radius:8px; font-size:0.8rem; display:flex; align-items:center; gap:8px;">
                         <i class="fas fa-image"></i> ${f.name.substring(0, 15)}...
+                        <i class="fas fa-times" style="color: #ef4444; cursor: pointer; margin-left: 5px;" onclick="removeFile(${i})"></i>
                     </div>
                 `).join('');
             } else {
@@ -382,7 +426,7 @@
                 return;
             }
 
-            if (currentType === 'Booking' && !bookingId) {
+            if (currentType !== 'Service' && !bookingId) {
                 alert('Please select a booking.');
                 return;
             }
@@ -391,8 +435,8 @@
             submitBtn.innerHTML = editingId ? '<i class="fas fa-spinner fa-spin"></i> Updating...' : '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
             const formData = new FormData();
-            formData.append('ComplaintType', currentType === 'Booking' ? 1 : 2);
-            if (currentType === 'Booking') formData.append('BookingId', bookingId);
+            formData.append('ComplaintType', currentType);
+            if (currentType !== 'Service') formData.append('BookingId', bookingId);
             formData.append('Subject', subject);
             formData.append('Message', message);
             
@@ -418,47 +462,54 @@
 
         async function loadComplaints() {
             const container = document.getElementById('complaintsList');
-            const res = await API.get('/user/complaints/mine');
-            
-            if (res.success) {
-                const list = res.data;
-                if (!list || list.length === 0) {
+            if (!container) return;
+            try {
+                const res = await API.get('/user/complaints/mine');
+                if (res && res.success && res.data) {
+                    const list = res.data;
+                    if (list.length === 0) {
+                        container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">No complaints found.</div>';
+                        return;
+                    }
+                    
+                    container.innerHTML = list.map(c => {
+                        const cStatus = c.status || c.Status || c.statue || c.Statue;
+                        const cId = c.id || c.Id;
+                        return `
+                        <div class="glass-panel complaint-card">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;" onclick="location.href='complaint-details.html?id=${cId}'">
+                                <div>
+                                    <div style="font-size:0.75rem; color:var(--gold); font-weight:700; text-transform:uppercase;">${c.complaintType || c.ComplaintType}</div>
+                                    <h3 style="margin:5px 0;">${c.subject || c.Subject}</h3>
+                                </div>
+                                <span class="status-pill status-${cStatus}">${cStatus}</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+                                <div style="font-size:0.85rem; color:#94a3b8;">
+                                    <i class="far fa-clock"></i> ${new Date(c.createdAt || c.CreatedAt).toLocaleDateString()}
+                                </div>
+                                <div style="display:flex; gap:10px;">
+                                    ${cStatus === 'Pending' ? `
+                                        <button class="pill" onclick="event.stopPropagation(); deleteComplaint(${cId}, this)" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; border:none; padding:6px 12px; font-weight:600; font-size:0.75rem;">
+                                            <i class="fas fa-trash-alt"></i> DELETE
+                                        </button>
+                                        <button class="pill" onclick="event.stopPropagation(); location.href='edit-complaint.html?id=${cId}'" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:6px 12px; font-weight:600; font-size:0.75rem;">
+                                            <i class="fas fa-edit"></i> EDIT
+                                        </button>
+                                    ` : ''}
+                                    <button class="pill" onclick="event.stopPropagation(); location.href='complaint-details.html?id=${cId}'" style="background:var(--gold); color:#000; border:none; padding:6px 15px; font-weight:800; font-size:0.75rem;">
+                                        VIEW <i class="fas fa-chevron-right" style="font-size:0.6rem; margin-left:5px;"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `; }).join('');
+                } else {
                     container.innerHTML = '<div style="text-align:center; padding:40px; color:#94a3b8;">No complaints found.</div>';
-                    return;
                 }
-                
-                container.innerHTML = list.map(c => {
-                    const cStatus = c.status || c.Status || c.statue || c.Statue;
-                    const cId = c.id || c.Id;
-                    return `
-                    <div class="glass-panel complaint-card">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;" onclick="location.href='complaint-details.html?id=${cId}'">
-                            <div>
-                                <div style="font-size:0.75rem; color:var(--gold); font-weight:700; text-transform:uppercase;">${c.complaintType || c.ComplaintType}</div>
-                                <h3 style="margin:5px 0;">${c.subject || c.Subject}</h3>
-                            </div>
-                            <span class="status-pill status-${cStatus}">${cStatus}</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
-                            <div style="font-size:0.85rem; color:#94a3b8;">
-                                <i class="far fa-clock"></i> ${new Date(c.createdAt || c.CreatedAt).toLocaleDateString()}
-                            </div>
-                            <div style="display:flex; gap:10px;">
-                                ${cStatus === 'Pending' ? `
-                                    <button class="pill" onclick="event.stopPropagation(); deleteComplaint(${cId}, this)" style="background:rgba(239, 68, 68, 0.1); color:#ef4444; border:none; padding:6px 12px; font-weight:600; font-size:0.75rem;">
-                                        <i class="fas fa-trash-alt"></i> DELETE
-                                    </button>
-                                    <button class="pill" onclick="event.stopPropagation(); location.href='edit-complaint.html?id=${cId}'" style="background:rgba(255,255,255,0.1); color:#fff; border:none; padding:6px 12px; font-weight:600; font-size:0.75rem;">
-                                        <i class="fas fa-edit"></i> EDIT
-                                    </button>
-                                ` : ''}
-                                <button class="pill" onclick="event.stopPropagation(); location.href='complaint-details.html?id=${cId}'" style="background:var(--gold); color:#000; border:none; padding:6px 15px; font-weight:800; font-size:0.75rem;">
-                                    VIEW <i class="fas fa-chevron-right" style="font-size:0.6rem; margin-left:5px;"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `; }).join('');
+            } catch (err) {
+                console.error("Error loading complaints:", err);
+                container.innerHTML = `<div style="text-align:center; padding:40px; color:#ef4444;">Failed to load complaints.</div>`;
             }
         }
 

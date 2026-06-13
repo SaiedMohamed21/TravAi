@@ -409,6 +409,18 @@ namespace TravAi.Data
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<Complaint>()
+                .HasOne(c => c.TourBooking)
+                .WithMany()
+                .HasForeignKey(c => c.TourBookingId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Complaint>()
+                .HasOne(c => c.AirlineBooking)
+                .WithMany()
+                .HasForeignKey(c => c.AirlineBookingId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<ComplaintAttachment>()
                 .HasOne(a => a.Complaint)
                 .WithMany(c => c.Attachments)

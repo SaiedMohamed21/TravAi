@@ -25,6 +25,14 @@ namespace TravAi.Models.Hotels
         [ForeignKey("BookingId")]
         public HotelBooking? Booking { get; set; }
 
+        public long? TourBookingId { get; set; }
+        [ForeignKey("TourBookingId")]
+        public TravAi.TourGuide.Models.TourBooking? TourBooking { get; set; }
+
+        public long? AirlineBookingId { get; set; }
+        [ForeignKey("AirlineBookingId")]
+        public TravAi.Airline.Models.Booking? AirlineBooking { get; set; }
+
         public long? HotelId { get; set; }
         [ForeignKey("HotelId")]
         public Hotel? Hotel { get; set; }
