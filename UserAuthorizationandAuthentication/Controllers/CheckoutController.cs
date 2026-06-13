@@ -11,6 +11,7 @@ using TravAi.Services;
 
 namespace TravAi.Controllers
 {
+    [ApiExplorerSettings(GroupName = "Common")]
     [ApiController]
     [Route("api/checkout")]
     public class CheckoutController : ControllerBase

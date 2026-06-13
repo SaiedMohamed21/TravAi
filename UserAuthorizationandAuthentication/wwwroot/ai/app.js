@@ -98,7 +98,7 @@ let fixedItems = {
   goFlight: false,
   returnFlight: false,
   tours: [],
-  hotel: false
+  hotels: {}
 };
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -315,7 +315,7 @@ async function goGenerate() {
     goFlight: false,
     returnFlight: false,
     tours: [],
-    hotel: false
+    hotels: {}
   };
   if (!selectedType) return showAlert('alert2', 'Please select a budget type.');
   const maxBudget = parseFloat(document.getElementById('budgetSlider').value);
@@ -573,8 +573,13 @@ async function regenerateTour(sessionId, dateToRegen, cityStr, btnElement) {
   }
 }
 
-function toggleHotelFix() {
-  fixedItems.hotel = !fixedItems.hotel;
+function toggleHotelFix(cityName, hotelId) {
+  if (!fixedItems.hotels) fixedItems.hotels = {};
+  if (fixedItems.hotels[cityName]) {
+    delete fixedItems.hotels[cityName];
+  } else {
+    fixedItems.hotels[cityName] = hotelId;
+  }
   renderPlan();
 }
 
@@ -582,6 +587,7 @@ function cityCard(city) {
   const el = document.createElement('div');
   el.className = 'city-plan';
   
+  const isFixed = !!(fixedItems.hotels && fixedItems.hotels[city.city]);
   const hotelHtml = city.hotel ? `
     <div class="flight-card" style="margin-top: 10px; border-left: 4px solid var(--primary); min-height: unset; padding: 15px 25px;">
       <span class="flight-dir" style="background: rgba(99, 102, 241, 0.15); color: var(--primary-light);">HOTEL</span>
@@ -600,7 +606,7 @@ function cityCard(city) {
       </div>
       <div style="text-align: right; display: flex; flex-direction: column; justify-content: center; align-items: flex-end; min-width: 100px;">
         <div class="flight-price" style="color: var(--primary-light);">$${fmt(city.hotel.totalPrice)}</div>
-        <button onclick="toggleHotelFix()" class="btn ${fixedItems.hotel ? 'btn-fixed' : 'btn-outline'}" style="margin-top:12px; font-size:0.75rem; padding:6px 12px">${fixedItems.hotel ? '🔒 Fixed' : '🔓 Fix'}</button>
+        <button onclick="toggleHotelFix('${city.city.replace(/'/g, "\\'")}', ${city.hotel.id})" class="btn ${isFixed ? 'btn-fixed' : 'btn-outline'}" style="margin-top:12px; font-size:0.75rem; padding:6px 12px">${isFixed ? '🔒 Fixed' : '🔓 Fix'}</button>
       </div>
     </div>` : `<div class="none-badge" style="margin-top: 10px;">🏨 No hotel found in budget</div>`;
 
@@ -713,7 +719,8 @@ async function goRegenerateUnified() {
   document.getElementById('loader3').classList.add('active');
   document.getElementById('planContent').style.display = 'none';
 
-  if (!fixedItems.hotel) {
+  const allHotelsFixed = planResult.cityPlans.every(cp => !cp.hotel || (fixedItems.hotels && fixedItems.hotels[cp.city]));
+  if (!allHotelsFixed) {
     hotelRegenerateIndex++;
   }
 
@@ -730,8 +737,10 @@ async function goRegenerateUnified() {
       fixedReturnFlightId: fixedItems.returnFlight ? (planResult.returnFlight?.id || null) : null,
 
       hotelRegenerateIndex: hotelRegenerateIndex,
-      isHotelFixed: fixedItems.hotel,
-      fixedHotelId: fixedItems.hotel ? (planResult.cityPlans.find(cp => cp.hotel)?.hotel?.id || null) : null,
+      fixedHotels: Object.entries(fixedItems.hotels || {}).map(([city, hotelId]) => ({
+        city: city,
+        hotelId: hotelId
+      })),
 
       fixedTourDates: fixedItems.tours,
 

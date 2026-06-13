@@ -10,6 +10,7 @@ namespace TravAi.TourGuide.Services
     {
         Task<TourGuideResponseDto> ApplyAsync(long userId, TourGuideApplicationDto model);
         Task<List<TourGuideResponseDto>> GetAllApplicationsAsync();
+        Task<List<GuideManageSummaryDto>> GetGuideManagementListAsync();
         Task<TourGuideResponseDto> GetApplicationByIdAsync(long id);
         Task<TourGuideResponseDto> GetTourGuideByUserIdAsync(long userId);
         Task<bool> ApproveApplicationAsync(long id);

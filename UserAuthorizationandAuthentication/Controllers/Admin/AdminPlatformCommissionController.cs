@@ -12,6 +12,7 @@ using TravAi.Models.Admin.DTOs;
 
 namespace TravAi.Controllers.Admin
 {
+    [ApiExplorerSettings(GroupName = "Common")]
     [Route("api/admin/commissions")]
     [ApiController]
     [Authorize(Roles = "Admin")]

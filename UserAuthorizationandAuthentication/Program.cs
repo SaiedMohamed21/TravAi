@@ -150,6 +150,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("TourGuide", new OpenApiInfo { Title = "TourGuide API", Version = "v1" });
     c.SwaggerDoc("Auth", new OpenApiInfo { Title = "Auth API", Version = "v1" });
     c.SwaggerDoc("AI",   new OpenApiInfo { Title = "AI Trip Planner API", Version = "v1" });
+    c.SwaggerDoc("Common", new OpenApiInfo { Title = "Common API", Version = "v1" });
 });
 
 var app = builder.Build();
@@ -177,6 +178,7 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/TourGuide/swagger.json", "TourGuide API");
     c.SwaggerEndpoint("/swagger/Auth/swagger.json", "Auth API");
     c.SwaggerEndpoint("/swagger/AI/swagger.json",   "AI Trip Planner API");
+    c.SwaggerEndpoint("/swagger/Common/swagger.json", "Common API");
 });
 
 app.UseMiddleware<ExceptionMiddleware>();

@@ -47,6 +47,7 @@ namespace TravAi.Controllers.TourGuide
         public string? OriginalPaymentUnavailableReason { get; set; }
     }
 
+    [ApiExplorerSettings(GroupName = "TourGuide")]
     [Route("api/tourguide/cancellation")]
     [ApiController]
     [Authorize]

@@ -168,6 +168,9 @@ namespace TravAi.DTOs.Hotel
         public bool CommissionThisMonthSupported { get; set; } = false;
         public int TotalBookings { get; set; }
         public int TotalHotels { get; set; }
+        public int TotalUsers { get; set; }
+        public int TotalFlights { get; set; }
+        public int TotalTours { get; set; }
         public List<TopHotelDto> TopHotels { get; set; } = new();
         public List<TopCityDto> TopCities { get; set; } = new();
     }
@@ -206,6 +209,7 @@ namespace TravAi.DTOs.Hotel
         public List<YearlyGrowthDto> PlatformGrowth { get; set; } = new();
         public List<MonthlyTrendDto> BookingsTrend { get; set; } = new();
         public List<DistributionRangeDto> BookingValueDistribution { get; set; } = new();
+        public List<MonthlyEarningsDto> EarningsTrend { get; set; } = new();
     }
 
     public class YearlyGrowthDto
@@ -225,5 +229,11 @@ namespace TravAi.DTOs.Hotel
     {
         public string RangeLabel { get; set; } = string.Empty;
         public int Count { get; set; }
+    }
+
+    public class MonthlyEarningsDto
+    {
+        public string MonthName { get; set; } = string.Empty;
+        public decimal TotalEarnings { get; set; }
     }
 }

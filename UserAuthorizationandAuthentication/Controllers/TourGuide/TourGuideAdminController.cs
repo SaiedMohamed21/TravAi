@@ -29,6 +29,16 @@ namespace TravAi.TourGuide.Controllers
         }
 
         /// <summary>
+        /// Get all Tour Guides for Admin Management Dashboard
+        /// </summary>
+        [HttpGet("management")]
+        public async Task<IActionResult> GetGuideManagementList()
+        {
+            var guides = await _service.GetGuideManagementListAsync();
+            return Ok(guides);
+        }
+
+        /// <summary>
         /// Get all pending Tour Guide applications
         /// </summary>
         [HttpGet("applications")]
@@ -128,6 +138,45 @@ namespace TravAi.TourGuide.Controllers
             }
         }
 
+        [HttpGet("/api/admin/tour-guide-cancellations")]
+        public async Task<IActionResult> GetAllCancellationsForAdmin([FromQuery] UrgentRequestStatus? status, [FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var query = context.UrgentRequests
+                .Include(r => r.TourGuide)
+                .Include(r => r.Tour)
+                .AsQueryable();
+
+            if (status.HasValue)
+            {
+                query = query.Where(r => r.Status == status.Value);
+            }
+
+            var requests = await query
+                .OrderBy(r => r.CreatedAt)
+                .ToListAsync();
+
+            var result = new List<object>();
+            foreach (var r in requests)
+            {
+                var affectedCount = await context.TourBookings
+                    .CountAsync(b => b.TourId == r.TourId && b.Status == BookingStatus.PendingUserDecision);
+
+                result.Add(new
+                {
+                    Id = r.Id,
+                    TourGuideName = r.TourGuide?.Name ?? "Unknown Guide",
+                    TourName = r.Tour?.TourTitle ?? "Unknown Tour",
+                    Destination = r.Tour?.City ?? "Unknown Destination",
+                    Reason = r.Reason,
+                    CreatedAt = r.CreatedAt,
+                    AffectedBookingsCount = affectedCount,
+                    Status = r.Status.ToString()
+                });
+            }
+
+            return Ok(result);
+        }
+
         [HttpGet("/api/admin/tour-guide-cancellations/pending-review")]
         public async Task<IActionResult> GetPendingCancellationsForAdmin([FromServices] TravAi.Data.ApplicationDbContext context)
         {
@@ -173,6 +222,116 @@ namespace TravAi.TourGuide.Controllers
             await context.SaveChangesAsync();
 
             return Ok(new { Message = "Review submitted successfully." });
+        }
+
+        [HttpGet("tours")]
+        public async Task<IActionResult> GetAdminToursList([FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var toursList = await context.Tours
+                .OrderByDescending(t => t.CreatedAt)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.TourTitle,
+                    t.City,
+                    t.BasePriceUsd,
+                    t.DurationHours,
+                    t.Active,
+                    GuideName = t.TourGuide != null ? t.TourGuide.Name : "Unknown",
+                    PrimaryImage = t.TourImages.Where(img => img.IsPrimary).OrderBy(img => img.SortOrder).Select(img => img.ImageUrl).FirstOrDefault() 
+                                   ?? t.TourImages.OrderBy(img => img.SortOrder).Select(img => img.ImageUrl).FirstOrDefault(),
+                    BookingsCount = context.TourBookings.Count(b => b.TourId == t.Id)
+                })
+                .ToListAsync();
+
+            var result = toursList.Select(t => new
+            {
+                Id = t.Id,
+                Image = t.PrimaryImage ?? "",
+                Name = t.TourTitle,
+                Location = t.City ?? "N/A",
+                Price = t.BasePriceUsd ?? 0,
+                Duration = t.DurationHours.HasValue ? $"{t.DurationHours} hours" : "N/A",
+                Guide = t.GuideName,
+                Status = t.Active ? "active" : "pending",
+                Bookings = t.BookingsCount
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpGet("tours/pending")]
+        public async Task<IActionResult> GetAdminPendingTours([FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var pendingTours = await context.Tours
+                .Where(t => !t.Active)
+                .OrderByDescending(t => t.CreatedAt)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.TourTitle,
+                    t.City,
+                    t.BasePriceUsd,
+                    t.CreatedAt,
+                    GuideName = t.TourGuide != null ? t.TourGuide.Name : "Unknown",
+                    PrimaryImage = t.TourImages.Where(img => img.IsPrimary).OrderBy(img => img.SortOrder).Select(img => img.ImageUrl).FirstOrDefault() 
+                                   ?? t.TourImages.OrderBy(img => img.SortOrder).Select(img => img.ImageUrl).FirstOrDefault()
+                })
+                .ToListAsync();
+
+            var result = pendingTours.Select(t => new
+            {
+                Id = t.Id,
+                Image = t.PrimaryImage ?? "",
+                TourName = t.TourTitle,
+                Guide = t.GuideName,
+                Location = t.City ?? "N/A",
+                Price = t.BasePriceUsd ?? 0,
+                SubmittedDate = t.CreatedAt.ToString("M/d/yyyy"),
+                Status = "pending"
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        [HttpPost("tours/{id}/approve")]
+        public async Task<IActionResult> ApproveTour(long id, [FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var tour = await context.Tours.FindAsync(id);
+            if (tour == null) return NotFound("Tour not found.");
+
+            tour.Active = true;
+            tour.UpdatedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+
+            return Ok(new { Message = "Tour approved successfully." });
+        }
+
+        [HttpPost("tours/{id}/reject")]
+        public async Task<IActionResult> RejectTour(long id, [FromBody] RejectApplicationDto? model, [FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var tour = await context.Tours.FindAsync(id);
+            if (tour == null) return NotFound("Tour not found.");
+
+            tour.Active = false;
+            tour.UpdatedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+
+            return Ok(new { Message = "Tour rejected and deactivated successfully." });
+        }
+
+        [HttpDelete("bookings/{bookingId}")]
+        public async Task<IActionResult> AdminDeleteBooking(long bookingId, [FromServices] TravAi.Data.ApplicationDbContext context)
+        {
+            var booking = await context.TourBookings.FindAsync(bookingId);
+            if (booking == null) return NotFound("Booking not found.");
+
+            booking.Status = BookingStatus.Cancelled;
+            booking.PaymentStatus = PaymentStatus.Cancelled;
+            booking.UpdatedAt = DateTime.UtcNow;
+            await context.SaveChangesAsync();
+
+            return Ok(new { Message = "Booking cancelled successfully." });
         }
     }
 

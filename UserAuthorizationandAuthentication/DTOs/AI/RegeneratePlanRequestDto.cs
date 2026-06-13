@@ -17,8 +17,13 @@ namespace TravAi.DTOs.AI
 
         public List<string> FixedTourDates { get; set; } = new List<string>();
 
+        public List<FixedHotelDto> FixedHotels { get; set; } = new List<FixedHotelDto>();
         public int HotelRegenerateIndex { get; set; } = 0;
-        public bool IsHotelFixed { get; set; } = false;
-        public long? FixedHotelId { get; set; }
+    }
+
+    public class FixedHotelDto
+    {
+        public string City { get; set; } = null!;
+        public long HotelId { get; set; }
     }
 }
