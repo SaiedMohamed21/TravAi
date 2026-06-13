@@ -25,7 +25,11 @@ namespace TravAi.Airline.Services.BookingService
                 .Include(f => f.Airline)
                 .FirstOrDefaultAsync(f => f.Id == dto.FlightId);
 
-            if (flight == null) throw new Exception("Flight not found.");
+            if (flight == null || flight.Airline == null || 
+                (flight.Airline.Status != "Approved" && flight.Airline.Status != "Active" && !flight.Airline.IsApproved) ||
+                flight.Airline.Status == "Inactive" || flight.Airline.Status == "Disabled" || flight.Airline.Status == "Rejected" ||
+                flight.Status == "Inactive")
+                throw new Exception("Flight not found.");
             if ((flight.AvailableSeats ?? 0) < dto.NumberOfSeats)
                 throw new Exception("Not enough seats available.");
 

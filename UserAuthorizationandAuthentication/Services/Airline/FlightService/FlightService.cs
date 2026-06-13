@@ -31,7 +31,15 @@ namespace TravAi.Airline.Services.FlightService
                     .ThenInclude(s => s.ToAirport)
                 .FirstOrDefaultAsync(f => f.Id == id);
 
-            return flight != null ? MapToFlightResultDto(flight) : null;
+            if (flight == null || flight.Airline == null || 
+                (flight.Airline.Status != "Approved" && flight.Airline.Status != "Active" && !flight.Airline.IsApproved) ||
+                flight.Airline.Status == "Inactive" || flight.Airline.Status == "Disabled" || flight.Airline.Status == "Rejected" ||
+                flight.Status == "Inactive")
+            {
+                return null;
+            }
+
+            return MapToFlightResultDto(flight);
         }
 
         public async Task<PaginatedFlightResultDto> SearchAsync(FlightSearchDto dto)
@@ -40,6 +48,12 @@ namespace TravAi.Airline.Services.FlightService
                 .Include(f => f.Airline)
                 .Include(f => f.DepartureAirport)
                 .Include(f => f.ArrivalAirport)
+                .Where(f => f.Airline != null && 
+                            (f.Airline.Status == "Approved" || f.Airline.Status == "Active" || f.Airline.IsApproved) && 
+                            f.Airline.Status != "Inactive" && 
+                            f.Airline.Status != "Disabled" && 
+                            f.Airline.Status != "Rejected" &&
+                            f.Status != "Inactive")
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -89,6 +103,12 @@ namespace TravAi.Airline.Services.FlightService
                     .Include(f => f.Airline)
                     .Include(f => f.DepartureAirport)
                     .Include(f => f.ArrivalAirport)
+                    .Where(f => f.Airline != null && 
+                                (f.Airline.Status == "Approved" || f.Airline.Status == "Active" || f.Airline.IsApproved) && 
+                                f.Airline.Status != "Inactive" && 
+                                f.Airline.Status != "Disabled" && 
+                                f.Airline.Status != "Rejected" &&
+                                f.Status != "Inactive")
                     .AsNoTracking()
                     .AsQueryable();
 

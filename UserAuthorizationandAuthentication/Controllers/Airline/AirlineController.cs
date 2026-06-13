@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TravAi.Data;
-
 using TravAi.DTOs.Common;
 using TravAi.DTOs.Auth;
 using TravAi.Airline.Models.Airlines;
@@ -61,7 +60,7 @@ namespace TravAi.Airline.Controllers
         public async Task<IActionResult> GetAll()
         {
             var airlines = await _context.Airlines
-                .Select(a => new { id = a.Id, name = a.Name, country = a.Country, logoUrl = a.LogoUrl })
+                .Select(a => new { id = a.Id, name = a.Name, country = a.Country, logoUrl = a.LogoUrl, status = a.Status })
                 .ToListAsync();
 
             return Ok(new ApiResponse<object>(airlines));
