@@ -3,6 +3,7 @@ namespace TravAi.DTOs.AI
     public class PlannedTourDto
     {
         public long     Id               { get; set; }
+        public long?    CatalogTourId    { get; set; }
         public string   TourTitle        { get; set; } = null!;
         public string   City             { get; set; } = null!;
         public string   GuideName        { get; set; } = null!;

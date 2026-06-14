@@ -27,7 +27,7 @@ namespace TravAi.TourGuide.Services
             _stripeOptions = stripeOptions.Value;
         }
 
-        public async Task<BookingResponseDto> CreateBookingAsync(long userId, long tourId)
+        public async Task<BookingResponseDto> CreateBookingAsync(long userId, long tourId, int participantsCount = 1)
         {
             // Check if tour exists and is active
             var tour = await _context.Tours
@@ -36,9 +36,6 @@ namespace TravAi.TourGuide.Services
 
             if (tour == null)
                 throw new Exception("Tour not found or not available");
-
-            // Default to 1 participant
-            int participantsCount = 1;
 
             // Check if tour is available
             if (!await IsTourAvailableAsync(tourId, participantsCount))

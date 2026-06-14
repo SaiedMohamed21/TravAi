@@ -11,7 +11,7 @@ namespace TravAi.TourGuide.Services
     public interface IBookingService
     {
         // Direct booking - creates booking with Pending status (1 participant by default)
-        Task<BookingResponseDto> CreateBookingAsync(long userId, long tourId);
+        Task<BookingResponseDto> CreateBookingAsync(long userId, long tourId, int participantsCount = 1);
         
         // Update booking participants
         Task<BookingResponseDto> UpdateBookingParticipantsAsync(long userId, long bookingId, List<ParticipantDto> participants);

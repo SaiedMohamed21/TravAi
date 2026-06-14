@@ -48,14 +48,21 @@ namespace TravAi.TourGuide.Controllers
         /// Create a new booking (status: Pending) with just a Tour ID
         /// </summary>
         [HttpPost("tour/{tourId}")]
-        public async Task<IActionResult> CreateBooking(long tourId)
+        public async Task<IActionResult> CreateBooking(long tourId, [FromBody] CreateTourBookingRequestDto? request = null)
         {
             var userId = GetUserIdFromToken();
             if (userId == 0) return Unauthorized("User ID not found in token.");
 
+            var participantsCount = request?.ParticipantsCount ?? request?.NumberOfPeople ?? 1;
+
+            if (participantsCount < 1)
+            {
+                return BadRequest(new { message = "Participants count must be at least 1." });
+            }
+
             try
             {
-                var result = await _bookingService.CreateBookingAsync(userId, tourId);
+                var result = await _bookingService.CreateBookingAsync(userId, tourId, participantsCount);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -444,6 +451,13 @@ namespace TravAi.TourGuide.Controllers
     public class CancelTourBookingRequest
     {
         public string? RefundMethod { get; set; }
+    }
+
+    public class CreateTourBookingRequestDto
+    {
+        public int? ParticipantsCount { get; set; }
+        public int? NumberOfPeople { get; set; }
+        public string? BookingDate { get; set; }
     }
 }
 

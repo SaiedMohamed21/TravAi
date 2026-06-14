@@ -775,19 +775,35 @@ namespace TravAi.Services.AI
                             if (apiResp != null && apiResp.Recommendations != null) {
                                 tourSessionId = apiResp.SessionId;
                                 var tourIds = apiResp.Recommendations.Where(r => r.Tour != null).Select(r => r.Tour.TourId).Distinct().ToList();
-                                var dbTours = await _db.Tours
+                                var tourTitles = apiResp.Recommendations.Where(r => r.Tour != null && !string.IsNullOrEmpty(r.Tour.TourTitle)).Select(r => r.Tour.TourTitle).Distinct().ToList();
+                                
+                                var dbToursList = await _db.Tours
                                     .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
                                     .Include(t => t.TourImages)
-                                    .Where(t => tourIds.Contains(t.Id))
-                                    .ToDictionaryAsync(t => t.Id);
+                                    .Where(t => t.Active && (tourIds.Contains(t.Id) || tourTitles.Contains(t.TourTitle)))
+                                    .ToListAsync();
+
+                                var dbToursById = dbToursList.ToDictionary(t => t.Id);
+                                var dbToursByTitle = dbToursList
+                                    .Where(t => !string.IsNullOrEmpty(t.TourTitle))
+                                    .GroupBy(t => t.TourTitle)
+                                    .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.Rating).First(), StringComparer.OrdinalIgnoreCase);
 
                                 foreach (var rec in apiResp.Recommendations) {
                                     if (rec.Tour != null) {
-                                        dbTours.TryGetValue(rec.Tour.TourId, out var dbTour);
+                                        dbToursById.TryGetValue(rec.Tour.TourId, out var dbTour);
+                                        if (dbTour == null && !string.IsNullOrEmpty(rec.Tour.TourTitle)) {
+                                            dbToursByTitle.TryGetValue(rec.Tour.TourTitle, out dbTour);
+                                        }
+
+                                        if (dbTour == null) {
+                                            continue; // Exclude unresolved tours
+                                        }
                                         
                                         var pTour = new PlannedTourDto {
-                                            Id              = dbTour?.Id ?? rec.Tour.TourId,
-                                            TourTitle       = dbTour?.TourTitle ?? rec.Tour.TourTitle ?? "AI Recommended Tour",
+                                            Id              = rec.Tour.TourId,
+                                            CatalogTourId   = dbTour.Id,
+                                            TourTitle       = dbTour.TourTitle ?? rec.Tour.TourTitle ?? "AI Recommended Tour",
                                             City            = dbTour?.City ?? rec.City,
                                             GuideName       = dbTour?.TourGuide?.Name ?? rec.Tour.GuideName ?? "Auto-Assigned",
                                             TourType        = dbTour?.TourType ?? "Standard",
@@ -1128,6 +1144,7 @@ namespace TravAi.Services.AI
             return new PlannedTourDto
             {
                 Id              = t2.Id,
+                CatalogTourId   = t2.Id,
                 TourTitle       = t2.TourTitle,
                 City            = t2.City ?? city,
                 GuideName       = t2.TourGuide.Name,
@@ -1264,11 +1281,19 @@ namespace TravAi.Services.AI
                     return (new List<PlannedTourDto>(), jsonReq, responseStr);
 
                 var tourIds = apiResp.Recommendations.Where(r => r.Tour != null).Select(r => r.Tour.TourId).Distinct().ToList();
-                var dbTours = await _db.Tours
+                var tourTitles = apiResp.Recommendations.Where(r => r.Tour != null && !string.IsNullOrEmpty(r.Tour.TourTitle)).Select(r => r.Tour.TourTitle).Distinct().ToList();
+                
+                var dbToursList = await _db.Tours
                     .Include(t => t.TourGuide).ThenInclude(tg => tg.TourGuideLanguages)
                     .Include(t => t.TourImages)
-                    .Where(t => tourIds.Contains(t.Id))
-                    .ToDictionaryAsync(t => t.Id);
+                    .Where(t => t.Active && (tourIds.Contains(t.Id) || tourTitles.Contains(t.TourTitle)))
+                    .ToListAsync();
+
+                var dbToursById = dbToursList.ToDictionary(t => t.Id);
+                var dbToursByTitle = dbToursList
+                    .Where(t => !string.IsNullOrEmpty(t.TourTitle))
+                    .GroupBy(t => t.TourTitle)
+                    .ToDictionary(g => g.Key, g => g.OrderByDescending(x => x.Rating).First(), StringComparer.OrdinalIgnoreCase);
 
                 var generatedTours = new List<PlannedTourDto>();
 
@@ -1276,12 +1301,20 @@ namespace TravAi.Services.AI
                 {
                     if (rec.Tour != null)
                     {
-                        dbTours.TryGetValue(rec.Tour.TourId, out var dbTour);
+                        dbToursById.TryGetValue(rec.Tour.TourId, out var dbTour);
+                        if (dbTour == null && !string.IsNullOrEmpty(rec.Tour.TourTitle)) {
+                            dbToursByTitle.TryGetValue(rec.Tour.TourTitle, out dbTour);
+                        }
+
+                        if (dbTour == null) {
+                            continue; // Exclude unresolved tours
+                        }
                         
                         var pTour = new PlannedTourDto
                         {
-                            Id = dbTour?.Id ?? rec.Tour.TourId,
-                            TourTitle = dbTour?.TourTitle ?? rec.Tour.TourTitle ?? "AI Recommended Tour",
+                            Id = rec.Tour.TourId,
+                            CatalogTourId = dbTour.Id,
+                            TourTitle = dbTour.TourTitle ?? rec.Tour.TourTitle ?? "AI Recommended Tour",
                             City = dbTour?.City ?? rec.City,
                             GuideName = dbTour?.TourGuide?.Name ?? rec.Tour.GuideName ?? "Auto-Assigned",
                             TourType = dbTour?.TourType ?? "Standard",
