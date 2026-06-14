@@ -1,4 +1,4 @@
-﻿using TravAi.TourGuide.Models.Enums;
+using TravAi.TourGuide.Models.Enums;
 using TravAi.Models;
 using TravAi.Models.Auth;
 using System;
@@ -47,6 +47,22 @@ namespace TravAi.TourGuide.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
+
+        // --- Fields added for Provider Fines System testing ---
+        [MaxLength(20)]
+        public string? CancelledByRole { get; set; } // e.g., "User", "TourGuide", "Admin"
+        
+        [MaxLength(500)]
+        public string? CancellationReason { get; set; }
+
+        public long? CancellationReviewedByAdminUserId { get; set; }
+        
+        [MaxLength(20)]
+        public string? CancellationReviewStatus { get; set; } // e.g., "Approved", "Rejected"
+        
+        [MaxLength(1000)]
+        public string? CancellationReviewNotes { get; set; }
+        // ------------------------------------------------------
 
         public ICollection<TourBookingParticipant> Participants { get; set; } = new List<TourBookingParticipant>();
         public ICollection<TourBookingPayment> Payments { get; set; } = new List<TourBookingPayment>();

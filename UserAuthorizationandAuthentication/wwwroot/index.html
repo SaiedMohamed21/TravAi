@@ -6,8 +6,19 @@
     <title>Travai Unified Platform</title>
     <script>
         // Check authentication before page renders
-        if (!localStorage.getItem('token')) {
+        const token = localStorage.getItem('token');
+        if (!token) {
             window.location.href = 'auth/login.html';
+        } else {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const isAdmin = payload.role === 'Admin' || payload.Role === 'Admin' || payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] === 'Admin';
+                if (!isAdmin) {
+                    document.write('<style>.admin-only { display: none !important; }</style>');
+                }
+            } catch(e) {
+                console.error('Token parsing error', e);
+            }
         }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -324,11 +335,27 @@
             </a>
 
             <!-- Admin Commissions -->
-            <a href="admin-payout/admin-commission-settings.html" class="card">
+            <a href="admin-payout/admin-commission-settings.html" class="card admin-only">
                 <div class="icon-box">⚙️</div>
                 <h2>Commissions</h2>
                 <p>Set platform commission percentages for Hotel, Tour, and Airline providers.</p>
                 <div class="btn">Commission Settings</div>
+            </a>
+
+            <!-- Admin Fines -->
+            <a href="admin-fines/index.html" class="card admin-only">
+                <div class="icon-box">⚖️</div>
+                <h2>Provider Fines</h2>
+                <p>Apply and manage monetary fines for providers based on complaints or policy violations.</p>
+                <div class="btn">Manage Fines</div>
+            </a>
+
+            <!-- Admin Fines API Docs -->
+            <a href="admin-fines-api-docs.html" class="card admin-only">
+                <div class="icon-box">📖</div>
+                <h2>Fines APIs</h2>
+                <p>Review the API documentation for the Provider Fines system.</p>
+                <div class="btn">View API Docs</div>
             </a>
         </div>
     </div>

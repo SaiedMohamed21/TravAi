@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Complaints API Docs - TravAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151f32;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #6366f1;
+            --accent-green: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --method-get: #38bdf8;
+            --method-post: #34d399;
+            --method-put: #fbbf24;
+            --method-delete: #f87171;
+            --method-guide: #a78bfa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', sans-serif; }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: #0f172a;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1 i { color: var(--gold); }
+
+        .search-container {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px 10px 38px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-container input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(99,102,241,0.2);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .endpoints-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .category-title {
+            padding: 20px 24px 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .endpoint-link {
+            padding: 10px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .endpoint-link:hover, .endpoint-link.active {
+            background: rgba(255,255,255,0.04);
+            border-left-color: var(--gold);
+        }
+
+        .method-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
+            min-width: 52px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .method-GET    { background: rgba(56,189,248,0.15);  color: var(--method-get); }
+        .method-POST   { background: rgba(52,211,153,0.15);  color: var(--method-post); }
+        .method-PUT    { background: rgba(251,191,36,0.15);  color: var(--method-put); }
+        .method-DELETE { background: rgba(248,113,113,0.15); color: var(--method-delete); }
+        .method-GUIDE  { background: rgba(167,139,250,0.15); color: var(--method-guide); }
+
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .url-box {
+            background: #0b0f19;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        h2 { color: var(--text-main); font-size: 1.8rem; margin-top: 0; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        h3 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 35px; color: #cbd5e1; font-weight: 600; }
+
+        pre {
+            background: #0a0e17;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: #a5b4fc;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
+        th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        th { color: var(--text-muted); font-weight: 600; background: rgba(0,0,0,0.15); }
+
+        .empty-state { text-align: center; padding: 120px 50px; color: var(--text-muted); }
+
+        .hl-req  { color: #fca5a5; font-weight: 600; }
+        .hl-res  { color: #34d399; font-weight: 600; }
+        .hl-guide{ color: #c084fc; font-weight: 600; }
+
+        code {
+            background: rgba(255,255,255,0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .alert-box {
+            background: rgba(99,102,241,0.08);
+            border-left: 4px solid var(--gold);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .alert-box.warning { background: rgba(239,68,68,0.08); border-left-color: var(--method-delete); }
+        .alert-box.success { background: rgba(16,185,129,0.08); border-left-color: var(--accent-green); }
+
+        ul, ol { margin: 15px 0 15px 25px; line-height: 1.6; }
+        li { margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1><i class="fas fa-exclamation-circle"></i> TravAi Complaints</h1>
+        <p style="color:var(--text-muted);font-size:0.8rem;margin-top:6px;">User & Admin Complaints API Specs</p>
+    </div>
+    <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchSidebar" placeholder="Search endpoints..." oninput="filterSidebar()">
+    </div>
+    <div class="endpoints-list" id="sidebarList"></div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content" id="mainContent">
+    <div class="empty-state">
+        <i class="fas fa-exclamation-circle fa-4x" style="color:var(--gold);margin-bottom:25px;opacity:0.6;"></i>
+        <h2 style="color:#fff;margin-bottom:10px;">TravAi Complaints API Specs</h2>
+        <p style="font-size:1.1rem;max-width:600px;margin:0 auto;line-height:1.6;">
+            Select a category or endpoint from the sidebar to view detailed parameters, payload structures, and integration notes.
+        </p>
+    </div>
+</div>
+
+<script>
+const apiData = [
+
+    /* =====================================================================
+       1. OVERVIEW
+    ===================================================================== */
+    {
+        category: "1. System Overview",
+        endpoints: [
+            {
+                title: "Complaint Flow Overview", method: "GUIDE", url: "Overview",
+                desc: "End-to-end lifecycle of a TravAi complaint ticket, from submission to resolution.",
+                isGuide: true,
+                content: `
+                    <div class="alert-box">
+                        <strong>System Goal:</strong> Allow users to raise tickets about Hotel, Tour, Airline, or general Service issues. Admins manage, reply to, and resolve those tickets. All communication is threaded per complaint and supports file attachments.
+                    </div>
+                    <h3>Lifecycle States</h3>
+                    <table>
+                        <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>Pending</code></td><td>Freshly submitted. User can still edit or delete it.</td></tr>
+                            <tr><td><code>InReview</code></td><td>Admin has started reviewing. User can no longer edit but can reply.</td></tr>
+                            <tr><td><code>Resolved</code></td><td>Admin has closed the ticket. No further replies allowed.</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Complaint Types</h3>
+                    <table>
+                        <thead><tr><th>Type</th><th>BookingId Required?</th><th>Notes</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>Hotel</code></td><td>✅ Yes</td><td>Must be the user's own confirmed hotel booking</td></tr>
+                            <tr><td><code>Tour</code></td><td>✅ Yes</td><td>Must be the user's own confirmed tour booking</td></tr>
+                            <tr><td><code>Airline</code></td><td>✅ Yes</td><td>Must be the user's own confirmed airline booking</td></tr>
+                            <tr><td><code>Service</code></td><td>❌ No</td><td>General platform complaints (no booking context)</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Authentication</h3>
+                    <ul>
+                        <li>All <strong>User endpoints</strong> require <code>Bearer</code> token with role <code>User</code>.</li>
+                        <li>All <strong>Admin endpoints</strong> require <code>Bearer</code> token with role <code>Admin</code>.</li>
+                    </ul>
+                    <h3>Base Route</h3>
+                    <ul>
+                        <li>User APIs: <code>/api/user/complaints</code></li>
+                        <li>Admin APIs: <code>/api/admin/complaints</code></li>
+                    </ul>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       2. AUTHENTICATION
+    ===================================================================== */
+    {
+        category: "2. Authentication",
+        endpoints: [
+            {
+                title: "Login (Get Token)", method: "POST", url: "/api/Users/login",
+                desc: "Authenticate and receive a JWT Bearer token to use in all complaint API requests.",
+                requestParams: null,
+                requestBody: JSON.stringify({
+                    email: "user@travai.com",
+                    password: "SecurePassword123"
+                }, null, 2),
+                response: JSON.stringify({
+                    success: true,
+                    message: "Login successful",
+                    data: {
+                        token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        userId: 4,
+                        userName: "john_doe",
+                        role: "User"
+                    }
+                }, null, 2),
+                notes: `
+                    <h3>Using the Token</h3>
+                    <p>Attach the token to every request as an Authorization header:</p>
+                    <pre><code>Authorization: Bearer &lt;your_token_here&gt;
+Content-Type: application/json</code></pre>
+                    <div class="alert-box">
+                        <strong>Role matters:</strong> Use a <code>User</code> role token for <code>/api/user/complaints</code> and an <code>Admin</code> role token for <code>/api/admin/complaints</code>.
+                    </div>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       3. USER – ELIGIBLE BOOKINGS
+    ===================================================================== */
+    {
+        category: "3. User – Eligible Bookings",
+        endpoints: [
+            {
+                title: "Get Eligible Bookings", method: "GET", url: "/api/user/complaints/bookings",
+                desc: "Returns the user's completed/paid bookings that are eligible for a complaint. Use this to populate the booking selector when creating a complaint.",
+                requestParams: [
+                    { name: "type", type: "Query (optional)", desc: "Filter by complaint type: <code>Hotel</code> | <code>Tour</code> | <code>Airline</code>. Defaults to <code>Hotel</code> if omitted." }
+                ],
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    data: [
+                        {
+                            bookingId: 88,
+                            hotelId: 3,
+                            hotelName: "Pyramids View Resort",
+                            city: "Giza",
+                            roomName: "Standard Double Room",
+                            dates: "Jul 01 – Jul 05, 2026",
+                            totalPrice: "$480.00",
+                            type: "Hotel",
+                            providerName: "Pyramids View Resort",
+                            title: "Pyramids View Resort – Standard Double Room",
+                            status: "Confirmed",
+                            extraInfo: "4 nights"
+                        }
+                    ]
+                }, null, 2),
+                notes: `
+                    <h3>Response Fields Explained</h3>
+                    <table>
+                        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>bookingId</code></td><td>long</td><td>The ID to pass as <code>BookingId</code> when creating a complaint</td></tr>
+                            <tr><td><code>type</code></td><td>string</td><td>Values: <code>Hotel</code>, <code>Tour</code>, <code>Airline</code></td></tr>
+                            <tr><td><code>status</code></td><td>string</td><td>Always <code>Confirmed</code> for eligible bookings</td></tr>
+                            <tr><td><code>extraInfo</code></td><td>string</td><td>Human-readable extra context (e.g. "4 nights", "2 seats")</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert-box">
+                        <strong>Service complaints</strong> do not need a booking. Skip this call and leave <code>BookingId</code> empty when <code>ComplaintType = Service</code>.
+                    </div>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       4. USER – COMPLAINT CRUD
+    ===================================================================== */
+    {
+        category: "4. User – Complaint CRUD",
+        endpoints: [
+            {
+                title: "Create Complaint", method: "POST", url: "/api/user/complaints",
+                desc: "Submit a new complaint ticket. Requires <code>multipart/form-data</code> to support optional file attachments.",
+                requestParams: null,
+                requestBody: `// Content-Type: multipart/form-data
+
+Field           | Type            | Required | Description
+----------------|-----------------|----------|------------------------------------------
+ComplaintType   | string (enum)   | ✅ Yes   | Hotel | Tour | Airline | Service
+BookingId       | long            | ⚠️ Cond  | Required for Hotel/Tour/Airline. Omit for Service.
+Subject         | string          | ✅ Yes   | Short title for the complaint
+Message         | string          | ✅ Yes   | Full description of the issue
+Attachments     | IFormFile[]     | ❌ No    | Up to N image/document files`,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Complaint submitted successfully.",
+                    data: 101
+                }, null, 2),
+                notes: `
+                    <h3>Notes</h3>
+                    <ul>
+                        <li><strong>data</strong> in the response is the newly created complaint ID (long). Store it to navigate directly to the details page.</li>
+                        <li>Initial status is always <code>Pending</code> with priority <code>Medium</code>.</li>
+                        <li>Attachments are saved server-side; their URLs appear in <code>GET /api/user/complaints/{id}</code>.</li>
+                    </ul>
+                    <h3>Validation Rules</h3>
+                    <table>
+                        <thead><tr><th>ComplaintType</th><th>BookingId</th><th>Rule</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>Hotel</code></td><td>Required</td><td>Must be a hotel booking owned by the caller</td></tr>
+                            <tr><td><code>Tour</code></td><td>Required</td><td>Must be a tour booking owned by the caller</td></tr>
+                            <tr><td><code>Airline</code></td><td>Required</td><td>Must be an airline booking owned by the caller</td></tr>
+                            <tr><td><code>Service</code></td><td>Must be empty</td><td>No booking context needed</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert-box warning">
+                        <strong>403 Forbidden</strong> is returned if <code>BookingId</code> belongs to a different user.
+                    </div>
+                `
+            },
+            {
+                title: "Update Complaint", method: "PUT", url: "/api/user/complaints/{id}",
+                desc: "Edit an existing complaint. Only allowed when the complaint status is <code>Pending</code>. Uses <code>multipart/form-data</code>.",
+                requestParams: [
+                    { name: "id", type: "Path", desc: "ID of the complaint to update" }
+                ],
+                requestBody: `// Content-Type: multipart/form-data
+
+Field                | Type            | Required | Description
+---------------------|-----------------|----------|------------------------------------------
+ComplaintType        | string (enum)   | ✅ Yes   | Hotel | Tour | Airline | Service
+BookingId            | long            | ⚠️ Cond  | Required for Hotel/Tour/Airline
+Subject              | string          | ✅ Yes   | Updated subject
+Message              | string          | ✅ Yes   | Updated message
+Attachments          | IFormFile[]     | ❌ No    | New files to add
+RemovedAttachmentIds | long[]          | ❌ No    | IDs of existing attachments to delete`,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Complaint updated successfully.",
+                    data: true
+                }, null, 2),
+                notes: `
+                    <div class="alert-box warning">
+                        <strong>Only Pending complaints can be edited.</strong> Attempting to update an <code>InReview</code> or <code>Resolved</code> complaint will return <code>400 Bad Request</code> with an error message.
+                    </div>
+                    <h3>Attachment Management</h3>
+                    <ul>
+                        <li>To <strong>remove</strong> an existing attachment, include its ID in <code>RemovedAttachmentIds[]</code>.</li>
+                        <li>To <strong>add</strong> new files, include them in <code>Attachments[]</code>.</li>
+                        <li>Both operations can happen in the same request.</li>
+                    </ul>
+                `
+            },
+            {
+                title: "Delete Complaint", method: "DELETE", url: "/api/user/complaints/{id}",
+                desc: "Permanently delete a complaint. Only allowed for <code>Pending</code> complaints that belong to the caller.",
+                requestParams: [
+                    { name: "id", type: "Path", desc: "ID of the complaint to delete" }
+                ],
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Complaint deleted successfully."
+                }, null, 2),
+                notes: `
+                    <div class="alert-box warning">
+                        <strong>400 Bad Request</strong> is returned if the complaint is <code>InReview</code> or <code>Resolved</code> — those cannot be deleted by the user.
+                    </div>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       5. USER – RETRIEVAL
+    ===================================================================== */
+    {
+        category: "5. User – Get Complaints",
+        endpoints: [
+            {
+                title: "Get My Complaints (List)", method: "GET", url: "/api/user/complaints/mine",
+                desc: "Fetch all complaints submitted by the authenticated user, ordered by newest first.",
+                requestParams: null,
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    data: [
+                        {
+                            id: 101,
+                            complaintType: "Hotel",
+                            subject: "Room AC not working",
+                            status: "InReview",
+                            createdAt: "2026-06-10T19:40:00Z"
+                        },
+                        {
+                            id: 102,
+                            complaintType: "Service",
+                            subject: "App payment page crashed",
+                            status: "Pending",
+                            createdAt: "2026-06-12T08:15:00Z"
+                        }
+                    ]
+                }, null, 2),
+                notes: `
+                    <h3>Response Fields</h3>
+                    <table>
+                        <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>id</code></td><td>long</td><td>Complaint ID – use to fetch details or reply</td></tr>
+                            <tr><td><code>complaintType</code></td><td>string</td><td>Hotel | Tour | Airline | Service</td></tr>
+                            <tr><td><code>subject</code></td><td>string</td><td>Short title of the complaint</td></tr>
+                            <tr><td><code>status</code></td><td>string</td><td>Pending | InReview | Resolved</td></tr>
+                            <tr><td><code>createdAt</code></td><td>datetime (UTC)</td><td>Submission timestamp</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert-box success">
+                        <strong>Empty History:</strong> If the user has no complaints, <code>data</code> returns an empty array <code>[]</code> — not null. The frontend should handle this gracefully without showing a spinner.
+                    </div>
+                `
+            },
+            {
+                title: "Get Complaint Details", method: "GET", url: "/api/user/complaints/{id}",
+                desc: "Fetch full details of a specific complaint including booking context, attachments, and the full reply thread.",
+                requestParams: [
+                    { name: "id", type: "Path", desc: "ID of the complaint" }
+                ],
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    data: {
+                        id: 101,
+                        complaintType: "Hotel",
+                        bookingId: 88,
+                        hotelName: "Pyramids View Resort",
+                        hotelCity: "Giza",
+                        roomName: "Standard Double Room",
+                        bookingDates: "Jul 01 – Jul 05, 2026",
+                        totalPrice: "$480.00",
+                        subject: "Room AC not working",
+                        message: "The air conditioning in room 402 was completely broken for all 4 nights.",
+                        status: "InReview",
+                        priority: "Medium",
+                        createdAt: "2026-06-10T19:40:00Z",
+                        attachments: [
+                            { id: 200, fileUrl: "https://example.com/uploads/complaints/ac-room.jpg" }
+                        ],
+                        replies: [
+                            {
+                                id: 50,
+                                adminUserId: 1,
+                                senderName: "Support Team",
+                                replyMessage: "We apologize. Our team is investigating this and will contact the hotel.",
+                                createdAt: "2026-06-11T10:00:00Z",
+                                attachments: []
+                            },
+                            {
+                                id: 51,
+                                adminUserId: null,
+                                senderName: "john_doe",
+                                replyMessage: "Here is an additional photo showing the broken thermostat.",
+                                createdAt: "2026-06-11T14:30:00Z",
+                                attachments: [
+                                    { id: 201, fileUrl: "https://example.com/uploads/complaints/thermostat.jpg" }
+                                ]
+                            }
+                        ]
+                    }
+                }, null, 2),
+                notes: `
+                    <h3>Booking Context Fields (Hotel complaints only)</h3>
+                    <table>
+                        <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>hotelName</code></td><td>Name of the hotel related to the complaint</td></tr>
+                            <tr><td><code>hotelCity</code></td><td>City where the hotel is located</td></tr>
+                            <tr><td><code>roomName</code></td><td>Room type name</td></tr>
+                            <tr><td><code>bookingDates</code></td><td>Formatted check-in → check-out string</td></tr>
+                            <tr><td><code>totalPrice</code></td><td>Formatted total price paid</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Reply Thread Fields</h3>
+                    <table>
+                        <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>adminUserId</code></td><td><code>null</code> = user reply; non-null = admin reply</td></tr>
+                            <tr><td><code>senderName</code></td><td>Display name of sender (admin or user)</td></tr>
+                            <tr><td><code>replyMessage</code></td><td>Text content of the reply</td></tr>
+                            <tr><td><code>attachments</code></td><td>Files uploaded with this specific reply</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Priority Values</h3>
+                    <table>
+                        <thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>Low</code></td><td>Minor issue</td></tr>
+                            <tr><td><code>Medium</code></td><td>Default priority on creation</td></tr>
+                            <tr><td><code>High</code></td><td>Urgent – set by admin</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert-box warning">
+                        <strong>404 Not Found</strong> is returned if the complaint ID doesn't exist or belongs to another user.
+                    </div>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       6. USER – REPLY
+    ===================================================================== */
+    {
+        category: "6. User – Reply to Ticket",
+        endpoints: [
+            {
+                title: "Reply to Complaint", method: "POST", url: "/api/user/complaints/{id}/reply",
+                desc: "Add a reply message to an active ticket. Only allowed when status is <code>Pending</code> or <code>InReview</code>. Uses <code>multipart/form-data</code>.",
+                requestParams: [
+                    { name: "id", type: "Path", desc: "ID of the complaint to reply to" }
+                ],
+                requestBody: `// Content-Type: multipart/form-data
+
+Field        | Type         | Required | Description
+-------------|--------------|----------|-----------------------------------
+Message      | string       | ✅ Yes   | Text content of the reply
+Attachments  | IFormFile[]  | ❌ No    | Optional image/document files`,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Reply sent successfully."
+                }, null, 2),
+                notes: `
+                    <div class="alert-box warning">
+                        <strong>Resolved complaints</strong> do not accept further replies. The endpoint returns <code>400 Bad Request</code> if the complaint is closed.
+                    </div>
+                    <h3>Reply Identification</h3>
+                    <p>After a successful reply, refresh the details endpoint (<code>GET /api/user/complaints/{id}</code>) to retrieve the new reply with its ID and any uploaded attachment URLs.</p>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       7. ADMIN – COMPLAINT LIST
+    ===================================================================== */
+    {
+        category: "7. Admin – Complaint List",
+        endpoints: [
+            {
+                title: "Get All Complaints (Admin)", method: "GET", url: "/api/admin/complaints",
+                desc: "Fetch all complaints across all users with optional filtering. Requires Admin JWT token.",
+                requestParams: [
+                    { name: "type",      type: "Query (optional)", desc: "Filter by type: <code>Hotel</code> | <code>Tour</code> | <code>Airline</code> | <code>Service</code>" },
+                    { name: "status",    type: "Query (optional)", desc: "Filter by status: <code>Pending</code> | <code>InReview</code> | <code>Resolved</code>" },
+                    { name: "search",    type: "Query (optional)", desc: "Search by subject, user name, or hotel name (partial match)" },
+                    { name: "bookingId", type: "Query (optional)", desc: "Filter complaints linked to a specific booking ID" },
+                    { name: "hotelName", type: "Query (optional)", desc: "Filter by hotel name (partial match)" }
+                ],
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    data: [
+                        {
+                            id: 101,
+                            complaintType: "Hotel",
+                            bookingId: 88,
+                            fromUser: "john_doe",
+                            regarding: "Pyramids View Resort",
+                            subject: "Room AC not working",
+                            status: "InReview",
+                            createdAt: "2026-06-10T19:40:00Z"
+                        },
+                        {
+                            id: 102,
+                            complaintType: "Service",
+                            bookingId: null,
+                            fromUser: "jane_smith",
+                            regarding: "Platform",
+                            subject: "App payment page crashed",
+                            status: "Pending",
+                            createdAt: "2026-06-12T08:15:00Z"
+                        }
+                    ]
+                }, null, 2),
+                notes: `
+                    <h3>Response Fields</h3>
+                    <table>
+                        <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>fromUser</code></td><td>Username of the complainant</td></tr>
+                            <tr><td><code>regarding</code></td><td>Hotel name (for hotel complaints) or "Platform" for service complaints</td></tr>
+                            <tr><td><code>bookingId</code></td><td>Linked booking ID, or <code>null</code> for service complaints</td></tr>
+                        </tbody>
+                    </table>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       8. ADMIN – COMPLAINT DETAILS
+    ===================================================================== */
+    {
+        category: "8. Admin – Complaint Details",
+        endpoints: [
+            {
+                title: "Get Complaint Details (Admin)", method: "GET", url: "/api/admin/complaints/{id}",
+                desc: "Full admin view of a complaint: user info, booking context (for hotel), attachments, and reply thread.",
+                requestParams: [
+                    { name: "id", type: "Path", desc: "ID of the complaint" }
+                ],
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    data: {
+                        id: 101,
+                        complaintType: "Hotel",
+                        status: "InReview",
+                        priority: "Medium",
+                        createdAt: "2026-06-10T19:40:00Z",
+                        fromUser: "john_doe",
+                        subject: "Room AC not working",
+                        message: "The air conditioning in room 402 was completely broken for all 4 nights.",
+                        attachments: [
+                            { id: 200, fileUrl: "https://example.com/uploads/complaints/ac-room.jpg" }
+                        ],
+                        replies: [
+                            {
+                                id: 50,
+                                adminUserId: 1,
+                                senderName: "Support Team",
+                                replyMessage: "We are looking into this issue immediately.",
+                                createdAt: "2026-06-11T10:00:00Z",
+                                attachments: []
+                            }
+                        ],
+                        bookingContext: {
+                            bookingId: 88,
+                            hotelName: "Pyramids View Resort",
+                            city: "Giza",
+                            roomName: "Standard Double Room",
+                            bookingDates: "Jul 01 – Jul 05, 2026",
+                            nights: 4,
+                            totalRooms: 1,
+                            totalPrice: "$480.00",
+                            bookingStatus: "Confirmed",
+                            paymentStatus: "Paid",
+                            paymentMethod: "Stripe",
+                            transactionId: "pi_3MtwL2LkdIwHu7ix1...",
+                            paidAt: "2026-06-10T19:45:00Z",
+                            refundAmount: null,
+                            providerName: "Pyramids View Resort",
+                            title: "Standard Double Room",
+                            type: "Hotel"
+                        }
+                    }
+                }, null, 2),
+                notes: `
+                    <h3>bookingContext Object</h3>
+                    <p>Only present for <code>Hotel</code> complaints. Contains the full booking and payment context for the admin to take action.</p>
+                    <table>
+                        <thead><tr><th>Field</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>nights</code></td><td>Number of nights of the booking</td></tr>
+                            <tr><td><code>paymentStatus</code></td><td>Paid | Pending | Refunded | etc.</td></tr>
+                            <tr><td><code>transactionId</code></td><td>Stripe Payment Intent ID</td></tr>
+                            <tr><td><code>refundAmount</code></td><td>Amount refunded if any, otherwise <code>null</code></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="alert-box warning">
+                        <strong>404 Not Found</strong> is returned if the complaint ID does not exist.
+                    </div>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       9. ADMIN – REPLY MANAGEMENT
+    ===================================================================== */
+    {
+        category: "9. Admin – Reply Management",
+        endpoints: [
+            {
+                title: "Admin Reply to Complaint", method: "POST", url: "/api/admin/complaints/{id}/reply",
+                desc: "Send an admin reply to a complaint ticket. Also automatically moves the complaint status from <code>Pending</code> to <code>InReview</code>. Uses <code>multipart/form-data</code>.",
+                requestParams: [
+                    { name: "id", type: "Path", desc: "ID of the complaint to reply to" }
+                ],
+                requestBody: `// Content-Type: multipart/form-data
+
+Field        | Type         | Required | Description
+-------------|--------------|----------|-----------------------------------
+Message      | string       | ✅ Yes   | Text content of the admin reply
+Attachments  | IFormFile[]  | ❌ No    | Optional supporting files`,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Reply sent successfully."
+                }, null, 2),
+                notes: `
+                    <h3>Status Auto-Transition</h3>
+                    <p>When an admin replies for the first time to a <code>Pending</code> complaint, the system automatically changes the complaint status to <code>InReview</code>.</p>
+                    <div class="alert-box">
+                        <strong>Important:</strong> Replying to an already <code>Resolved</code> complaint is blocked by the backend.
+                    </div>
+                `
+            },
+            {
+                title: "Edit Admin Reply", method: "PUT", url: "/api/admin/complaints/replies/{replyId}",
+                desc: "Edit the text or attachments of an existing admin reply. Uses <code>multipart/form-data</code>.",
+                requestParams: [
+                    { name: "replyId", type: "Path", desc: "ID of the reply to edit" }
+                ],
+                requestBody: `// Content-Type: multipart/form-data
+
+Field                | Type         | Required | Description
+---------------------|--------------|----------|----------------------------------------------
+Message              | string       | ✅ Yes   | Updated reply text
+NewAttachments       | IFormFile[]  | ❌ No    | New files to add to this reply
+RemovedAttachmentIds | long[]       | ❌ No    | IDs of existing reply attachments to remove`,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Reply updated."
+                }, null, 2),
+                notes: `
+                    <h3>Attachment Editing</h3>
+                    <ul>
+                        <li>Use <code>RemovedAttachmentIds</code> to delete specific attachment files from the reply.</li>
+                        <li>Use <code>NewAttachments</code> to add new files to the reply.</li>
+                        <li>Both can be done in a single request.</li>
+                    </ul>
+                `
+            },
+            {
+                title: "Delete Admin Reply", method: "DELETE", url: "/api/admin/complaints/replies/{replyId}",
+                desc: "Permanently delete an admin reply. Only the admin who created the reply can delete it.",
+                requestParams: [
+                    { name: "replyId", type: "Path", desc: "ID of the reply to delete" }
+                ],
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Reply deleted."
+                }, null, 2),
+                notes: `
+                    <div class="alert-box warning">
+                        <strong>Ownership check:</strong> The <code>adminUserId</code> from the JWT token must match the reply's creator. Admins cannot delete each other's replies.
+                    </div>
+                    <div class="alert-box success">
+                        <strong>Frontend note:</strong> After a successful delete, remove the reply from the UI list directly without requiring a page refresh.
+                    </div>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       10. ADMIN – RESOLVE
+    ===================================================================== */
+    {
+        category: "10. Admin – Resolve Complaint",
+        endpoints: [
+            {
+                title: "Resolve Complaint", method: "POST", url: "/api/admin/complaints/{id}/resolve",
+                desc: "Mark a complaint as <code>Resolved</code>. Closes the ticket permanently — no further replies from either side are accepted.",
+                requestParams: [
+                    { name: "id", type: "Path", desc: "ID of the complaint to resolve" }
+                ],
+                requestBody: null,
+                response: JSON.stringify({
+                    success: true,
+                    message: "Complaint resolved successfully."
+                }, null, 2),
+                notes: `
+                    <h3>What Happens on Resolve</h3>
+                    <ul>
+                        <li>Complaint status changes to <code>Resolved</code>.</li>
+                        <li>User can no longer reply to the ticket.</li>
+                        <li>Admin can no longer reply to the ticket.</li>
+                        <li>The ticket is retained in history for both user and admin views.</li>
+                    </ul>
+                    <div class="alert-box warning">
+                        <strong>Irreversible:</strong> There is no "unresolve" endpoint. Once resolved, the ticket cannot be reopened via the API.
+                    </div>
+                `
+            }
+        ]
+    },
+
+    /* =====================================================================
+       11. ERROR REFERENCE
+    ===================================================================== */
+    {
+        category: "11. Error Reference",
+        endpoints: [
+            {
+                title: "Error Codes & Responses", method: "GUIDE", url: "Errors",
+                desc: "Common error HTTP status codes returned by the Complaints API.",
+                isGuide: true,
+                content: `
+                    <table>
+                        <thead><tr><th>HTTP Code</th><th>When It Occurs</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>400 Bad Request</code></td><td>Validation failed, invalid complaint type, missing required field, or business rule violation (e.g. editing a non-Pending complaint)</td></tr>
+                            <tr><td><code>401 Unauthorized</code></td><td>JWT token is missing, expired, or malformed</td></tr>
+                            <tr><td><code>403 Forbidden</code></td><td>The booking ID belongs to a different user</td></tr>
+                            <tr><td><code>404 Not Found</code></td><td>Complaint or reply ID does not exist</td></tr>
+                            <tr><td><code>500 Internal Server Error</code></td><td>Unexpected server-side failure</td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Error Response Shape</h3>
+                    <pre><code>{
+  "success": false,
+  "message": "Human-readable error description"
+}</code></pre>
+                    <div class="alert-box">
+                        <strong>Always check <code>success</code> first.</strong> If <code>false</code>, display <code>message</code> to the user. Never assume a 2xx status means success — always verify the <code>success</code> field.
+                    </div>
+                `
+            }
+        ]
+    }
+];
+
+/* =====================================================================
+   RENDER SIDEBAR
+===================================================================== */
+function renderSidebar(filterQuery = "") {
+    const sidebarList = document.getElementById('sidebarList');
+    let html = '';
+    const query = filterQuery.toLowerCase().trim();
+
+    apiData.forEach((cat, catIdx) => {
+        const filteredEndpoints = cat.endpoints.filter(ep =>
+            ep.title.toLowerCase().includes(query) ||
+            ep.url.toLowerCase().includes(query) ||
+            ep.desc.toLowerCase().includes(query)
+        );
+
+        if (filteredEndpoints.length > 0) {
+            html += `<div class="category-title">${cat.category}</div>`;
+            filteredEndpoints.forEach(ep => {
+                const originalEpIdx = cat.endpoints.indexOf(ep);
+                html += `
+                    <div class="endpoint-link" onclick="showDetails(${catIdx}, ${originalEpIdx}, this)">
+                        <span class="method-badge method-${ep.method}">${ep.method}</span>
+                        <span style="font-size:0.85rem;">${ep.title}</span>
+                    </div>`;
+            });
+        }
+    });
+
+    sidebarList.innerHTML = html || `<div style="padding:24px;color:var(--text-muted);font-size:0.9rem;text-align:center;">No matches found</div>`;
+}
+
+function filterSidebar() {
+    renderSidebar(document.getElementById('searchSidebar').value);
+}
+
+/* =====================================================================
+   SHOW DETAILS
+===================================================================== */
+function showDetails(catIdx, epIdx, el) {
+    document.querySelectorAll('.endpoint-link').forEach(l => l.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    const ep   = apiData[catIdx].endpoints[epIdx];
+    const main = document.getElementById('mainContent');
+
+    /* --- Guide --- */
+    if (ep.isGuide) {
+        main.innerHTML = `
+            <div class="card">
+                <h2>${ep.title}</h2>
+                <p style="color:var(--text-muted);font-size:1.1rem;line-height:1.5;margin-bottom:25px;">${ep.desc}</p>
+                <div style="border-top:1px solid var(--border);padding-top:25px;">${ep.content}</div>
+            </div>`;
+        return;
+    }
+
+    /* --- Params --- */
+    let paramsHtml = '';
+    if (ep.requestParams && ep.requestParams.length > 0) {
+        paramsHtml = `
+            <h3><span style="color:#38bdf8;font-weight:600;"><i class="fas fa-filter"></i> Request Parameters</span> (Query / Path)</h3>
+            <table>
+                <thead><tr><th>Name</th><th>Type / Location</th><th>Description</th></tr></thead>
+                <tbody>
+                    ${ep.requestParams.map(p => `
+                        <tr>
+                            <td style="color:var(--text-main);"><code>${p.name}</code></td>
+                            <td style="color:var(--text-muted);">${p.type}</td>
+                            <td>${p.desc}</td>
+                        </tr>`).join('')}
+                </tbody>
+            </table>`;
+    }
+
+    /* --- Body --- */
+    const bodyHtml = ep.requestBody
+        ? `<h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span> (multipart/form-data or JSON)</h3><pre><code>${ep.requestBody}</code></pre>`
+        : `<h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span></h3><pre><code style="color:#64748b;font-style:italic;">// No body required for this request.</code></pre>`;
+
+    /* --- Notes --- */
+    const notesHtml = ep.notes ? `<div style="margin-top:30px;">${ep.notes}</div>` : '';
+
+    main.innerHTML = `
+        <div class="card">
+            <h2>${ep.title}</h2>
+            <p style="color:var(--text-muted);font-size:1.1rem;line-height:1.5;">${ep.desc}</p>
+
+            <div class="url-box">
+                <span class="method-badge method-${ep.method}" style="font-size:0.85rem;padding:6px 12px;margin-right:10px;">${ep.method}</span>
+                <span style="color:#a5b4fc;font-weight:600;">http://localhost:5210</span>${ep.url}
+            </div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:25px;padding-left:5px;">
+                <i class="fas fa-globe"></i> Production base URL: <code>https://YOUR_BACKEND_BASE_URL${ep.url}</code>
+            </div>
+
+            ${paramsHtml}
+            ${bodyHtml}
+
+            <h3><span class="hl-res"><i class="fas fa-file-import"></i> Response Payload</span></h3>
+            <pre><code>${ep.response}</code></pre>
+
+            ${notesHtml}
+        </div>`;
+}
+
+// Init
+renderSidebar();
+</script>
+</body>
+</html>

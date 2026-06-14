@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Provider Fines API Docs - TravAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151f32;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #ef4444; /* Changed style brand to red for fines */
+            --accent-green: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --method-get: #38bdf8;
+            --method-post: #34d399;
+            --method-put: #fbbf24;
+            --method-delete: #f87171;
+            --method-guide: #a78bfa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: #0f172a;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1 i {
+            color: var(--gold);
+        }
+
+        .search-container {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px 10px 38px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-container input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .endpoints-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .category-title {
+            padding: 20px 24px 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .endpoint-link {
+            padding: 10px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .endpoint-link:hover, .endpoint-link.active {
+            background: rgba(255, 255, 255, 0.04);
+            border-left-color: var(--gold);
+        }
+
+        .method-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
+            min-width: 50px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .method-GET { background: rgba(56, 189, 248, 0.15); color: var(--method-get); }
+        .method-POST { background: rgba(52, 211, 153, 0.15); color: var(--method-post); }
+        .method-PUT { background: rgba(251, 191, 36, 0.15); color: var(--method-put); }
+        .method-DELETE { background: rgba(248, 113, 113, 0.15); color: var(--method-delete); }
+        .method-GUIDE { background: rgba(167, 139, 250, 0.15); color: var(--method-guide); }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .url-box {
+            background: #0b0f19;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        h2 { color: var(--text-main); font-size: 1.8rem; margin-top: 0; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 15px;}
+        h3 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 35px; color: #cbd5e1; font-weight: 600;}
+
+        pre {
+            background: #0a0e17;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: #a5b4fc;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 120px 50px;
+            color: var(--text-muted);
+        }
+
+        .hl-req { color: #fca5a5; font-weight: 600; }
+        .hl-res { color: #34d399; font-weight: 600; }
+        .hl-guide { color: #c084fc; font-weight: 600; }
+
+        code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .alert-box {
+            background: rgba(239, 68, 68, 0.08);
+            border-left: 4px solid var(--gold);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 25px;
+            line-height: 1.6;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fas fa-gavel"></i> Admin Fines API</h1>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 6px;">Provider Fines Management</p>
+        </div>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchSidebar" placeholder="Search categories or endpoints..." oninput="filterSidebar()">
+        </div>
+        <div class="endpoints-list" id="sidebarList">
+            <!-- Rendered Dynamically -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="empty-state">
+            <i class="fas fa-gavel fa-4x" style="color: var(--gold); margin-bottom: 25px; opacity: 0.6;"></i>
+            <h2 style="color: #fff; margin-bottom: 10px;">Admin Provider Fines APIs</h2>
+            <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto; line-height: 1.6;">Select a documentation category or API endpoint from the sidebar to view detailed parameters for managing provider fines.</p>
+        </div>
+    </div>
+
+    <script src="hotel/js/config.js"></script>
+    <script>
+        // Check Authentication - Admin Only
+        const user = Auth.getUser();
+        if (!Auth.isLoggedIn() || (user.role !== 'Admin' && user.Role !== 'Admin')) {
+            window.location.href = '/index.html';
+        }
+
+        const apiData = [
+            {
+                category: "1. Core Operations",
+                endpoints: [
+                    {
+                        title: "List Fines", method: "GET", url: "/api/admin/fines",
+                        desc: "Retrieves a paginated list of fines based on optional filters.",
+                        requestParams: [
+                            { name: "providerType", type: "Query", desc: "Filter by Provider Type (Hotel, TourGuide, Airline)" },
+                            { name: "providerId", type: "Query", desc: "Filter by Provider ID" },
+                            { name: "status", type: "Query", desc: "Filter by Fine Status (Active, Cancelled, Deducted)" },
+                            { name: "page", type: "Query", desc: "Page number (default 1)" },
+                            { name: "pageSize", type: "Query", desc: "Items per page (default 20)" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: {
+                                totalCount: 10,
+                                page: 1,
+                                pageSize: 20,
+                                items: [
+                                    {
+                                        id: 1,
+                                        providerType: "Hotel",
+                                        providerId: 5,
+                                        amount: 150.00,
+                                        currency: "USD",
+                                        status: "Active",
+                                        createdAt: "2026-06-13T10:00:00Z"
+                                    }
+                                ]
+                            }
+                        }, null, 2),
+                        notes: \`
+                            <h3>Security</h3>
+                            <p>Requires an Admin JWT token.</p>
+                        \`
+                    },
+                    {
+                        title: "Get Fine Details", method: "GET", url: "/api/admin/fines/{id}",
+                        desc: "Retrieves the detailed information of a specific fine by ID.",
+                        requestParams: [
+                            { name: "id", type: "Path", desc: "The ID of the fine" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: {
+                                id: 1,
+                                providerType: "Hotel",
+                                providerId: 5,
+                                sourceType: "Complaint",
+                                complaintId: 42,
+                                amount: 150.00,
+                                currency: "USD",
+                                reason: "Violation of policy",
+                                adminNotes: "Internal note",
+                                status: "Active",
+                                createdByAdminUserId: 1,
+                                createdAt: "2026-06-13T10:00:00Z"
+                            }
+                        }, null, 2),
+                        notes: \`
+                            <h3>Details</h3>
+                            <p>Returns the full database record including references to complaints or bookings.</p>
+                        \`
+                    },
+                    {
+                        title: "Create Fine", method: "POST", url: "/api/admin/fines",
+                        desc: "Creates a new monetary fine applied to a provider.",
+                        requestParams: null,
+                        requestBody: JSON.stringify({
+                            providerType: "Hotel",
+                            sourceType: "Complaint",
+                            complaintId: 42,
+                            amount: 150.00,
+                            currency: "USD",
+                            reason: "Multiple late responses.",
+                            adminNotes: "Internal note regarding this fine."
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Fine created successfully.",
+                            data: { id: 1 }
+                        }, null, 2),
+                        notes: \`
+                            <h3>Source Types</h3>
+                            <ul>
+                                <li><code>Complaint</code>: Requires complaintId. Provider ID is derived automatically.</li>
+                                <li><code>Manual</code>: Requires explicit providerType and providerId.</li>
+                                <li><code>Cancellation</code>: Requires booking ID.</li>
+                            </ul>
+                        \`
+                    },
+                    {
+                        title: "Update Fine", method: "PUT", url: "/api/admin/fines/{id}",
+                        desc: "Updates an existing active fine. Note: You can only update Reason, AdminNotes, and Amount.",
+                        requestParams: [
+                            { name: "id", type: "Path", desc: "The ID of the fine to update" }
+                        ],
+                        requestBody: JSON.stringify({
+                            amount: 200.00,
+                            reason: "Updated reason for fine",
+                            adminNotes: "Updated internal note"
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Fine updated successfully."
+                        }, null, 2)
+                    },
+                    {
+                        title: "Cancel Fine", method: "POST", url: "/api/admin/fines/{id}/cancel",
+                        desc: "Cancels an active fine, preventing it from being deducted during payouts.",
+                        requestParams: [
+                            { name: "id", type: "Path", desc: "The ID of the fine to cancel" }
+                        ],
+                        requestBody: JSON.stringify({
+                            cancellationReason: "Mistake. Reversing fine."
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Fine cancelled successfully."
+                        }, null, 2)
+                    }
+                ]
+            },
+            {
+                category: "2. Helper Lookups",
+                endpoints: [
+                    {
+                        title: "Get Eligible Complaints", method: "GET", url: "/api/admin/fines/eligible-complaints",
+                        desc: "Retrieves complaints that are eligible to have a fine attached.",
+                        requestParams: [
+                            { name: "type", type: "Query", desc: "ProviderType (Hotel, TourGuide, Airline)" }
+                        ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: [
+                                {
+                                    id: 42,
+                                    title: "Room was dirty",
+                                    providerId: 5,
+                                    providerName: "Grand Hotel"
+                                }
+                            ]
+                        }, null, 2)
+                    },
+                    {
+                        title: "Get Tour Guide Cancellations", method: "GET", url: "/api/admin/fines/tour-guide-cancelled-bookings",
+                        desc: "Retrieves cancelled tour bookings eligible for a fine.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: [
+                                {
+                                    id: 101,
+                                    tourId: 8,
+                                    tourName: "Pyramids Tour",
+                                    tourGuideId: 2,
+                                    cancellationReason: "Emergency"
+                                }
+                            ]
+                        }, null, 2)
+                    }
+                ]
+            }
+        ];
+
+        // The rest of the script is identical to checkout-payment-mobile-api-docs.html rendering logic
+        function renderSidebar() {
+            const container = document.getElementById('sidebarList');
+            container.innerHTML = '';
+            
+            apiData.forEach((category, catIndex) => {
+                const title = document.createElement('div');
+                title.className = 'category-title';
+                title.textContent = category.category;
+                container.appendChild(title);
+
+                category.endpoints.forEach((endpoint, epIndex) => {
+                    const link = document.createElement('a');
+                    link.className = 'endpoint-link';
+                    link.onclick = () => renderMainContent(catIndex, epIndex);
+                    
+                    const badge = document.createElement('span');
+                    badge.className = \`method-badge method-\${endpoint.method}\`;
+                    badge.textContent = endpoint.method;
+                    
+                    const text = document.createElement('span');
+                    text.textContent = endpoint.title;
+                    text.style.fontSize = "0.95rem";
+                    
+                    link.appendChild(badge);
+                    link.appendChild(text);
+                    container.appendChild(link);
+                });
+            });
+        }
+
+        function filterSidebar() {
+            const term = document.getElementById('searchSidebar').value.toLowerCase();
+            const container = document.getElementById('sidebarList');
+            container.innerHTML = '';
+
+            apiData.forEach((category, catIndex) => {
+                const matches = category.endpoints.filter(ep => 
+                    ep.title.toLowerCase().includes(term) || 
+                    ep.url.toLowerCase().includes(term) ||
+                    ep.method.toLowerCase().includes(term)
+                );
+
+                if (matches.length > 0) {
+                    const title = document.createElement('div');
+                    title.className = 'category-title';
+                    title.textContent = category.category;
+                    container.appendChild(title);
+
+                    matches.forEach(endpoint => {
+                        const epIndex = category.endpoints.indexOf(endpoint);
+                        const link = document.createElement('a');
+                        link.className = 'endpoint-link';
+                        link.onclick = () => renderMainContent(catIndex, epIndex);
+                        
+                        const badge = document.createElement('span');
+                        badge.className = \`method-badge method-\${endpoint.method}\`;
+                        badge.textContent = endpoint.method;
+                        
+                        const text = document.createElement('span');
+                        text.textContent = endpoint.title;
+                        text.style.fontSize = "0.95rem";
+                        
+                        link.appendChild(badge);
+                        link.appendChild(text);
+                        container.appendChild(link);
+                    });
+                }
+            });
+        }
+
+        function renderMainContent(catIndex, epIndex) {
+            const endpoint = apiData[catIndex].endpoints[epIndex];
+            const content = document.getElementById('mainContent');
+            
+            document.querySelectorAll('.endpoint-link').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            let html = \`
+                <div class="card">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                        <span class="method-badge method-\${endpoint.method}" style="font-size: 1rem; padding: 6px 12px;">\${endpoint.method}</span>
+                        <h2 style="margin: 0; border: none; padding: 0;">\${endpoint.title}</h2>
+                    </div>
+                    
+                    <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 20px;">\${endpoint.desc}</p>
+                    
+                    <div class="url-box">
+                        <i class="fas fa-link" style="color: var(--text-muted)"></i>
+                        <span>\${endpoint.url}</span>
+                    </div>
+            \`;
+
+            if (endpoint.requestParams) {
+                html += \`
+                    <h3><i class="fas fa-sliders-h"></i> Parameters</h3>
+                    <table>
+                        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                        \${endpoint.requestParams.map(p => \`<tr><td><code>\${p.name}</code></td><td>\${p.type}</td><td>\${p.desc}</td></tr>\`).join('')}
+                    </table>
+                \`;
+            }
+
+            if (endpoint.requestBody) {
+                html += \`
+                    <h3><i class="fas fa-file-upload"></i> Request Payload <span class="hl-req">JSON</span></h3>
+                    <pre><code>\${endpoint.requestBody}</code></pre>
+                \`;
+            }
+
+            if (endpoint.response) {
+                html += \`
+                    <h3><i class="fas fa-file-download"></i> Response Payload <span class="hl-res">JSON</span></h3>
+                    <pre><code>\${endpoint.response}</code></pre>
+                \`;
+            }
+
+            if (endpoint.content) {
+                html += endpoint.content;
+            }
+
+            if (endpoint.notes) {
+                html += endpoint.notes;
+            }
+
+            html += \`</div>\`;
+            content.innerHTML = html;
+        }
+
+        renderSidebar();
+    </script>
+</body>
+</html>

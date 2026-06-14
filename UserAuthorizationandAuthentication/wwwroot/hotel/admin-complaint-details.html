@@ -202,11 +202,11 @@
                 <div class="card-title"><i class='bx bx-calendar-check'></i> Related Booking Information</div>
                 <div class="grid-info">
                     <div class="info-item"><label>Booking ID</label><span id="b-id"></span></div>
-                    <div class="info-item"><label>Hotel</label><span id="b-hotel" style="font-weight:700;"></span></div>
-                    <div class="info-item"><label>Location</label><span id="b-city"></span></div>
-                    <div class="info-item"><label>Room(s)</label><span id="b-room"></span></div>
-                    <div class="info-item"><label>Stay Dates</label><span id="b-dates"></span></div>
-                    <div class="info-item"><label>Nights / Rooms</label><span id="b-nights"></span></div>
+                    <div class="info-item"><label id="lbl-b-hotel">Hotel</label><span id="b-hotel" style="font-weight:700;"></span></div>
+                    <div class="info-item"><label id="lbl-b-city">Location</label><span id="b-city"></span></div>
+                    <div class="info-item"><label id="lbl-b-room">Room(s)</label><span id="b-room"></span></div>
+                    <div class="info-item"><label id="lbl-b-dates">Stay Dates</label><span id="b-dates"></span></div>
+                    <div class="info-item" id="info-nights"><label id="lbl-b-nights">Nights / Rooms</label><span id="b-nights"></span></div>
                     <div class="info-item"><label>Total Price</label><span id="b-price" style="color:var(--success); font-weight:700;"></span></div>
                     <div class="info-item"><label>Booking Status</label><span id="b-status"></span></div>
                 </div>
@@ -259,6 +259,12 @@
                         </button>
                     </div>
                 </div>
+            <!-- Section 5: Provider Fine History -->
+            <div class="card" id="providerFinesCard" style="display:none; border-left: 5px solid var(--accent-gold);">
+                <div class="card-title"><i class='bx bx-money'></i> Provider Fine History</div>
+                <div id="finesContainer">
+                    <p style="color:var(--text-muted); font-style:italic;">Loading fines...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -299,14 +305,36 @@
                 // Section 2: Booking
                 if (c.bookingContext) {
                     document.getElementById('bookingSection').style.display = 'block';
-                    const bc = c.bookingContext;
-                    document.getElementById('b-id').innerText = '#' + bc.bookingId;
-                    document.getElementById('b-hotel').innerText = bc.hotelName;
-                    document.getElementById('b-city').innerText = bc.city;
-                    document.getElementById('b-room').innerText = bc.roomName || 'N/A';
-                    document.getElementById('b-dates').innerText = bc.bookingDates;
-                    document.getElementById('b-nights').innerText = `${bc.nights} Nights / ${bc.totalRooms} Rooms`;
-                    document.getElementById('b-price').innerText = bc.totalPrice;
+                    const bc = c.bookingContext || c.BookingContext;
+                    const type = bc.type || bc.Type || 'Hotel';
+                    
+                    if (type === 'Tour') {
+                        document.getElementById('lbl-b-hotel').innerText = 'Tour Title';
+                        document.getElementById('lbl-b-city').innerText = 'City';
+                        document.getElementById('lbl-b-room').innerText = 'Participants';
+                        document.getElementById('lbl-b-dates').innerText = 'Tour Date';
+                        document.getElementById('info-nights').style.display = 'none';
+                    } else if (type === 'Airline') {
+                        document.getElementById('lbl-b-hotel').innerText = 'Flight';
+                        document.getElementById('lbl-b-city').innerText = 'Route';
+                        document.getElementById('lbl-b-room').innerText = 'Details';
+                        document.getElementById('lbl-b-dates').innerText = 'Flight Date';
+                        document.getElementById('info-nights').style.display = 'none';
+                    } else {
+                        document.getElementById('lbl-b-hotel').innerText = 'Hotel';
+                        document.getElementById('lbl-b-city').innerText = 'Location';
+                        document.getElementById('lbl-b-room').innerText = 'Room(s)';
+                        document.getElementById('lbl-b-dates').innerText = 'Stay Dates';
+                        document.getElementById('info-nights').style.display = 'block';
+                    }
+
+                    document.getElementById('b-id').innerText = '#' + (bc.bookingId || bc.BookingId || 'N/A');
+                    document.getElementById('b-hotel').innerText = bc.hotelName || bc.HotelName || 'N/A';
+                    document.getElementById('b-city').innerText = bc.city || bc.City || 'N/A';
+                    document.getElementById('b-room').innerText = bc.roomName || bc.RoomName || 'N/A';
+                    document.getElementById('b-dates').innerText = bc.bookingDates || bc.BookingDates || 'N/A';
+                    document.getElementById('b-nights').innerText = (bc.nights !== undefined || bc.Nights !== undefined) ? `${bc.nights || bc.Nights} Nights / ${bc.totalRooms || bc.TotalRooms || 1} Rooms` : 'N/A';
+                    document.getElementById('b-price').innerText = bc.totalPrice || bc.TotalPrice || 'N/A';
                     document.getElementById('b-status').innerText = bc.bookingStatus;
 
                     // Payment
@@ -380,9 +408,52 @@
                     document.getElementById('replyArea').style.display = 'none';
                 }
 
+                // Load Fines
+                await loadProviderFines();
+
             } else {
                 alert(res.message);
                 window.location.href = 'admin-dashboard.html';
+            }
+        }
+
+        async function loadProviderFines() {
+            try {
+                const res = await API.get(`/admin/fines/by-complaint/${complaintId}`);
+                if (res.success && res.data && res.data.length > 0) {
+                    document.getElementById('providerFinesCard').style.display = 'block';
+                    const container = document.getElementById('finesContainer');
+                    let html = `<table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+                                  <tr style="border-bottom: 1px solid var(--border-color); color: var(--accent-gold); font-size: 12px; text-transform: uppercase;">
+                                      <th style="padding: 10px; text-align: left;">ID</th>
+                                      <th style="padding: 10px; text-align: left;">Provider</th>
+                                      <th style="padding: 10px; text-align: left;">Amount</th>
+                                      <th style="padding: 10px; text-align: left;">Status</th>
+                                      <th style="padding: 10px; text-align: left;">Date</th>
+                                      <th style="padding: 10px; text-align: right;">Actions</th>
+                                  </tr>`;
+                    res.data.forEach(f => {
+                        html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                    <td style="padding: 10px; color: var(--text-muted);">#${f.id}</td>
+                                    <td style="padding: 10px;">${f.providerDisplayName} <span style="opacity:0.5; font-size:10px;">(${f.providerType})</span></td>
+                                    <td style="padding: 10px; font-weight: bold; color: var(--accent-gold);">$${f.amount.toFixed(2)}</td>
+                                    <td style="padding: 10px;">
+                                        <span class="status-badge" style="background: rgba(226, 180, 91, 0.1); color: var(--accent-gold);">${f.status}</span>
+                                    </td>
+                                    <td style="padding: 10px; font-size:12px; opacity:0.8;">${new Date(f.createdAt).toLocaleDateString()}</td>
+                                    <td style="padding: 10px; text-align: right;">
+                                        <a href="../admin-fines/details.html?id=${f.id}" class="btn" style="padding: 6px 12px; font-size: 12px; text-decoration:none;"><i class='bx bx-right-arrow-alt'></i> View Fine Details</a>
+                                    </td>
+                                 </tr>`;
+                    });
+                    html += `</table>`;
+                    container.innerHTML = html;
+                } else {
+                    document.getElementById('providerFinesCard').style.display = 'block';
+                    document.getElementById('finesContainer').innerHTML = '<p style="color:var(--text-muted); font-style:italic;">No provider fines for this complaint.</p>';
+                }
+            } catch (err) {
+                console.error("Error loading fines:", err);
             }
         }
 

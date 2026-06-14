@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Local secrets and uploaded test files
+UserAuthorizationandAuthentication/admin_token.txt
+UserAuthorizationandAuthentication/wwwroot/uploads/complaints/
+UserAuthorizationandAuthentication/wwwroot/uploads/hotels/complaints/

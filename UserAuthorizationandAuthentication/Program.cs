@@ -6,6 +6,8 @@ using TravAi.Repositories.GenericRepository;
 
 using TravAi.Repositories.UserRepository;
 using TravAi.Services;
+using TravAi.Services.Admin;
+using TravAi.Services.Admin.Fines;
 using TravAi.Services.Auth;
 using TravAi.Services.AI;
 // Final sync after manual drop
@@ -19,13 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null);
-    }));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 2. Register Repositories
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -58,6 +54,10 @@ builder.Services.AddScoped<TravAi.TourGuide.Services.IWithdrawRequestService, Tr
 
 // --- AI Trip Planner Service ---
 builder.Services.AddScoped<IAiTripPlannerService, AiTripPlannerService>();
+
+// --- Admin Services ---
+builder.Services.AddScoped<IProviderFineService, ProviderFineService>();
+builder.Services.AddScoped<TravAi.Services.Admin.Payout.IAdminPayoutService, TravAi.Services.Admin.Payout.AdminPayoutService>();
 
 // --- Simple Stripe Checkout Integration ---
 builder.Services.Configure<TravAi.Options.StripeOptions>(builder.Configuration.GetSection("Stripe"));

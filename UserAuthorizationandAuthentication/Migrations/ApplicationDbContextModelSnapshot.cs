@@ -580,6 +580,263 @@ namespace TravAi.Migrations
                     b.ToTable("ai_ChatSessions", (string)null);
                 });
 
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutBatch", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("ConfirmedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("ConfirmedByAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime?>("FailedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("FinalPayoutAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("GeneratedByAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("GrossAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("NetAfterRefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<long>("ProviderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProviderNameSnapshot")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("ProviderType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalCommissionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalFineDeductionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalRefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("WeekEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("WeekStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConfirmedByAdminUserId");
+
+                    b.HasIndex("GeneratedByAdminUserId");
+
+                    b.HasIndex("ProviderType", "ProviderId", "WeekStartDate", "WeekEndDate", "Currency")
+                        .IsUnique();
+
+                    b.ToTable("admin_PayoutBatches");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutFineDeduction", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("AppliedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FineCreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("PayoutBatchId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProviderFineId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ReasonSnapshot")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PayoutBatchId");
+
+                    b.HasIndex("ProviderFineId")
+                        .IsUnique();
+
+                    b.ToTable("admin_PayoutFineDeductions");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("BookingType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("CommissionPercentage")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<decimal>("NetAfterRefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OriginalPaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long?>("PaymentTransactionId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("PaymentTransactionItemId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PayoutBatchId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("ProviderAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("RefundReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("ServiceEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PayoutBatchId");
+
+                    b.HasIndex("BookingType", "BookingId")
+                        .IsUnique();
+
+                    b.ToTable("admin_PayoutItems");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutStripePayment", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CreatedByAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("FailureReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("PayoutBatchId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProviderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProviderStripePayoutAccountId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("ProviderType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StripeCheckoutSessionId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("StripeConnectedAccountId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("StripePaymentIntentId")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PayoutBatchId");
+
+                    b.HasIndex("ProviderStripePayoutAccountId");
+
+                    b.ToTable("admin_PayoutStripePayments");
+                });
+
             modelBuilder.Entity("TravAi.Models.Admin.PlatformCommission", b =>
                 {
                     b.Property<long>("Id")
@@ -615,6 +872,155 @@ namespace TravAi.Migrations
                     b.HasIndex("CreatedByAdminUserId");
 
                     b.ToTable("admin_PlatformCommissions", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.ProviderFine", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<long?>("AirlineBookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long?>("CancelledByAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("ComplaintId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("CreatedByAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<long?>("HotelBookingId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("ProviderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProviderType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("SourceType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<long?>("TourBookingId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CancelledByAdminUserId");
+
+                    b.HasIndex("ComplaintId");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("CreatedByAdminUserId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TourBookingId");
+
+                    b.HasIndex("ProviderType", "ProviderId");
+
+                    b.ToTable("admin_ProviderFines", (string)null);
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.ProviderStripePayoutAccount", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("BankLast4")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<long>("ProviderId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProviderNameSnapshot")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ProviderPayoutAccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("ProviderType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StripeAccountDisplayName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("StripeConnectedAccountId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProviderType", "ProviderId")
+                        .IsUnique();
+
+                    b.ToTable("admin_ProviderStripePayoutAccounts");
                 });
 
             modelBuilder.Entity("TravAi.Models.Auth.RefreshToken", b =>
@@ -2442,6 +2848,25 @@ namespace TravAi.Migrations
                     b.Property<DateTime?>("BookingDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("CancellationReviewNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("CancellationReviewStatus")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<long?>("CancellationReviewedByAdminUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("CancelledByRole")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -3178,11 +3603,102 @@ namespace TravAi.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutBatch", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "ConfirmedByAdminUser")
+                        .WithMany()
+                        .HasForeignKey("ConfirmedByAdminUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TravAi.Models.Auth.User", "GeneratedByAdminUser")
+                        .WithMany()
+                        .HasForeignKey("GeneratedByAdminUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ConfirmedByAdminUser");
+
+                    b.Navigation("GeneratedByAdminUser");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutFineDeduction", b =>
+                {
+                    b.HasOne("TravAi.Models.Admin.PayoutBatch", "PayoutBatch")
+                        .WithMany("Deductions")
+                        .HasForeignKey("PayoutBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Admin.ProviderFine", "ProviderFine")
+                        .WithMany()
+                        .HasForeignKey("ProviderFineId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PayoutBatch");
+
+                    b.Navigation("ProviderFine");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutItem", b =>
+                {
+                    b.HasOne("TravAi.Models.Admin.PayoutBatch", "PayoutBatch")
+                        .WithMany("Items")
+                        .HasForeignKey("PayoutBatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PayoutBatch");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutStripePayment", b =>
+                {
+                    b.HasOne("TravAi.Models.Admin.PayoutBatch", "PayoutBatch")
+                        .WithMany()
+                        .HasForeignKey("PayoutBatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TravAi.Models.Admin.ProviderStripePayoutAccount", "ProviderStripePayoutAccount")
+                        .WithMany()
+                        .HasForeignKey("ProviderStripePayoutAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("PayoutBatch");
+
+                    b.Navigation("ProviderStripePayoutAccount");
+                });
+
             modelBuilder.Entity("TravAi.Models.Admin.PlatformCommission", b =>
                 {
                     b.HasOne("TravAi.Models.Auth.User", "CreatedByAdminUser")
                         .WithMany()
                         .HasForeignKey("CreatedByAdminUserId");
+
+                    b.Navigation("CreatedByAdminUser");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.ProviderFine", b =>
+                {
+                    b.HasOne("TravAi.Models.Auth.User", "CancelledByAdminUser")
+                        .WithMany()
+                        .HasForeignKey("CancelledByAdminUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TravAi.Models.Hotels.Complaint", "Complaint")
+                        .WithMany()
+                        .HasForeignKey("ComplaintId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("TravAi.Models.Auth.User", "CreatedByAdminUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByAdminUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CancelledByAdminUser");
+
+                    b.Navigation("Complaint");
 
                     b.Navigation("CreatedByAdminUser");
                 });
@@ -3986,6 +4502,13 @@ namespace TravAi.Migrations
             modelBuilder.Entity("TravAi.Models.AI.ChatSession", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("TravAi.Models.Admin.PayoutBatch", b =>
+                {
+                    b.Navigation("Deductions");
+
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("TravAi.Models.Auth.User", b =>

@@ -1,337 +1,437 @@
-// Admin Payout Details - Sub-page Logic
+// Admin Payout Details Page Logic
 
-// Mock Payouts Dataset
-const ROWS = [
-    { id: "p1", hotel: "Hilton Hotel & Resort", amount: "4,500$", amountValue: 4500, dueSince: "14 days ago", dueDays: 14, status: "Pending" },
-    { id: "p2", hotel: "Marriott Premium Suites", amount: "3,200$", amountValue: 3200, dueSince: "7 days ago", dueDays: 7, status: "Pending" },
-    { id: "p3", hotel: "Four Seasons Luxury", amount: "8,750$", amountValue: 8750, dueSince: "3 days ago", dueDays: 3, status: "Paid" },
-    { id: "p4", hotel: "Ritz-Carlton Plaza", amount: "2,100$", amountValue: 2100, dueSince: "21 days ago", dueDays: 21, status: "Pending" },
-    { id: "p5", hotel: "Hyatt Regency Heights", amount: "5,400$", amountValue: 5400, dueSince: "5 days ago", dueDays: 5, status: "Pending" },
-    { id: "p6", hotel: "Sheraton Grand Hotel", amount: "1,900$", amountValue: 1900, dueSince: "10 days ago", dueDays: 10, status: "Paid" },
-    { id: "p7", hotel: "InterContinental Cairo", amount: "1,500$", amountValue: 1500, dueSince: "2 days ago", dueDays: 2, status: "Failed" },
-    { id: "p8", hotel: "Kempinski Nile Hotel", amount: "2,800$", amountValue: 2800, dueSince: "12 days ago", dueDays: 12, status: "Failed" }
-];
-
-// Mock Bookings Receipts included in the payout (recreated from payouts.ts)
-const RECEIPTS = [
-    { id: "BK-1042", customer: "Sarah Johnson", booked: "Apr 28, 2026", checkIn: "May 02, 2026", checkOut: "May 05, 2026", total: "$650", fee: "$65", net: "$585", rooms: 1, roomType: "Deluxe Room", bedType: "King Bed", nights: 3, pricePerNight: "$216", totalRoomPrice: "$650", paymentMethod: "Visa", paymentDate: "Apr 28, 2026", paymentStatus: "Settled", bookingStatus: "Completed" },
-    { id: "BK-1058", customer: "David Lee", booked: "Apr 30, 2026", checkIn: "May 04, 2026", checkOut: "May 06, 2026", total: "$420", fee: "$42", net: "$378", rooms: 1, roomType: "Standard Room", bedType: "Queen Bed", nights: 2, pricePerNight: "$210", totalRoomPrice: "$420", paymentMethod: "Mastercard", paymentDate: "Apr 30, 2026", paymentStatus: "Settled", bookingStatus: "Completed" },
-    { id: "BK-1071", customer: "Emma Williams", booked: "May 01, 2026", checkIn: "May 05, 2026", checkOut: "May 09, 2026", total: "$890", fee: "$89", net: "$801", rooms: 2, roomType: "Suite", bedType: "King Bed", nights: 4, pricePerNight: "$222", totalRoomPrice: "$890", paymentMethod: "Visa", paymentDate: "May 01, 2026", paymentStatus: "Settled", bookingStatus: "Completed" },
-    { id: "BK-1083", customer: "Liam Brown", booked: "May 02, 2026", checkIn: "May 06, 2026", checkOut: "May 07, 2026", total: "$310", fee: "$31", net: "$279", rooms: 1, roomType: "Standard Room", bedType: "Twin Bed", nights: 1, pricePerNight: "$310", totalRoomPrice: "$310", paymentMethod: "Mastercard", paymentDate: "May 02, 2026", paymentStatus: "Settled", bookingStatus: "Completed" },
-    { id: "BK-1090", customer: "Olivia Davis", booked: "May 03, 2026", checkIn: "May 07, 2026", checkOut: "May 10, 2026", total: "$540", fee: "$54", net: "$486", rooms: 1, roomType: "Deluxe Room", bedType: "Queen Bed", nights: 3, pricePerNight: "$180", totalRoomPrice: "$540", paymentMethod: "Visa", paymentDate: "May 03, 2026", paymentStatus: "Settled", bookingStatus: "Completed" }
-];
-
-let selectedRow = null;
-let currentPage = 1;
-const PAGE_SIZE = 5;
-
-// DOM references
-let hotelNameText, tableBody, paginationInfo, btnPrev, btnNext, detailsTable, confirmBtn, confirmModal, btnConfirmCancel, btnConfirmAction, receiptModal, receiptModalBody, btnCloseReceipt;
+let payoutId = new URLSearchParams(window.location.search).get('id');
+let payoutData = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Get query parameters
-    const params = new URLSearchParams(window.location.search);
-    const id = params.get("id") || "p1";
-    selectedRow = ROWS.find(r => r.id === id) || ROWS[0];
-
-    // DOM bindings
-    hotelNameText = document.getElementById("hotel-name-text");
-    tableBody = document.getElementById("table-body");
-    paginationInfo = document.getElementById("pagination-info");
-    btnPrev = document.getElementById("btn-prev");
-    btnNext = document.getElementById("btn-next");
-    detailsTable = document.getElementById("details-table");
-    confirmBtn = document.getElementById("confirm-btn");
-    
-    // Modals
-    confirmModal = document.getElementById("confirm-modal");
-    btnConfirmCancel = document.getElementById("btn-confirm-cancel");
-    btnConfirmAction = document.getElementById("btn-confirm-action");
-    receiptModal = document.getElementById("receipt-modal");
-    receiptModalBody = document.getElementById("receipt-modal-body");
-    btnCloseReceipt = document.getElementById("btn-close-receipt");
-
-    // Dynamic Title
-    hotelNameText.textContent = selectedRow.hotel;
-
-    // Confirm button click
-    if (selectedRow.status === "Paid") {
-        confirmBtn.style.display = "none";
+    if (!payoutId) {
+        showToast("No Payout ID specified.");
+        return;
     }
-    confirmBtn.addEventListener("click", () => {
-        confirmModal.classList.add("active");
-    });
-
-    btnConfirmCancel.addEventListener("click", () => {
-        confirmModal.classList.remove("active");
-    });
-
-    btnConfirmAction.addEventListener("click", executeConfirmPayout);
     
-    // Receipt Modal controls
-    btnCloseReceipt.addEventListener("click", () => {
-        receiptModal.classList.remove("active");
-    });
+    // Add event listeners to buttons
+    document.getElementById("btn-confirm-cancel").addEventListener("click", closeModal);
+    document.getElementById("confirm-btn").addEventListener("click", openConfirmModal);
+    document.getElementById("btn-confirm-action").addEventListener("click", confirmPayout);
+    
+    // Check if we have a mark failed button, or create it dynamically later
+    // In our UI there's only an export and confirm button currently, we'll append "Mark Failed" dynamically.
 
-    // Pagination Listeners
-    btnPrev.addEventListener("click", () => {
-        if (currentPage > 1) {
-            currentPage--;
-            render();
-        }
-    });
-
-    btnNext.addEventListener("click", () => {
-        const totalRows = RECEIPTS.length;
-        const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
-        if (currentPage < totalPages) {
-            currentPage++;
-            render();
-        }
-    });
-
-    // Initial renders
-    renderDetailsCard();
-    renderSummary();
-    render();
+    checkStripeRedirect();
+    fetchPayoutDetails();
 });
 
-// Render general metadata
-function renderDetailsCard() {
+async function checkStripeRedirect() {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    const sessionId = params.get('session_id');
+
+    if (payment === 'success' && sessionId) {
+        showToast("Verifying Stripe payment...");
+        try {
+            const res = await fetch(`/api/admin/payouts/${payoutId}/verify-payment?session_id=${sessionId}`, {
+                method: 'POST',
+                headers: getHeaders()
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showToast("Stripe payment verified and payout confirmed!");
+                console.log("Stripe Verification Success Checked Values:", data);
+                fetchPayoutDetails();
+            } else {
+                showToast("Failed to verify payment: " + (data.message || "Unknown error"));
+                console.error("Stripe Verification Failure Checked Values:", data);
+            }
+        } catch (err) {
+            showToast("Error verifying payment.");
+            console.error("Error verifying payment:", err);
+        }
+        
+        // Clean URL
+        const url = new URL(window.location);
+        url.searchParams.delete('payment');
+        url.searchParams.delete('session_id');
+        window.history.replaceState({}, document.title, url.toString());
+    } else if (payment === 'cancelled') {
+        showToast("Payment was cancelled. Payout is still pending.");
+        
+        const url = new URL(window.location);
+        url.searchParams.delete('payment');
+        window.history.replaceState({}, document.title, url.toString());
+    }
+}
+
+function getHeaders() {
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token") || document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
+    return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+    };
+}
+
+function unwrapObject(raw) {
+  return raw?.data ?? raw?.result ?? raw?.item ?? raw ?? {};
+}
+
+function unwrapArray(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.items)) return raw.items;
+  if (Array.isArray(raw?.data)) return raw.data;
+  if (Array.isArray(raw?.data?.items)) return raw.data.items;
+  if (Array.isArray(raw?.result)) return raw.result;
+  if (Array.isArray(raw?.result?.items)) return raw.result.items;
+  return [];
+}
+
+function safeNumber(value) {
+  const n = Number(value ?? 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function formatDate(value) {
+  if (!value) return 'N/A';
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? 'N/A' : d.toLocaleDateString();
+}
+
+function formatDateTime(value) {
+  if (!value) return 'N/A';
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? 'N/A' : d.toLocaleString();
+}
+
+async function fetchPayoutDetails() {
+    try {
+        const res = await fetch(`/api/admin/payouts/${payoutId}`, { headers: getHeaders() });
+        if (res.ok) {
+            const raw = await res.json();
+            payoutData = unwrapObject(raw);
+            renderDetails();
+        } else {
+            showToast("Failed to fetch payout details.");
+        }
+    } catch (err) {
+        console.error(err);
+        showToast("Error connecting to server.");
+    }
+}
+
+function renderDetails() {
+    if (!payoutData) return;
+
+    const p = payoutData;
+    const batchId = p.id ?? p.payoutBatchId ?? p.PayoutBatchId;
+    const providerName = p.providerName ?? p.ProviderName ?? p.providerNameSnapshot ?? p.ProviderNameSnapshot ?? `Provider ID: ${p.providerId ?? p.ProviderId ?? 'N/A'}`;
+    const providerType = p.providerType ?? p.ProviderType ?? 'N/A';
+    const statusText = p.status ?? p.Status ?? 'N/A';
+    const statusClass = String(statusText).toLowerCase();
+    const weekStart = p.weekStartDate ?? p.WeekStartDate;
+    const weekEnd = p.weekEndDate ?? p.WeekEndDate;
+    const generatedAt = p.generatedAt ?? p.GeneratedAt;
+    const confirmedAt = p.confirmedAt ?? p.ConfirmedAt;
+    
+    // Totals
+    const grossAmount = safeNumber(p.grossAmount ?? p.GrossAmount);
+    const totalRefundAmount = safeNumber(p.totalRefundAmount ?? p.TotalRefundAmount);
+    const netAfterRefundAmount = safeNumber(p.netAfterRefundAmount ?? p.NetAfterRefundAmount);
+    const totalCommissionAmount = safeNumber(p.totalCommissionAmount ?? p.TotalCommissionAmount);
+    const totalFineDeductionAmount = safeNumber(p.totalFineDeductionAmount ?? p.TotalFineDeductionAmount);
+    const finalPayoutAmount = safeNumber(p.finalPayoutAmount ?? p.FinalPayoutAmount);
+    const ccy = p.currency ?? p.Currency ?? '';
+
+    // Header updates
+    document.getElementById("hotel-name-text").textContent = providerName;
+    document.querySelector(".modal-title").textContent = `${providerType} Payout Details`;
+
+    // General Details Table
+    const detailsTable = document.getElementById("details-table");
+
     detailsTable.innerHTML = `
         <tr>
-            <td class="info-label">Hotel Name</td>
-            <td class="info-value" style="font-weight:600;">${selectedRow.hotel}</td>
+            <td><strong>Batch ID</strong></td>
+            <td>#${batchId || 'N/A'}</td>
+            <td><strong>Status</strong></td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
         </tr>
         <tr>
-            <td class="info-label">Total Amount</td>
-            <td class="info-value" style="font-weight:600; color:var(--primary);">${selectedRow.amount}</td>
+            <td><strong>Period Start</strong></td>
+            <td>${formatDate(weekStart)}</td>
+            <td><strong>Generated At</strong></td>
+            <td>${formatDateTime(generatedAt)}</td>
         </tr>
         <tr>
-            <td class="info-label">Status</td>
-            <td class="info-value">
-                <span class="status-badge ${selectedRow.status.toLowerCase()}">${selectedRow.status}</span>
-            </td>
-        </tr>
-        <tr>
-            <td class="info-label">Generated Date</td>
-            <td class="info-value">May 10, 2026</td>
-        </tr>
-        <tr>
-            <td class="info-label">Due Since</td>
-            <td class="info-value">${selectedRow.dueSince}</td>
+            <td><strong>Period End</strong></td>
+            <td>${formatDate(weekEnd)}</td>
+            <td><strong>Confirmed At</strong></td>
+            <td>${formatDateTime(confirmedAt)}</td>
         </tr>
     `;
-}
 
-// Render sub-bookings table
-function render() {
-    const totalRows = RECEIPTS.length;
-    const totalPages = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
-    
-    // Bounds check
-    if (currentPage > totalPages) {
-        currentPage = totalPages;
-    }
-    
-    const startIdx = (currentPage - 1) * PAGE_SIZE;
-    const paged = RECEIPTS.slice(startIdx, startIdx + PAGE_SIZE);
-
+    // Bookings Table
+    const tableBody = document.getElementById("table-body");
     tableBody.innerHTML = "";
-    paged.forEach(b => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td style="font-weight: 500;">${b.id}</td>
-            <td>${b.customer}</td>
-            <td>${b.total}</td>
-            <td style="color: var(--text-muted);">${b.checkIn}</td>
-            <td style="color: var(--text-muted);">${b.checkOut}</td>
-            <td>
-                <span class="status-badge paid" style="font-size: 0.75rem; padding: 2px 8px;">${b.paymentStatus}</span>
-            </td>
-            <td>
-                <span class="status-badge paid" style="font-size: 0.75rem; padding: 2px 8px;">${b.bookingStatus}</span>
-            </td>
-            <td class="text-right">
-                <button class="btn-action btn-outline" onclick="openReceiptModal('${b.id}')">
-                    <i class="fa-regular fa-eye"></i> View
-                </button>
-            </td>
-        `;
-        tableBody.appendChild(tr);
-    });
+    const items = p.items || p.Items || p.payoutItems || p.PayoutItems || p.includedBookings || p.IncludedBookings || [];
+    const itemsArray = unwrapArray(items);
 
-    // Render Pagination Info
-    const startNum = totalRows === 0 ? 0 : startIdx + 1;
-    const endNum = Math.min(startIdx + PAGE_SIZE, totalRows);
-    paginationInfo.innerHTML = `Showing <strong>${startNum}-${endNum}</strong> of <strong>${totalRows}</strong> results`;
+    if (itemsArray.length > 0) {
+        itemsArray.forEach(item => {
+            const itemId = item.bookingId ?? item.BookingId ?? 'N/A';
+            const guestName = item.guestName ?? item.GuestName ?? 'N/A';
+            const checkIn = item.checkInDate ?? item.CheckInDate;
+            const checkOut = item.checkOutDate ?? item.CheckOutDate;
+            const itemType = item.bookingType ?? item.BookingType ?? 'N/A';
+            const origPaid = safeNumber(item.originalPaidAmount ?? item.OriginalPaidAmount);
+            const itemCcy = item.currency ?? item.Currency ?? '';
+            const serviceEnd = item.serviceEndDate ?? item.ServiceEndDate;
+            const refundAmt = safeNumber(item.refundAmount ?? item.RefundAmount);
+            const commPct = safeNumber(item.commissionPercentage ?? item.CommissionPercentage);
+            const commAmt = safeNumber(item.commissionAmount ?? item.CommissionAmount);
+            const provAmt = safeNumber(item.providerAmount ?? item.ProviderAmount);
+            const refundReason = item.refundReason ?? item.RefundReason ?? 'No refund';
 
-    // Toggle pagination disabled status
-    btnPrev.disabled = currentPage === 1;
-    btnNext.disabled = currentPage === totalPages;
-    btnPrev.style.opacity = currentPage === 1 ? "0.5" : "1";
-    btnNext.style.opacity = currentPage === totalPages ? "0.5" : "1";
-}
+            tableBody.innerHTML += `
+                <tr>
+                    <td>#${itemId}</td>
+                    <td>${guestName}</td>
+                    <td>${origPaid.toLocaleString()} ${itemCcy}</td>
+                    <td>${formatDate(checkIn)}</td>
+                    <td>${formatDate(checkOut || serviceEnd)}</td>
+                    <td style="color:var(--danger);">${refundAmt > 0 ? '-' + refundAmt.toLocaleString() : '0'} ${itemCcy}</td>
+                    <td style="color:var(--danger);">${commAmt > 0 ? '-' + commAmt.toLocaleString() : '0'} ${itemCcy}</td>
+                    <td style="color:var(--primary); font-weight:bold;">${provAmt.toLocaleString()} ${itemCcy}</td>
+                    <td class="text-right">
+                        ${refundAmt > 0 
+                            ? `<a href="admin-payout-refund-details.html?payoutId=${payoutId}&itemId=${item.id ?? item.Id}" class="btn-action btn-outline" style="font-size:0.75rem; padding: 4px 8px;">View Refund</a>` 
+                            : 'No refund'}
+                    </td>
+                </tr>
+            `;
+        });
+    } else {
+        tableBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color: var(--text-muted); padding: 40px;">No included bookings found for this payout.</td></tr>`;
+    }
 
-// Render totals card summary
-function renderSummary() {
+    document.getElementById("pagination-info").innerHTML = `Showing <strong>${itemsArray.length}</strong> bookings`;
+
+    // Fines Table
+    const finesBody = document.getElementById("fines-table-body");
+    const finesSection = document.getElementById("fines-section");
+    const fines = p.deductions || p.Deductions || p.fineDeductions || p.FineDeductions || [];
+    const finesArray = unwrapArray(fines);
+
+    if (finesSection && finesBody) {
+        if (finesArray.length > 0) {
+            finesSection.style.display = "block";
+            finesBody.innerHTML = "";
+            finesArray.forEach(fine => {
+                const fineId = fine.providerFineId ?? fine.ProviderFineId ?? 'N/A';
+                const appliedAt = fine.appliedAt ?? fine.AppliedAt;
+                const reason = fine.reasonSnapshot ?? fine.ReasonSnapshot ?? 'N/A';
+                const amt = safeNumber(fine.amount ?? fine.Amount);
+                
+                finesBody.innerHTML += `
+                    <tr>
+                        <td>#${fineId}</td>
+                        <td>${formatDateTime(appliedAt)}</td>
+                        <td>${reason}</td>
+                        <td style="color:var(--danger); font-weight:bold;">-${amt.toLocaleString()} ${ccy}</td>
+                        <td class="text-right">
+                            <a href="admin-payout-fine-details.html?payoutId=${payoutId}&fineId=${fineId}" class="btn-action btn-outline" style="font-size:0.75rem; padding: 4px 8px;">View Fine</a>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            finesSection.style.display = "none";
+        }
+    }
+
+    // Summary Table
     const summaryTable = document.getElementById("summary-table");
-    
-    const totalBookings = RECEIPTS.length;
-    const totalGross = RECEIPTS.reduce((s, r) => s + parseFloat(r.total.replace("$", "")), 0);
-    const totalFees = RECEIPTS.reduce((s, r) => s + parseFloat(r.fee.replace("$", "")), 0);
-    const totalNet = totalGross - totalFees;
-
     summaryTable.innerHTML = `
         <tr>
-            <td style="color: var(--text-muted);">Total Bookings</td>
-            <td style="font-weight:600; text-align:right;">${totalBookings}</td>
+            <td><strong>Gross Bookings Revenue</strong></td>
+            <td style="text-align: right;">${grossAmount.toLocaleString()} ${ccy}</td>
         </tr>
         <tr>
-            <td style="color: var(--text-muted);">Total Revenue (Gross)</td>
-            <td style="font-weight:600; text-align:right;">${totalGross.toLocaleString()}$</td>
+            <td><strong>Total Refunds Deducted</strong></td>
+            <td style="text-align: right; color: var(--danger);">- ${totalRefundAmount.toLocaleString()} ${ccy}</td>
         </tr>
         <tr>
-            <td style="color: var(--text-muted);">Platform Fees (10%)</td>
-            <td style="font-weight:600; text-align:right; color:#ef4444;">${totalFees.toLocaleString()}$</td>
+            <td><strong>Net After Refunds</strong></td>
+            <td style="text-align: right; font-weight: 500;">${netAfterRefundAmount.toLocaleString()} ${ccy}</td>
         </tr>
-        <tr style="background: rgba(255, 255, 255, 0.03); font-weight: 700; border-top: 1.5px solid var(--border);">
-            <td style="color: var(--text-main);">Final Payout Amount (Net)</td>
-            <td style="text-align:right; color: #10b981; font-size:1.05rem;">${totalNet.toLocaleString()}$</td>
+        <tr>
+            <td><strong>Total Platform Commission</strong></td>
+            <td style="text-align: right; color: var(--danger);">- ${totalCommissionAmount.toLocaleString()} ${ccy}</td>
+        </tr>
+        <tr>
+            <td><strong>Total Fine Deductions</strong></td>
+            <td style="text-align: right; color: var(--danger);">- ${totalFineDeductionAmount.toLocaleString()} ${ccy}</td>
+        </tr>
+        <tr style="background-color: rgba(99, 102, 241, 0.05);">
+            <td style="font-size: 1.1rem; font-weight: 600; color: var(--primary);"><strong>Final Payout Amount</strong></td>
+            <td style="font-size: 1.2rem; font-weight: 700; color: var(--primary); text-align: right;">
+                ${finalPayoutAmount.toLocaleString()} ${ccy}
+            </td>
         </tr>
     `;
+
+    // Action buttons logic
+    const actionGroup = document.querySelector(".action-group");
+    if (statusText === "Pending") {
+        document.getElementById("confirm-btn").style.display = "inline-block";
+    } else {
+        document.getElementById("confirm-btn").style.display = "none";
+    }
+
+    if (statusText === "Paid") {
+        fetchStripeReceipt();
+    }
 }
 
-// Open booking receipt details modal
-function openReceiptModal(id) {
-    const b = RECEIPTS.find(r => r.id === id);
-    if (!b) return;
+async function fetchStripeReceipt() {
+    try {
+        const res = await fetch(`/api/admin/payouts/${payoutId}/stripe-payment`, { headers: getHeaders() });
+        if (res.ok) {
+            const raw = await res.json();
+            const receipt = unwrapObject(raw);
+            if (receipt && receipt.stripeConnectedAccountId) {
+                renderStripeReceipt(receipt);
+            }
+        }
+    } catch (err) {
+        console.error("Failed to fetch Stripe receipt", err);
+    }
+}
 
-    receiptModalBody.innerHTML = `
-        <div class="overflow-hidden rounded-xl border border-border" style="margin-bottom: 20px;">
-            <table class="w-full text-sm custom-table">
-                <tbody>
-                    <tr class="bg-muted/30">
-                        <td class="info-label" style="padding: 10px 16px;">Booking ID</td>
-                        <td class="info-value" style="padding: 10px 16px; font-weight:600;">${b.id}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-label" style="padding: 10px 16px;">Customer Name</td>
-                        <td class="info-value" style="padding: 10px 16px;">${b.customer}</td>
-                    </tr>
-                    <tr class="bg-muted/30">
-                        <td class="info-label" style="padding: 10px 16px;">Hotel Name</td>
-                        <td class="info-value" style="padding: 10px 16px;">${selectedRow.hotel}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-label" style="padding: 10px 16px;">Booking Date</td>
-                        <td class="info-value" style="padding: 10px 16px; color: var(--text-muted);">${b.booked}</td>
-                    </tr>
-                    <tr class="bg-muted/30">
-                        <td class="info-label" style="padding: 10px 16px;">Check-In Date</td>
-                        <td class="info-value" style="padding: 10px 16px; color: var(--text-muted);">${b.checkIn}</td>
-                    </tr>
-                    <tr>
-                        <td class="info-label" style="padding: 10px 16px;">Check-Out Date</td>
-                        <td class="info-value" style="padding: 10px 16px; color: var(--text-muted);">${b.checkOut}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+function renderStripeReceipt(receipt) {
+    let receiptSection = document.getElementById("stripe-receipt-section");
+    if (!receiptSection) {
+        receiptSection = document.createElement('div');
+        receiptSection.id = "stripe-receipt-section";
+        document.querySelector(".table-wrapper").after(receiptSection);
+    }
 
-        <h3 class="receipt-section-title">Room Specifications</h3>
-        <div class="table-wrapper" style="margin-bottom: 20px;">
+    const ccy = (receipt.currency || "").toUpperCase();
+    
+    let receiptHtml = `
+        <h2 class="section-title" style="margin-top: 32px;">Payment Receipt</h2>
+        <div class="table-wrapper">
             <table class="custom-table">
-                <thead>
-                    <tr>
-                        <th>Room Type</th>
-                        <th>Bed Specifications</th>
-                        <th>Quantity</th>
-                        <th>Nights</th>
-                        <th>Price/Night</th>
-                        <th class="text-right">Total Price</th>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr>
-                        <td style="font-weight:500;">${b.roomType}</td>
-                        <td>${b.bedType}</td>
-                        <td>${b.rooms}</td>
-                        <td>${b.nights}</td>
-                        <td>${b.pricePerNight}</td>
-                        <td class="text-right" style="font-weight:600;">${b.totalRoomPrice}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <h3 class="receipt-section-title">Billing & Transaction Details</h3>
-        <div class="overflow-hidden rounded-xl border border-border">
-            <table class="w-full text-sm custom-table">
-                <tbody>
-                    <tr class="bg-muted/30">
-                        <td class="info-label" style="padding: 10px 16px;">Payment Method</td>
-                        <td class="info-value" style="padding: 10px 16px;">${b.paymentMethod} Card</td>
+                        <td><strong>Provider Account</strong></td>
+                        <td>${receipt.providerPayoutAccountNumber || 'N/A'}</td>
+                        <td><strong>Stripe Connected Account</strong></td>
+                        <td>${receipt.stripeConnectedAccountId || 'N/A'}</td>
                     </tr>
                     <tr>
-                        <td class="info-label" style="padding: 10px 16px;">Payment Settlement Date</td>
-                        <td class="info-value" style="padding: 10px 16px; color: var(--text-muted);">${b.paymentDate}</td>
-                    </tr>
-                    <tr class="bg-muted/30">
-                        <td class="info-label" style="padding: 10px 16px; font-weight:600;">Paid Amount (Gross)</td>
-                        <td class="info-value" style="padding: 10px 16px; font-weight:600; color: var(--primary);">${b.total}</td>
+                        <td><strong>Stripe Destination Account</strong></td>
+                        <td colspan="3">
+                            ${receipt.stripeDestinationAccount ? receipt.stripeDestinationAccount : '<span style="color:var(--danger)">Payment succeeded but no provider destination transfer was found.</span>'}
+                        </td>
                     </tr>
                     <tr>
-                        <td class="info-label" style="padding: 10px 16px; font-weight:600;">Platform Fee (10%)</td>
-                        <td class="info-value" style="padding: 10px 16px; font-weight:600; color: #ef4444;">${b.fee}</td>
+                        <td><strong>Stripe PaymentIntent ID</strong></td>
+                        <td>${receipt.stripePaymentIntentId || 'N/A'}</td>
+                        <td><strong>Stripe Checkout Session ID</strong></td>
+                        <td>${receipt.stripeCheckoutSessionId || 'N/A'}</td>
                     </tr>
-                    <tr class="bg-muted/30">
-                        <td class="info-label" style="padding: 10px 16px; font-weight:600;">Net payout for Hotel</td>
-                        <td class="info-value" style="padding: 10px 16px; font-weight:600; color: #10b981;">${b.net}</td>
+                    <tr>
+                        <td><strong>Amount Paid</strong></td>
+                        <td style="color:var(--primary); font-weight:bold;">${receipt.amount.toLocaleString()} ${ccy}</td>
+                        <td><strong>Paid At</strong></td>
+                        <td>${formatDateTime(receipt.paidAt)}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bank Info</strong></td>
+                        <td colspan="3">${receipt.bankName || 'N/A'} (****${receipt.bankLast4 || 'N/A'})</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     `;
-    receiptModal.classList.add("active");
+    receiptSection.innerHTML = receiptHtml;
 }
 
-// Confirm payout execution
-function executeConfirmPayout() {
-    selectedRow.status = "Paid";
-    selectedRow.dueSince = "Paid today";
+// Modal Controllers
+function openConfirmModal() {
+    document.getElementById("confirm-modal").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("confirm-modal").classList.remove("active");
+}
+
+async function confirmPayout() {
+    closeModal();
+    const finalAmt = safeNumber(payoutData?.finalPayoutAmount ?? payoutData?.FinalPayoutAmount);
     
-    // Hide confirm action
-    confirmBtn.style.display = "none";
-    
-    // Show toast and reload metadata
-    showToast(`Payout to ${selectedRow.hotel} confirmed successfully.`);
-    renderDetailsCard();
-    
-    confirmModal.classList.remove("active");
+    if (finalAmt > 0) {
+        // Create Stripe Checkout Session
+        showToast("Redirecting to Stripe checkout...");
+        try {
+            const res = await fetch(`/api/admin/payouts/${payoutId}/create-payment-session`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({})
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (data.skipped) {
+                    showToast(data.message);
+                    fetchPayoutDetails();
+                } else if (data.checkoutUrl) {
+                    window.location.href = data.checkoutUrl;
+                }
+            } else {
+                showToast("Failed to create Stripe session: " + (data.message || "Unknown error"));
+            }
+        } catch (err) {
+            showToast("Error connecting to Stripe.");
+        }
+    } else {
+        // If 0 or negative, use the old confirm
+        try {
+            const res = await fetch(`/api/admin/payouts/${payoutId}/create-payment-session`, {
+                method: 'POST',
+                headers: getHeaders(),
+                body: JSON.stringify({})
+            });
+            
+            if (res.ok) {
+                const data = await res.json();
+                showToast(data.message || "Payout confirmed successfully!");
+                fetchPayoutDetails(); // Refresh
+            } else {
+                const data = await res.json();
+                showToast("Failed to confirm payout: " + (data.message || "Unknown error"));
+            }
+        } catch(err) {
+            showToast("Error connecting to server.");
+        }
+    }
 }
 
 function showToast(message) {
     const toastContainer = document.getElementById("toast-container");
+    if(!toastContainer) return;
     const toast = document.createElement("div");
     toast.className = "toast-message";
-    toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+    toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> ${message}`;
     toastContainer.appendChild(toast);
     
     // Trigger slide-in
     setTimeout(() => toast.classList.add("active"), 50);
     
-    // Slide-out and redirect to dashboard
+    // Slide-out and remove
     setTimeout(() => {
         toast.classList.remove("active");
-        setTimeout(() => {
-            toast.remove();
-            window.location.href = "admin-payout.html";
-        }, 300);
-    }, 2500);
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
 }
 
-// Export Receipt handler
 function exportReceipt() {
-    showToast("Exporting payout summary and receipts sheet...");
+    window.print();
 }

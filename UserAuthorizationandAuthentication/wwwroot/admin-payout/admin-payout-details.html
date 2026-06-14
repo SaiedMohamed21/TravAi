@@ -29,19 +29,41 @@
                 <!-- Loaded Dynamically by JS -->
             </table>
 
+            <!-- Fine Deductions List -->
+            <div id="fines-section" style="display: none;">
+                <h2 class="section-title" id="fines-section-title" style="margin-top: 32px;">Fine Deductions</h2>
+                <div class="table-wrapper" style="margin-bottom: 24px;">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>Fine ID</th>
+                                <th>Applied At</th>
+                                <th>Reason</th>
+                                <th>Amount Deducted</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fines-table-body">
+                            <!-- Filled Dynamically by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- Included Bookings List -->
-            <h2 class="section-title" style="margin-top: 32px;">Included Bookings & Transactions</h2>
+            <h2 class="section-title" id="bookings-section-title" style="margin-top: 32px;">Included Bookings & Transactions</h2>
             <div class="table-wrapper">
                 <table class="custom-table">
                     <thead>
                         <tr>
                             <th>Booking ID</th>
                             <th>Guest/User</th>
-                            <th>Amount</th>
+                            <th>Original Paid Amount</th>
                             <th>Check-in</th>
                             <th>Check-out</th>
-                            <th>Payment Status</th>
-                            <th>Booking Status</th>
+                            <th>Refund Amount</th>
+                            <th>Commission</th>
+                            <th>Net / Final Booking Payout</th>
                             <th class="text-right">Action</th>
                         </tr>
                     </thead>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Cancellation Details - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --card-bg: #141414;
+            --accent-gold: #e2b45b;
+            --text-main: #f5f5f5;
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent-gold);
+            margin: 0;
+            font-size: 2rem;
+        }
+
+        .back-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover {
+            color: var(--accent-gold);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .card-full {
+            grid-column: 1 / -1;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .data-value {
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        .status-completed { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+
+        #loading { text-align: center; color: var(--text-muted); padding: 50px; }
+        #errorBox { display: none; color: var(--danger); padding: 20px; background: rgba(239, 68, 68, 0.1); border-radius: 12px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-link"><i class="fas fa-arrow-left"></i> Back</a>
+        
+        <div class="header" style="margin-top: 20px;">
+            <h1>Tour Cancellation Details</h1>
+        </div>
+
+        <div id="errorBox"></div>
+        <div id="loading">Loading details...</div>
+
+        <div id="content" style="display: none;">
+            <div class="grid">
+                
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-suitcase-rolling"></i> Booking & Tour Info</div>
+
+                    <div class="data-row">
+                        <span class="data-label">Tour ID</span>
+                        <span class="data-value" id="tourId"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Tour Title</span>
+                        <span class="data-value" id="tourTitle"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Booking Date</span>
+                        <span class="data-value" id="bookingDate"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Tour Date</span>
+                        <span class="data-value" id="tourDate"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Booking Status</span>
+                        <span class="data-value status-badge status-cancelled" id="bookingStatus"></span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-users"></i> Participants & Payment</div>
+                    <div class="data-row">
+                        <span class="data-label">Participants Count</span>
+                        <span class="data-value" id="participantsCount"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Ticket Price / Pax</span>
+                        <span class="data-value" id="ticketPrice"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Total Price</span>
+                        <span class="data-value" id="totalPrice"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Total Paid</span>
+                        <span class="data-value" id="totalPaid"></span>
+                    </div>
+                </div>
+
+                <div class="card card-full">
+                    <div class="card-title"><i class="fas fa-exclamation-triangle"></i> Cancellation Details</div>
+                    <div class="data-row">
+                        <span class="data-label">Tour Guide</span>
+                        <span class="data-value" id="tourGuide"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Cancellation Reason</span>
+                        <span class="data-value" id="cancelReason" style="color: var(--danger);"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Review Status</span>
+                        <span class="data-value" id="reviewStatus"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="../hotel/js/config.js"></script>
+    <script>
+        const user = Auth.getUser();
+        if (!Auth.isLoggedIn() || (user.role !== 'Admin' && user.Role !== 'Admin')) {
+            window.location.href = '../hotel/login.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const tourBookingId = urlParams.get('tourBookingId');
+        
+        if (!tourBookingId) {
+            showErr('No Tour Booking ID provided.');
+        } else {
+            loadDetails();
+        }
+
+        async function loadDetails() {
+            try {
+                const res = await API.get(`/admin/fines/tour-cancellations/${tourBookingId}`);
+                if (res.success) {
+                    const d = res.data;
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+
+
+                    document.getElementById('tourId').innerText = '#' + d.tourId;
+                    document.getElementById('tourTitle').innerText = d.tourName;
+                    document.getElementById('bookingDate').innerText = new Date(d.bookingDate).toLocaleDateString();
+                    document.getElementById('tourDate').innerText = d.tourDate ? new Date(d.tourDate).toLocaleDateString() : 'N/A';
+                    document.getElementById('bookingStatus').innerText = d.status;
+
+                    document.getElementById('participantsCount').innerText = d.participantsCount || 1;
+                    document.getElementById('ticketPrice').innerText = d.ticketPricePerParticipant ? `$${d.ticketPricePerParticipant.toFixed(2)}` : 'N/A';
+                    document.getElementById('totalPrice').innerText = d.totalPrice ? `$${d.totalPrice.toFixed(2)}` : 'N/A';
+                    document.getElementById('totalPaid').innerText = d.totalPaid ? `$${d.totalPaid.toFixed(2)}` : '$0.00';
+
+                    document.getElementById('tourGuide').innerText = `${d.tourGuideName} (ID: ${d.tourGuideId})`;
+                    document.getElementById('cancelReason').innerText = d.cancellationReason || 'No reason provided';
+                    document.getElementById('reviewStatus').innerText = d.cancellationReviewStatus || 'Pending';
+                } else {
+                    showErr(res.message);
+                }
+            } catch (err) {
+                showErr(err.message || 'Failed to load details.');
+            }
+        }
+
+        function showErr(msg) {
+            document.getElementById('loading').style.display = 'none';
+            const e = document.getElementById('errorBox');
+            e.innerText = msg;
+            e.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

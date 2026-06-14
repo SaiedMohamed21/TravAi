@@ -16,16 +16,27 @@
         </a>
 
         <!-- Horizontal navigation tabs -->
-        <div class="tabs-container" id="tabs-container">
-            <button class="tab-btn active" data-tab="Hotels">Hotels</button>
-            <button class="tab-btn" data-tab="Airlines">Airlines</button>
-            <button class="tab-btn" data-tab="Tour Guides">Tour Guides</button>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
+            <div class="tabs-container" id="tabs-container" style="margin-bottom: 0;">
+                <button class="tab-btn active" data-tab="Hotels">Hotels</button>
+                <button class="tab-btn" data-tab="Airlines">Airlines</button>
+                <button class="tab-btn" data-tab="Tour Guides">Tour Guides</button>
+            </div>
+            <div class="help-text" style="margin-top: 0;">
+                <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i> 
+                Tabs filter payout invoices by provider type: Hotels, Airlines, or Tour Guides.
+            </div>
         </div>
 
         <!-- Page Header -->
-        <div class="page-header">
-            <h1 id="page-title-text">Admin Payout</h1>
-            <p>Payouts are generated based on completed bookings and provider balances.</p>
+        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1 id="page-title-text">Admin Payout</h1>
+                <p>Payouts are generated based on completed bookings and provider balances.</p>
+            </div>
+            <button class="btn-action btn-primary" id="btn-generate-payouts" onclick="generateWeeklyPayouts()" title="Generates missing weekly payout invoices for completed services. Each provider and each week gets a separate invoice. Existing invoices are not duplicated.&#10;&#10;Weeks are Monday to Sunday. Bookings enter payout based on service end date: hotel checkout, tour date, or flight arrival/departure.">
+                <i class="fa-solid fa-bolt"></i> Generate Weekly Payouts
+            </button>
         </div>
 
         <h2 class="section-title">Hotel Payout Management</h2>
@@ -35,13 +46,16 @@
             <!-- Total Pending Card -->
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Total Pending</span>
-                    <select class="stat-select" id="select-stat-pending" onchange="onPendingRangeChange(event)">
+                    <span class="stat-title">
+                        Total Pending 
+                        <i class="fa-solid fa-circle-info tooltip-icon" title="Filters pending payout invoices by Generated At date."></i>
+                    </span>
+                    <select class="stat-select" id="select-stat-pending">
                         <option value="Today">Today</option>
-                        <option value="This Week" selected>This Week</option>
+                        <option value="This Week">This Week</option>
                         <option value="This Month">This Month</option>
                         <option value="Last 30 Days">Last 30 Days</option>
-                        <option value="All Time">All Time</option>
+                        <option value="All Time" selected>All Time</option>
                     </select>
                 </div>
                 <div class="stat-value" id="stat-pending-text">0$</div>
@@ -50,23 +64,11 @@
             <!-- Total Paid Card -->
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Total Paid</span>
-                    <select class="stat-select" id="select-stat-paid" onchange="onPaidRangeChange(event)">
-                        <option value="Today">Today</option>
-                        <option value="This Week">This Week</option>
-                        <option value="This Month" selected>This Month</option>
-                        <option value="Last 30 Days">Last 30 Days</option>
-                        <option value="All Time">All Time</option>
-                    </select>
-                </div>
-                <div class="stat-value" id="stat-paid-text">0$</div>
-            </div>
-
-            <!-- Failed Card -->
-            <div class="stat-card">
-                <div class="stat-header">
-                    <span class="stat-title">Failed</span>
-                    <select class="stat-select" id="select-stat-failed" onchange="onFailedRangeChange(event)">
+                    <span class="stat-title">
+                        Total Paid
+                        <i class="fa-solid fa-circle-info tooltip-icon" title="Filters paid payout invoices by Confirmed At date. If Confirmed At is missing, Generated At is used."></i>
+                    </span>
+                    <select class="stat-select" id="select-stat-paid">
                         <option value="Today">Today</option>
                         <option value="This Week">This Week</option>
                         <option value="This Month">This Month</option>
@@ -74,14 +76,19 @@
                         <option value="All Time" selected>All Time</option>
                     </select>
                 </div>
-                <div class="stat-value" id="stat-failed-text">0$</div>
+                <div class="stat-value" id="stat-paid-text">0$</div>
             </div>
+
+
 
             <!-- Pending Hotels Card -->
             <div class="stat-card">
                 <div class="stat-header">
-                    <span class="stat-title">Pending Hotels</span>
-                    <select class="stat-select" id="select-stat-pending-hotels" onchange="onPendingHotelsRangeChange(event)">
+                    <span class="stat-title">
+                        Pending Hotels
+                        <i class="fa-solid fa-circle-info tooltip-icon" title="Counts unique providers with pending payout invoices by Generated At date."></i>
+                    </span>
+                    <select class="stat-select" id="select-stat-pending-hotels">
                         <option value="Today">Today</option>
                         <option value="This Week">This Week</option>
                         <option value="This Month">This Month</option>
@@ -95,6 +102,11 @@
 
         <!-- Main Content Table Card -->
         <div class="content-card">
+            <div class="help-text" style="margin-bottom: 20px;">
+                <i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i> 
+                Table filters work on generated payout invoices. Date Range filters by Generated At date. Search filters provider name or provider id. Status filters payout invoice status. Sort changes the order of displayed invoices.
+            </div>
+            
             <!-- Filter Actions Bar -->
             <div class="filters-grid">
                 <!-- Search Hotel Name -->
@@ -113,7 +125,6 @@
                         <option value="All Status">All Status</option>
                         <option value="Pending">Pending</option>
                         <option value="Paid">Paid</option>
-                        <option value="Failed">Failed</option>
                     </select>
                 </div>
 
@@ -123,8 +134,39 @@
                     <select class="input-field" id="select-date">
                         <option value="Today">Today</option>
                         <option value="This Week">This Week</option>
-                        <option value="This Month" selected>This Month</option>
-                        <option value="All Time">All Time</option>
+                        <option value="This Month">This Month</option>
+                        <option value="All Time" selected>All Time</option>
+                    </select>
+                </div>
+
+                <!-- Month filter -->
+                <div class="filter-group">
+                    <label class="filter-label">Month</label>
+                    <select class="input-field" id="select-month">
+                        <option value="">All Months</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+
+                <!-- Year filter -->
+                <div class="filter-group">
+                    <label class="filter-label">Year</label>
+                    <select class="input-field" id="select-year">
+                        <option value="">All Years</option>
+                        <option value="2024">2024</option>
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
                     </select>
                 </div>
 
@@ -138,6 +180,11 @@
                         <option value="Lowest Amount">Lowest Amount</option>
                     </select>
                 </div>
+
+                <!-- Reset Filters -->
+                <div class="filter-group" style="display:flex; align-items:flex-end;">
+                    <button id="btn-reset-filters" class="btn-action btn-outline" style="height: 42px; width:100%; justify-content:center;">Reset Filters</button>
+                </div>
             </div>
 
             <!-- Custom Table -->
@@ -145,10 +192,16 @@
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th>Hotel / Provider</th>
-                            <th>Amount</th>
-                            <th>Due Since</th>
+                            <th>Provider</th>
+                            <th>Provider Type</th>
+                            <th>Week</th>
+                            <th>Gross</th>
+                            <th>Refunds</th>
+                            <th>Commission</th>
+                            <th>Fines</th>
+                            <th>Final Payout</th>
                             <th>Status</th>
+                            <th>Generated At</th>
                             <th class="text-right">Action</th>
                         </tr>
                     </thead>
@@ -160,7 +213,9 @@
 
             <!-- Table Pagination Controls -->
             <div class="pagination-row">
-                <div class="pagination-info" id="pagination-info">Showing 0-0 of 0 results</div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div class="pagination-info" id="pagination-info">Showing 0-0 of 0 results</div>
+                </div>
                 <div class="pagination-controls">
                     <button class="btn-action btn-outline" id="btn-prev"><i class="fa-solid fa-chevron-left"></i> Previous</button>
                     <button class="btn-action btn-outline" id="btn-next">Next <i class="fa-solid fa-chevron-right"></i></button>

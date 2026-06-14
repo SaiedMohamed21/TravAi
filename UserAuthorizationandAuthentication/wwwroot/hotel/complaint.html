@@ -431,8 +431,10 @@
                 return;
             }
 
+            if (submitBtn.disabled) return;
+
             submitBtn.disabled = true;
-            submitBtn.innerHTML = editingId ? '<i class="fas fa-spinner fa-spin"></i> Updating...' : '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            submitBtn.innerHTML = editingId ? '<i class="fas fa-spinner fa-spin"></i> Updating...' : '<i class="fas fa-spinner fa-spin"></i> Submitting... (V2)';
 
             const formData = new FormData();
             formData.append('ComplaintType', currentType);
@@ -444,20 +446,41 @@
                 formData.append('Attachments', file);
             });
 
-            const url = editingId ? `/user/complaints/${editingId}` : '/user/complaints';
+            const url = editingId ? `${API_BASE_URL}/user/complaints/${editingId}` : `${API_BASE_URL}/user/complaints`;
             const method = editingId ? 'PUT' : 'POST';
 
-            const res = await API.request(url, { method: method, body: formData });
-            if (res.success) {
-                alert(editingId ? 'Complaint updated successfully!' : 'Complaint submitted successfully!');
-                cancelEdit();
-                loadComplaints();
-            } else {
-                alert(res.message);
-            }
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+                    body: formData
+                });
 
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = 'Submit Complaint';
+                if (response.ok) {
+                    const resultData = await response.json().catch(() => ({}));
+                    alert(editingId ? 'Complaint updated successfully!' : 'Complaint submitted successfully!');
+                    
+                    document.getElementById('complaintForm').reset();
+                    selectedFiles = [];
+                    renderFilePreview();
+                    
+                    if (typeof cancelEdit === 'function') cancelEdit();
+                    loadComplaints();
+                } else {
+                    let errMsg = "Failed to submit complaint.";
+                    try {
+                        const errData = await response.json();
+                        errMsg = errData.message || errData.title || errMsg;
+                    } catch(e) {}
+                    alert(errMsg);
+                }
+            } catch (err) {
+                console.error("Submit error:", err);
+                alert("A network error occurred. Please try again.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Submit Complaint';
+            }
         };
 
         async function loadComplaints() {

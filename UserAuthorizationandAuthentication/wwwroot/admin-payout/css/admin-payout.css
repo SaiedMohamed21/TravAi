@@ -35,7 +35,7 @@ body {
 }
 
 .max-width-container {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 40px 20px;
 }
@@ -181,7 +181,7 @@ body {
 /* Filter bar grid */
 .filters-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
     gap: 16px;
     margin-bottom: 24px;
 }
@@ -203,6 +203,25 @@ body {
     color: var(--text-muted);
     margin-bottom: 6px;
     text-transform: uppercase;
+}
+
+.help-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-weight: 400;
+}
+
+.tooltip-icon {
+    margin-left: 6px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: help;
+    transition: color 0.2s;
+}
+
+.tooltip-icon:hover {
+    color: var(--primary);
 }
 
 .search-wrapper {

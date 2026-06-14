@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fine Details - Lumière Admin</title>
+    <link rel="stylesheet" href="../hotel/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #070708;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-gold: #e2b45b;
+        }
+        body { 
+            background-color: var(--admin-bg); 
+            color: #d1d1d1; 
+            font-family: 'Outfit', sans-serif; 
+            margin: 0; padding: 0;
+        }
+        .header-actions {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+        }
+        .header-actions a { color: var(--accent-gold); font-size: 1.5rem; text-decoration: none; }
+        .container {
+            max-width: 1000px;
+            margin: 60px auto;
+            padding: 40px;
+        }
+        .back-link {
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+        .back-link:hover { color: #fff; }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--card-border);
+        }
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            color: #fff;
+            margin: 0 0 10px 0;
+        }
+        .status {
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .status-active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .status-deducted { background: rgba(226, 180, 91, 0.1); color: var(--accent-gold); }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .card-title {
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .data-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
+        .data-label { color: rgba(255,255,255,0.5); font-size: 0.9rem; }
+        .data-value { color: #fff; font-weight: 500; text-align: right; }
+
+        .amount-display {
+            font-size: 3rem;
+            font-family: 'Cormorant Garamond', serif;
+            color: var(--accent-gold);
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .btn-cancel-fine { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-cancel-fine:hover { background: #ef4444; color: #fff; }
+        
+        .btn-link { background: rgba(226, 180, 91, 0.1); color: var(--accent-gold); }
+        .btn-link:hover { background: var(--accent-gold); color: #000; }
+
+        .actions-bar {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+        }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-content { background: #111; padding: 40px; border-radius: 20px; width: 100%; max-width: 500px; border: 1px solid var(--card-border); }
+        .modal input { width: 100%; background: #222; border: 1px solid #333; color: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; box-sizing:border-box;}
+    </style>
+</head>
+<body>
+    <div class="header-actions">
+        <a href="../hotel/admin-dashboard.html"><i class="fas fa-home"></i></a>
+    </div>
+
+    <div class="container">
+        <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Fines</a>
+        
+        <div id="content" style="display:none;">
+            <div class="header-section">
+                <div>
+                    <h1>Fine #<span id="fineId"></span></h1>
+                    <div class="status" id="fineStatus"></div>
+                </div>
+                <div style="text-align:right;">
+                    <div class="amount-display" id="fineAmount"></div>
+                    <div style="color:rgba(255,255,255,0.5);" id="fineDate"></div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-building"></i> Provider Information</div>
+                    <div class="data-row">
+                        <span class="data-label">Provider Type</span>
+                        <span class="data-value" id="provType"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Provider ID</span>
+                        <span class="data-value" id="provId"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Name</span>
+                        <span class="data-value" id="provName"></span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-info-circle"></i> Fine Details</div>
+                    <div class="data-row">
+                        <span class="data-label">Reason</span>
+                        <span class="data-value" id="fineReason"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Created By</span>
+                        <span class="data-value" id="adminName"></span>
+                    </div>
+                    <div class="data-row" id="rowCancelReason" style="display:none;">
+                        <span class="data-label" style="color:#ef4444;">Cancellation Reason</span>
+                        <span class="data-value" id="cancelReason"></span>
+                    </div>
+                    <div class="data-row">
+                        <span class="data-label">Admin Notes</span>
+                        <span class="data-value" id="adminNotes" style="font-style:italic; opacity:0.8;"></span>
+                    </div>
+                </div>
+
+                <div class="card" id="cardSource">
+                    <div class="card-title"><i class="fas fa-link"></i> Source Origin</div>
+                    <div class="data-row">
+                        <span class="data-label">Source Type</span>
+                        <span class="data-value" id="sourceType"></span>
+                    </div>
+                    <div id="sourceDetails"></div>
+                </div>
+            </div>
+
+            <div class="actions-bar" id="actionsBar">
+                <button class="btn btn-cancel-fine" onclick="showCancelModal()"><i class="fas fa-times"></i> Cancel Fine</button>
+            </div>
+        </div>
+        
+        <div id="loading">Loading details...</div>
+        <div id="errorBox" style="display:none; color:#ef4444; padding:20px; background:rgba(239, 68, 68, 0.1); border-radius:12px;"></div>
+    </div>
+
+    <!-- Cancel Modal -->
+    <div class="modal" id="cancelModal">
+        <div class="modal-content">
+            <h2 style="margin-top:0;">Cancel Fine</h2>
+            <p style="color:rgba(255,255,255,0.6); margin-bottom:20px;">Please provide a reason for cancelling this fine. This action cannot be undone.</p>
+            <input type="text" id="cancelReasonInput" placeholder="Reason for cancellation" required>
+            <div style="display:flex; gap:15px;">
+                <button class="btn" style="background:var(--accent-gold); color:#000; flex:1;" onclick="submitCancel()">Confirm Cancel</button>
+                <button class="btn" style="background:rgba(255,255,255,0.1); color:#fff; flex:1;" onclick="hideCancelModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../hotel/js/config.js"></script>
+    <script>
+        const user = Auth.getUser();
+        if (!Auth.isLoggedIn() || (user.role !== 'Admin' && user.Role !== 'Admin')) {
+            window.location.href = '../hotel/login.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const fineId = urlParams.get('id');
+        if (!fineId) window.location.href = 'index.html';
+
+        let currentFine = null;
+
+        async function loadDetails() {
+            try {
+                const res = await API.get(`/admin/fines/${fineId}`);
+                if (res.success) {
+                    const f = res.data;
+                    currentFine = f;
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('content').style.display = 'block';
+
+                    document.getElementById('fineId').innerText = f.id;
+                    document.getElementById('fineAmount').innerText = `$${f.amount.toFixed(2)}`;
+                    document.getElementById('fineDate').innerText = new Date(f.createdAt).toLocaleString();
+                    
+                    const statusEl = document.getElementById('fineStatus');
+                    statusEl.innerText = f.status;
+                    statusEl.className = `status status-${f.status.toLowerCase()}`;
+
+                    document.getElementById('provType').innerText = f.providerType;
+                    document.getElementById('provId').innerText = f.providerId;
+                    document.getElementById('provName').innerText = f.providerDisplayName;
+
+                    document.getElementById('fineReason').innerText = f.reason;
+                    document.getElementById('adminName').innerText = f.createdByAdminName;
+                    document.getElementById('adminNotes').innerText = f.adminNotes || 'None';
+
+                    if (f.status === 'Cancelled') {
+                        document.getElementById('rowCancelReason').style.display = 'flex';
+                        document.getElementById('cancelReason').innerText = f.cancellationReason || 'N/A';
+                        document.getElementById('actionsBar').style.display = 'none';
+                    } else if (f.status === 'Deducted') {
+                        document.getElementById('actionsBar').style.display = 'none';
+                    }
+
+                    const sd = document.getElementById('sourceDetails');
+                    sd.innerHTML = '';
+
+                    if (f.sourceType === 'TourGuideCancellation') {
+                        document.getElementById('sourceType').innerText = 'Tour Guide Cancellation';
+                        sd.innerHTML += `
+                            <div class="data-row">
+                                <span class="data-label">Tour Booking ID</span>
+                                <span class="data-value">#${f.tourBookingId || 'N/A'}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Tour Title</span>
+                                <span class="data-value">${f.tourTitle || 'N/A'}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Participants</span>
+                                <span class="data-value">${f.participantsCount || 1}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Ticket Price</span>
+                                <span class="data-value">$${f.ticketPricePerParticipant ? f.ticketPricePerParticipant.toFixed(2) : 'N/A'}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Total Price</span>
+                                <span class="data-value">$${f.totalPrice ? f.totalPrice.toFixed(2) : 'N/A'}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Reason</span>
+                                <span class="data-value">${f.cancellationReason || 'N/A'}</span>
+                            </div>
+                            <div class="data-row">
+                                <span class="data-label">Review Status</span>
+                                <span class="data-value">${f.cancellationReviewStatus || 'N/A'}</span>
+                            </div>
+                            ${f.tourBookingId ? `
+                            <div style="margin-top:20px; text-align:right;">
+                                <a href="tour-cancellation-details.html?tourBookingId=${f.tourBookingId}" class="btn btn-link" style="color:var(--accent-gold); text-decoration:none;"><i class="fas fa-eye"></i> View Cancellation Details</a>
+                            </div>` : ''}
+                        `;
+                    } else {
+                        document.getElementById('sourceType').innerText = f.sourceType;
+                        if (f.complaintSummary) {
+                            sd.innerHTML += `
+                                <div class="data-row">
+                                    <span class="data-label">Complaint ID</span>
+                                    <span class="data-value">#${f.complaintSummary.id}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Subject</span>
+                                    <span class="data-value">${f.complaintSummary.subject}</span>
+                                </div>
+                                <div style="margin-top:20px; text-align:right;">
+                                    <a href="../hotel/admin-complaint-details.html?id=${f.complaintSummary.id}" class="btn btn-link" style="color:var(--accent-gold); text-decoration:none;"><i class="fas fa-eye"></i> View Complaint</a>
+                                </div>
+                            `;
+                        } else if (f.bookingSummary) {
+                            sd.innerHTML += `
+                                <div class="data-row">
+                                    <span class="data-label">Booking ID</span>
+                                    <span class="data-value">#${f.bookingSummary.id}</span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Total Price</span>
+                                    <span class="data-value">$${f.bookingSummary.totalPrice}</span>
+                                </div>
+                            `;
+                        }
+                    }
+
+                } else {
+                    showErr(res.message);
+                }
+            } catch (e) {
+                showErr(e.message);
+            }
+        }
+
+        function showErr(msg) {
+            document.getElementById('loading').style.display = 'none';
+            const e = document.getElementById('errorBox');
+            e.innerText = msg;
+            e.style.display = 'block';
+        }
+
+        function showCancelModal() { document.getElementById('cancelModal').style.display = 'flex'; }
+        function hideCancelModal() { document.getElementById('cancelModal').style.display = 'none'; }
+
+        async function submitCancel() {
+            const reason = document.getElementById('cancelReasonInput').value;
+            if (!reason) { alert("Reason required"); return; }
+
+            try {
+                const res = await API.post(`/admin/fines/${fineId}/cancel`, { cancellationReason: reason });
+                if (res.success) {
+                    hideCancelModal();
+                    loadDetails();
+                } else {
+                    alert(res.message);
+                }
+            } catch (e) { alert(e.message); }
+        }
+
+        window.onload = loadDetails;
+    </script>
+</body>
+</html>

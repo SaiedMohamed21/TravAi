@@ -160,7 +160,10 @@
                         <h1 id="c-subject" style="font-size: 2.2rem; margin: 10px 0;"></h1>
                         <p id="c-date" style="color: var(--text-secondary); font-size: 0.9rem;"></p>
                     </div>
-                    <span id="c-status" class="status-badge"></span>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="c-status" class="status-badge"></span>
+                        <a id="btn-apply-fine" href="#" class="btn-primary" style="display:none; text-decoration:none; padding: 6px 12px; font-size: 0.8rem; background: var(--gold); color: #000; border-radius: 8px; font-weight: 600;"><i class="fas fa-file-invoice-dollar"></i> Apply Fine</a>
+                    </div>
                 </div>
 
                 <div class="glass-panel detail-group" style="background: rgba(255,255,255,0.05);">
@@ -253,6 +256,12 @@
                 const statusPill = document.getElementById('c-status');
                 statusPill.innerText = c.status;
                 statusPill.className = `status-badge status-${c.status}`;
+
+                if (urlParams.get('admin') === 'true' && c.complaintType !== 'Service') {
+                    const btnFine = document.getElementById('btn-apply-fine');
+                    btnFine.style.display = 'inline-block';
+                    btnFine.href = `../admin-fines/create.html?complaintId=${c.id}&providerType=${c.complaintType === 'Tour' ? 'TourGuide' : c.complaintType}`;
+                }
 
                 document.getElementById('c-message').innerText = c.message;
 

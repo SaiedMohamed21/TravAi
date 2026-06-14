@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Refund Details - TravAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/admin-payout.css">
+</head>
+<body>
+    <div class="max-width-container" style="max-width: 800px;">
+        <a href="#" id="back-link" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Payout Details
+        </a>
+
+        <div class="content-card">
+            <div style="border-bottom: 1px solid var(--border); padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
+                <h1 class="modal-title" style="font-size: 1.5rem; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Refund Details
+                </h1>
+                <span class="status-badge" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;" id="booking-id-text">Booking #...</span>
+            </div>
+
+            <table class="info-table" id="refund-details-table">
+                <!-- Loaded Dynamically by JS -->
+            </table>
+        </div>
+    </div>
+    <div class="toast-container" id="toast-container"></div>
+    <script src="js/admin-view-refund.js"></script>
+</body>
+</html>

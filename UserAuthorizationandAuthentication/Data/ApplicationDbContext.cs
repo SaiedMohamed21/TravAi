@@ -11,6 +11,7 @@ using TravAi.TourGuide.Models;
 using TravAi.Models.Common;
 using TravAi.Models.AI;
 using TravAi.Models.Admin;
+using TravAi.Airline.Models.Airlines;
 
 namespace TravAi.Data
 {
@@ -53,6 +54,14 @@ namespace TravAi.Data
         public DbSet<HotelPendingPolicy> HotelPendingPolicies { get; set; }
         public DbSet<HotelPendingCancellationRule> HotelPendingCancellationRules { get; set; }
         public DbSet<HotelPendingLegalDocument> HotelPendingLegalDocuments { get; set; }
+
+        // Admin DbSets
+        public DbSet<ProviderFine> ProviderFines { get; set; }
+        public DbSet<PayoutBatch> PayoutBatches { get; set; }
+        public DbSet<PayoutItem> PayoutItems { get; set; }
+        public DbSet<PayoutFineDeduction> PayoutFineDeductions { get; set; }
+        public DbSet<ProviderStripePayoutAccount> ProviderStripePayoutAccounts { get; set; }
+        public DbSet<PayoutStripePayment> PayoutStripePayments { get; set; }
 
         // Airline DbSets
         public DbSet<Airport> Airports { get; set; }
@@ -137,6 +146,9 @@ namespace TravAi.Data
             modelBuilder.Entity<Flight>().ToTable("airline_Flights");
             modelBuilder.Entity<FlightSegment>().ToTable("airline_FlightSegments");
             modelBuilder.Entity<FlightLayover>().ToTable("airline_FlightLayovers");
+
+            // Admin Prefixes
+            modelBuilder.Entity<ProviderFine>().ToTable("admin_ProviderFines");
 
             // TourGuide Prefixes
             modelBuilder.Entity<TravAi.TourGuide.Models.Review>().ToTable("tourguide_Reviews");
@@ -689,6 +701,103 @@ namespace TravAi.Data
                 .WithMany(s => s.Messages)
                 .HasForeignKey(m => m.ChatSessionId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // ProviderFines Configuration
+            modelBuilder.Entity<ProviderFine>()
+                .Property(f => f.ProviderType)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<ProviderFine>()
+                .Property(f => f.SourceType)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<ProviderFine>()
+                .Property(f => f.Status)
+                .HasConversion<string>();
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasIndex(f => new { f.ProviderType, f.ProviderId });
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasIndex(f => f.ComplaintId);
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasIndex(f => f.TourBookingId);
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasIndex(f => f.Status);
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasIndex(f => f.CreatedAt);
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasOne(f => f.CreatedByAdminUser)
+                .WithMany()
+                .HasForeignKey(f => f.CreatedByAdminUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasOne(f => f.CancelledByAdminUser)
+                .WithMany()
+                .HasForeignKey(f => f.CancelledByAdminUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProviderFine>()
+                .HasOne(f => f.Complaint)
+                .WithMany()
+                .HasForeignKey(f => f.ComplaintId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Payouts Configurations
+            modelBuilder.Entity<PayoutBatch>()
+                .HasIndex(p => new { p.ProviderType, p.ProviderId, p.WeekStartDate, p.WeekEndDate, p.Currency })
+                .IsUnique();
+
+            modelBuilder.Entity<PayoutBatch>()
+                .HasOne(p => p.GeneratedByAdminUser)
+                .WithMany()
+                .HasForeignKey(p => p.GeneratedByAdminUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PayoutBatch>()
+                .HasOne(p => p.ConfirmedByAdminUser)
+                .WithMany()
+                .HasForeignKey(p => p.ConfirmedByAdminUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PayoutItem>()
+                .HasOne(i => i.PayoutBatch)
+                .WithMany(b => b.Items)
+                .HasForeignKey(i => i.PayoutBatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PayoutFineDeduction>()
+                .HasOne(d => d.PayoutBatch)
+                .WithMany(b => b.Deductions)
+                .HasForeignKey(d => d.PayoutBatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PayoutFineDeduction>()
+                .HasOne(d => d.ProviderFine)
+                .WithMany()
+                .HasForeignKey(d => d.ProviderFineId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProviderStripePayoutAccount>()
+                .HasIndex(a => new { a.ProviderType, a.ProviderId })
+                .IsUnique();
+
+            modelBuilder.Entity<PayoutStripePayment>()
+                .HasOne(p => p.PayoutBatch)
+                .WithMany()
+                .HasForeignKey(p => p.PayoutBatchId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<PayoutStripePayment>()
+                .HasOne(p => p.ProviderStripePayoutAccount)
+                .WithMany()
+                .HasForeignKey(p => p.ProviderStripePayoutAccountId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

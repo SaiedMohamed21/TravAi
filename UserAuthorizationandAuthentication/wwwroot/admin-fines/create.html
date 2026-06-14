@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Provider Fine - Lumière Admin</title>
+    <link rel="stylesheet" href="../hotel/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #070708;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-gold: #e2b45b;
+        }
+        body { 
+            background-color: var(--admin-bg); 
+            color: #d1d1d1; 
+            font-family: 'Outfit', sans-serif; 
+            margin: 0; padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 40px;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+        }
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--accent-gold);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+        select, input, textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+        select:focus, input:focus, textarea:focus {
+            border-color: var(--accent-gold);
+        }
+        option { background: var(--admin-bg); }
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+        }
+        button {
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 1rem;
+        }
+        .btn-submit {
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            flex: 2;
+        }
+        .btn-submit:hover { box-shadow: 0 0 20px rgba(226, 180, 91, 0.4); }
+        .btn-cancel {
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1px solid var(--card-border);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+        .btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Provider Fine</h1>
+        <div id="errorBox" class="error-msg"></div>
+
+        <form id="createFineForm">
+            <!-- Step 1 -->
+            <div class="form-group">
+                <label>Step 1: Provider Type</label>
+                <select id="providerType" required onchange="handleTypeChange()">
+                    <option value="">Select Provider Type...</option>
+                    <option value="Hotel">Hotel</option>
+                    <option value="TourGuide">Tour Guide</option>
+                    <option value="Airline">Airline</option>
+                </select>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="form-group" id="sourceGroup" style="display:none;">
+                <label>Step 2: Source Type</label>
+                <select id="sourceType" onchange="handleSourceChange()">
+                    <option value="">Select Source...</option>
+                    <option value="Complaint">Complaint</option>
+                    <option value="TourGuideCancellation" id="optTourCancel" style="display:none;">Tour Guide Cancelled Trip</option>
+                    <option value="Others">Others</option>
+                </select>
+            </div>
+
+            <!-- Step 3 Dynamic Selectors -->
+            <div class="form-group" id="complaintGroup" style="display:none;">
+                <label>Step 3: Search Eligible Complaint</label>
+                <input type="text" id="complaintSearch" placeholder="Search by ID, User, Subject..." oninput="debounceComplaintSearch()" style="margin-bottom:10px;">
+                <select id="complaintId" onchange="updateSummary('complaint')">
+                    <option value="">Search to select a complaint...</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="tourCancelGroup" style="display:none;">
+                <label>Step 3: Search Cancelled Tour Booking</label>
+                <input type="text" id="tourCancelSearch" placeholder="Search by ID, Tour, Guide..." oninput="debounceTourCancelSearch()" style="margin-bottom:10px;">
+                <select id="tourBookingId" onchange="updateSummary('tourCancel')">
+                    <option value="">Search to select a booking...</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="providerGroup" style="display:none;">
+                <label>Step 3: Search Provider</label>
+                <input type="text" id="providerSearch" placeholder="Search by ID or Name..." oninput="debounceProviderSearch()" style="margin-bottom:10px;">
+                <select id="providerId" onchange="updateSummary('provider')">
+                    <option value="">Search to select a provider...</option>
+                </select>
+            </div>
+
+            <!-- Step 4 Summary -->
+            <div id="summaryCard" style="display:none; padding:20px; background:rgba(226, 180, 91, 0.1); border:1px solid var(--accent-gold); border-radius:12px; margin-bottom:25px;">
+                <h3 style="margin-top:0; color:var(--accent-gold);">Selected Target Summary</h3>
+                <div id="summaryContent" style="font-size:0.95rem; line-height:1.6;"></div>
+            </div>
+
+            <!-- Step 5 Fine Details -->
+            <div id="fineDetailsGroup" style="display:none;">
+                <h3 style="color:var(--accent-gold); border-bottom:1px solid var(--card-border); padding-bottom:10px; margin-bottom:20px;">Fine Details</h3>
+                <div class="form-group">
+                    <label>Fine Amount</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0.00" style="flex:3;">
+                        <input type="text" id="currency" value="USD" required placeholder="Currency" style="flex:1;">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Reason (Required)</label>
+                    <input type="text" id="reason" required placeholder="Specific reason for the fine">
+                </div>
+
+                <div class="form-group">
+                    <label>Admin Notes (Optional)</label>
+                    <textarea id="adminNotes" rows="3" placeholder="Internal notes not visible to provider"></textarea>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="btn-submit" id="submitBtn">Create Fine</button>
+                    <a href="index.html" class="btn-cancel">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="../hotel/js/config.js"></script>
+    <script>
+        const user = Auth.getUser();
+        if (!Auth.isLoggedIn() || (user.role !== 'Admin' && user.Role !== 'Admin')) {
+            window.location.href = '../hotel/login.html';
+        }
+
+        let loadedComplaints = [];
+        let loadedCancellations = [];
+        let loadedProviders = [];
+        
+        let cSearchTimeout, tSearchTimeout, pSearchTimeout;
+        let selectedTargetValid = false;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const prefillType = urlParams.get('providerType');
+        const prefillComplaint = urlParams.get('complaintId');
+
+        if (prefillType) {
+            document.getElementById('providerType').value = prefillType;
+            handleTypeChange();
+            document.getElementById('sourceType').value = 'Complaint';
+            handleSourceChange();
+        }
+
+        function handleTypeChange() {
+            const pType = document.getElementById('providerType').value;
+            const optCancel = document.getElementById('optTourCancel');
+            
+            document.getElementById('sourceGroup').style.display = pType ? 'block' : 'none';
+            document.getElementById('sourceType').required = pType ? true : false;
+            
+            if (pType === 'TourGuide') optCancel.style.display = 'block';
+            else optCancel.style.display = 'none';
+
+            if (pType !== 'TourGuide' && document.getElementById('sourceType').value === 'TourGuideCancellation') {
+                document.getElementById('sourceType').value = '';
+            }
+            handleSourceChange();
+        }
+
+        function handleSourceChange() {
+            const pType = document.getElementById('providerType').value;
+            const sType = document.getElementById('sourceType').value;
+
+            document.getElementById('complaintGroup').style.display = 'none';
+            document.getElementById('tourCancelGroup').style.display = 'none';
+            document.getElementById('providerGroup').style.display = 'none';
+            document.getElementById('summaryCard').style.display = 'none';
+            document.getElementById('fineDetailsGroup').style.display = 'none';
+            selectedTargetValid = false;
+
+            document.getElementById('complaintId').required = false;
+            document.getElementById('tourBookingId').required = false;
+            document.getElementById('providerId').required = false;
+
+            if (!pType || !sType) return;
+
+            if (sType === 'Complaint') {
+                document.getElementById('complaintGroup').style.display = 'block';
+                document.getElementById('complaintId').required = true;
+                loadComplaints(pType, '');
+            } else if (sType === 'TourGuideCancellation') {
+                document.getElementById('tourCancelGroup').style.display = 'block';
+                document.getElementById('tourBookingId').required = true;
+                loadCancelledBookings('');
+            } else if (sType === 'Others') {
+                document.getElementById('providerGroup').style.display = 'block';
+                document.getElementById('providerId').required = true;
+                loadProviders(pType, '');
+            }
+        }
+
+        function debounceComplaintSearch() { clearTimeout(cSearchTimeout); cSearchTimeout = setTimeout(() => loadComplaints(document.getElementById('providerType').value, document.getElementById('complaintSearch').value), 500); }
+        function debounceTourCancelSearch() { clearTimeout(tSearchTimeout); tSearchTimeout = setTimeout(() => loadCancelledBookings(document.getElementById('tourCancelSearch').value), 500); }
+        function debounceProviderSearch() { clearTimeout(pSearchTimeout); pSearchTimeout = setTimeout(() => loadProviders(document.getElementById('providerType').value, document.getElementById('providerSearch').value), 500); }
+
+        async function loadComplaints(type, search) {
+            const select = document.getElementById('complaintId');
+            select.innerHTML = '<option value="">Loading...</option>';
+            try {
+                const url = search ? `/admin/fines/eligible-complaints?type=${type}&search=${encodeURIComponent(search)}` : `/admin/fines/eligible-complaints?type=${type}`;
+                const res = await API.get(url);
+                if (res && res.success) {
+                    loadedComplaints = res.data;
+                    if (!res.data || res.data.length === 0) {
+                        select.innerHTML = `<option value="">No eligible ${type.toLowerCase()} complaints found</option>`;
+                        return;
+                    }
+                    select.innerHTML = '<option value="">Select Complaint...</option>';
+                    res.data.forEach(c => {
+                        const disabled = c.hasActiveFine ? 'disabled' : '';
+                        const marker = c.hasActiveFine ? '⚠️ [ACTIVE FINE EXISTS] ' : '';
+                        select.innerHTML += `<option value="${c.complaintId}" ${disabled}>${marker}[#${c.complaintId}] ${c.providerName} - ${c.subject}</option>`;
+                    });
+                    if (prefillComplaint && !search) {
+                        select.value = prefillComplaint;
+                        updateSummary('complaint');
+                    }
+                } else {
+                    select.innerHTML = `<option value="">Error: ${res?.message || 'Failed to load'}</option>`;
+                }
+            } catch (e) { select.innerHTML = `<option value="">Error: ${e.message || 'Unknown error'}</option>`; }
+        }
+
+        async function loadCancelledBookings(search) {
+            const select = document.getElementById('tourBookingId');
+            select.innerHTML = '<option value="">Loading...</option>';
+            try {
+                const url = search ? `/admin/fines/tour-guide-cancelled-bookings?search=${encodeURIComponent(search)}` : `/admin/fines/tour-guide-cancelled-bookings`;
+                const res = await API.get(url);
+                if (res && res.success) {
+                    loadedCancellations = res.data;
+                    if (!res.data || res.data.length === 0) {
+                        select.innerHTML = '<option value="">No eligible tour guide cancellations found</option>';
+                        return;
+                    }
+                    select.innerHTML = '<option value="">Select Booking...</option>';
+                    res.data.forEach(b => {
+                        const disabled = b.hasActiveFine ? 'disabled' : '';
+                        const marker = b.hasActiveFine ? '⚠️ [ACTIVE FINE EXISTS] ' : '';
+                        select.innerHTML += `<option value="${b.tourBookingId}" ${disabled}>${marker}Booking #${b.tourBookingId} - ${b.tourName} by ${b.tourGuideName} (${b.participantsCount || 1} Pax, $${b.totalPrice ? b.totalPrice.toFixed(2) : 'N/A'})</option>`;
+                    });
+                } else {
+                    select.innerHTML = `<option value="">Error: ${res?.message || 'Failed to load'}</option>`;
+                }
+            } catch (e) { select.innerHTML = `<option value="">Error: ${e.message || 'Unknown error'}</option>`; }
+        }
+
+        async function loadProviders(type, search) {
+            const select = document.getElementById('providerId');
+            select.innerHTML = '<option value="">Loading...</option>';
+            try {
+                const url = search ? `/admin/fines/providers?type=${type}&search=${encodeURIComponent(search)}` : `/admin/fines/providers?type=${type}`;
+                const res = await API.get(url);
+                if (res && res.success) {
+                    loadedProviders = res.data;
+                    if (!res.data || res.data.length === 0) {
+                        select.innerHTML = `<option value="">No ${type.toLowerCase()} providers found</option>`;
+                        return;
+                    }
+                    select.innerHTML = '<option value="">Select Provider...</option>';
+                    res.data.forEach(p => {
+                        select.innerHTML += `<option value="${p.providerId}">[#${p.providerId}] ${p.providerName} ${p.extraInfo ? '('+p.extraInfo+')' : ''}</option>`;
+                    });
+                } else {
+                    select.innerHTML = `<option value="">Error: ${res?.message || 'Failed to load'}</option>`;
+                }
+            } catch (e) { select.innerHTML = `<option value="">Error: ${e.message || 'Unknown error'}</option>`; }
+        }
+
+        function updateSummary(sourceType) {
+            const card = document.getElementById('summaryCard');
+            const content = document.getElementById('summaryContent');
+            const detailsGrp = document.getElementById('fineDetailsGroup');
+            selectedTargetValid = false;
+            document.getElementById('errorBox').style.display = 'none';
+
+            let html = '';
+            let blockReason = null;
+
+            if (sourceType === 'complaint') {
+                const id = parseInt(document.getElementById('complaintId').value);
+                if (!id) { card.style.display = 'none'; detailsGrp.style.display = 'none'; return; }
+                const item = loadedComplaints.find(x => x.complaintId === id);
+                if (item) {
+                    html = `<strong>Complaint ID:</strong> #${item.complaintId} <br>
+                            <strong>Type:</strong> ${item.complaintType || 'N/A'}<br>
+                            <strong>Provider:</strong> ${item.providerName} (ID: ${item.providerId})<br>
+                            <strong>User:</strong> ${item.userName || 'N/A'} (${item.userEmail || 'N/A'})<br>
+                            <strong>Subject:</strong> ${item.subject}<br>
+                            <strong>Complaint Status:</strong> ${item.complaintStatus || 'N/A'}<br>
+                            <strong>Related Booking/Ticket ID:</strong> ${item.relatedBookingId ? '#'+item.relatedBookingId + ' - ' + (item.bookingTitle || '') : 'N/A'}<br>
+                            <strong>Booking Status:</strong> ${item.bookingStatus || 'N/A'}<br>
+                            <strong>Payment Status:</strong> ${item.paymentStatus || 'N/A'}<br>
+                            <strong style="color:var(--accent-gold); font-size:1.1rem;">Total Price:</strong> ${item.currency||'USD'} ${(item.totalPrice||0).toFixed(2)} | <strong style="color:var(--accent-gold); font-size:1.1rem;">Total Paid:</strong> ${item.currency||'USD'} ${(item.totalPaid||0).toFixed(2)}`;
+                    if (item.hasActiveFine) blockReason = "An active fine already exists for this complaint. You cannot add a duplicate fine.";
+                    else selectedTargetValid = true;
+                }
+            } else if (sourceType === 'tourCancel') {
+                const id = parseInt(document.getElementById('tourBookingId').value);
+                if (!id) { card.style.display = 'none'; detailsGrp.style.display = 'none'; return; }
+                const item = loadedCancellations.find(x => x.tourBookingId === id);
+                if (item) {
+                    html = `<strong>Booking ID:</strong> #${item.tourBookingId} <br>
+                            <strong>Tour:</strong> ${item.tourName} (Date: ${item.tourDate ? new Date(item.tourDate).toLocaleDateString() : 'N/A'})<br>
+                            <strong>Tour Guide:</strong> ${item.tourGuideName} (ID: ${item.tourGuideId})<br>
+                            <strong>Participants:</strong> ${item.participantsCount || 1}<br>
+                            <strong>Ticket Price:</strong> $${item.ticketPricePerParticipant ? item.ticketPricePerParticipant.toFixed(2) : 'N/A'}<br>
+                            <strong>Booking Status:</strong> ${item.status || 'N/A'}<br>
+                            <strong>Cancellation Reason:</strong> ${item.cancellationReason || 'N/A'}<br>
+                            <strong>Review Status:</strong> ${item.cancellationReviewStatus || 'N/A'}<br>
+                            <strong style="color:var(--accent-gold); font-size:1.1rem;">Total Price:</strong> ${item.currency||'USD'} ${(item.totalPrice||0).toFixed(2)} | <strong style="color:var(--accent-gold); font-size:1.1rem;">Total Paid:</strong> ${item.currency||'USD'} ${(item.totalPaid||0).toFixed(2)}`;
+                    if (item.hasActiveFine) blockReason = "This tour guide cancellation already has an active fine.";
+                    else selectedTargetValid = true;
+                }
+            } else if (sourceType === 'provider') {
+                const id = parseInt(document.getElementById('providerId').value);
+                if (!id) { card.style.display = 'none'; detailsGrp.style.display = 'none'; return; }
+                const item = loadedProviders.find(x => x.providerId === id);
+                if (item) {
+                    html = `<strong>Provider Name:</strong> ${item.providerName} <br>
+                            <strong>Provider ID:</strong> #${item.providerId}<br>
+                            <strong>Type:</strong> ${item.providerType}<br>
+                            <strong>Extra Info:</strong> ${item.extraInfo || 'N/A'}`;
+                    selectedTargetValid = true;
+                }
+            }
+
+            if (blockReason) {
+                html += `<div style="color:#ef4444; margin-top:10px; font-weight:bold;"><i class="fas fa-exclamation-triangle"></i> ${blockReason}</div>`;
+                detailsGrp.style.display = 'none';
+            } else {
+                detailsGrp.style.display = 'block';
+            }
+
+            content.innerHTML = html;
+            card.style.display = 'block';
+        }
+
+        document.getElementById('createFineForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const errorBox = document.getElementById('errorBox');
+            errorBox.style.display = 'none';
+
+            if (!selectedTargetValid) {
+                showError("Please select a valid target source before submitting.");
+                return;
+            }
+
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').innerText = 'Creating...';
+
+            const dto = {
+                providerType: document.getElementById('providerType').value,
+                sourceType: document.getElementById('sourceType').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                currency: document.getElementById('currency').value || 'USD',
+                reason: document.getElementById('reason').value,
+                adminNotes: document.getElementById('adminNotes').value
+            };
+
+            if (dto.sourceType === 'Complaint') dto.complaintId = parseInt(document.getElementById('complaintId').value);
+            else if (dto.sourceType === 'TourGuideCancellation') dto.tourBookingId = parseInt(document.getElementById('tourBookingId').value);
+            else if (dto.sourceType === 'Others') dto.providerId = parseInt(document.getElementById('providerId').value);
+
+            try {
+                const res = await API.post('/admin/fines', dto);
+                if (res.success) {
+                    window.location.href = `details.html?id=${res.data.id}`;
+                } else {
+                    showError(res.message || "Failed to create fine.");
+                }
+            } catch (err) {
+                showError(err.message || "An error occurred.");
+            }
+        };
+
+        function showError(msg) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.innerText = msg;
+            errorBox.style.display = 'block';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').innerText = 'Create Fine';
+            window.scrollTo(0,0);
+        }
+    </script>
+</body>
+</html>

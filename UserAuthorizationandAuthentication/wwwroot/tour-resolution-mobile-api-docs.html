@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Resolution API Docs - TravAi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: #151f32;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #6366f1; /* TravAi Indigo */
+            --accent-green: #10b981;
+            --border: rgba(255, 255, 255, 0.08);
+            --method-get: #38bdf8;
+            --method-post: #34d399;
+            --method-put: #fbbf24;
+            --method-delete: #f87171;
+            --method-guide: #a78bfa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: #0f172a;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .sidebar-header {
+            padding: 24px 24px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-header h1 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1 i {
+            color: var(--gold);
+        }
+
+        .search-container {
+            padding: 12px 24px;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px 10px 38px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-container input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 36px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .endpoints-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .category-title {
+            padding: 20px 24px 8px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .endpoint-link {
+            padding: 10px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .endpoint-link:hover, .endpoint-link.active {
+            background: rgba(255, 255, 255, 0.04);
+            border-left-color: var(--gold);
+        }
+
+        .method-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 6px;
+            border-radius: 4px;
+            min-width: 50px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .method-GET { background: rgba(56, 189, 248, 0.15); color: var(--method-get); }
+        .method-POST { background: rgba(52, 211, 153, 0.15); color: var(--method-post); }
+        .method-PUT { background: rgba(251, 191, 36, 0.15); color: var(--method-put); }
+        .method-DELETE { background: rgba(248, 113, 113, 0.15); color: var(--method-delete); }
+        .method-GUIDE { background: rgba(167, 139, 250, 0.15); color: var(--method-guide); }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .url-box {
+            background: #0b0f19;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        h2 { color: var(--text-main); font-size: 1.8rem; margin-top: 0; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 15px;}
+        h3 { font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 35px; color: #cbd5e1; font-weight: 600;}
+
+        pre {
+            background: #0a0e17;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: #a5b4fc;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 120px 50px;
+            color: var(--text-muted);
+        }
+
+        .hl-req { color: #fca5a5; font-weight: 600; }
+        .hl-res { color: #34d399; font-weight: 600; }
+        .hl-guide { color: #c084fc; font-weight: 600; }
+
+        code {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+        }
+
+        .alert-box {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 4px solid var(--gold);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .alert-box.warning {
+            background: rgba(239, 68, 68, 0.08);
+            border-left-color: var(--method-delete);
+        }
+        
+        .alert-box.success {
+            background: rgba(16, 185, 129, 0.08);
+            border-left-color: var(--accent-green);
+        }
+
+        ul, ol {
+            margin: 15px 0 15px 25px;
+            line-height: 1.6;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fas fa-random"></i> Tour Resolution</h1>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 6px;">Disruption & Cancellation Flows</p>
+        </div>
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchSidebar" placeholder="Search categories or endpoints..." oninput="filterSidebar()">
+        </div>
+        <div class="endpoints-list" id="sidebarList">
+            <!-- Rendered Dynamically -->
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="empty-state">
+            <i class="fas fa-life-ring fa-4x" style="color: var(--gold); margin-bottom: 25px; opacity: 0.6;"></i>
+            <h2 style="color: #fff; margin-bottom: 10px;">Tour Disruption & Resolution</h2>
+            <p style="font-size: 1.1rem; max-width: 600px; margin: 0 auto; line-height: 1.6;">Full documentation of the three-way workflow when a Tour Guide cancels a tour, how the Admin reviews it, and how the User resolves their affected booking.</p>
+        </div>
+    </div>
+
+    <script>
+        const apiData = [
+            {
+                category: "1. Tour Guide Flow",
+                endpoints: [
+                    {
+                        title: "Cancel / Delete Tour", method: "DELETE", url: "/api/tourguide/tours/{id}",
+                        desc: "Tour Guide initiates the cancellation of a scheduled tour.",
+                        requestParams: [ { name: "id", type: "Path", desc: "The ID of the tour to delete." } ],
+                        requestBody: null,
+                        response: JSON.stringify({ message: "Tour deleted successfully." }, null, 2),
+                        notes: `
+                            <h3>System Behavior on Deletion</h3>
+                            <p>When a tour is deleted by the guide, the system checks for any active user bookings. If bookings exist:</p>
+                            <ul>
+                                <li>It automatically creates an <strong>Urgent Request</strong> for Admin review.</li>
+                                <li>It marks all affected user bookings as <code>PendingUserDecision</code>.</li>
+                            </ul>
+                        `
+                    }
+                ]
+            },
+            {
+                category: "2. Admin Flow (Review Cancellations)",
+                endpoints: [
+                    {
+                        title: "Get Pending Cancellations", method: "GET", url: "/api/admin/tour-guide-cancellations/pending-review",
+                        desc: "Admin fetches all urgent cancellation requests submitted automatically when Tour Guides cancel tours with active bookings.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: JSON.stringify([
+                            {
+                                id: 5,
+                                tourGuideName: "Ahmed Ali",
+                                tourName: "Pyramids VIP",
+                                destination: "Cairo",
+                                reason: "Medical Emergency",
+                                createdAt: "2026-06-12T10:00:00Z",
+                                affectedBookingsCount: 14,
+                                status: "Pending"
+                            }
+                        ], null, 2)
+                    },
+                    {
+                        title: "Review Cancellation", method: "POST", url: "/api/admin/tour-guide-cancellations/{id}/review",
+                        desc: "Admin approves or rejects the Tour Guide's reason for cancellation to apply penalties if necessary. (This does not block users from getting refunds).",
+                        requestParams: [ { name: "id", type: "Path", desc: "The Urgent Request ID." } ],
+                        requestBody: JSON.stringify({
+                            isReasonAccepted: true,
+                            adminNotes: "Medical documentation provided. Approved without penalty."
+                        }, null, 2),
+                        response: JSON.stringify({ Message: "Review submitted successfully." }, null, 2)
+                    }
+                ]
+            },
+            {
+                category: "3. User Resolution Flow (Options)",
+                endpoints: [
+                    {
+                        title: "Get Disrupted Bookings", method: "GET", url: "/api/users/tour-cancellations",
+                        desc: "User fetches their bookings that were cancelled by the Tour Guide and require a resolution decision.",
+                        requestParams: null,
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: [
+                                {
+                                    bookingId: 76,
+                                    tourName: "Historic Cairo",
+                                    cancellationDate: "2026-06-12T08:00:00Z",
+                                    amountPaid: 120.00,
+                                    status: "Pending User Decision"
+                                }
+                            ]
+                        }, null, 2)
+                    },
+                    {
+                        title: "Get Refund Preview", method: "GET", url: "/api/users/tour-cancellations/{bookingId}/refund-preview",
+                        desc: "View the 100% guaranteed refund amount before confirming.",
+                        requestParams: [ { name: "bookingId", type: "Path", desc: "The affected booking ID." } ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: {
+                                isRefundable: true,
+                                refundAmount: 120.00,
+                                cancellationFee: 0.00,
+                                reason: "Guide initiated cancellation. Full refund guaranteed."
+                            }
+                        }, null, 2)
+                    },
+                    {
+                        title: "Option A: Request Refund", method: "POST", url: "/api/users/tour-cancellations/{bookingId}/refund",
+                        desc: "User chooses to simply take their money back.",
+                        requestParams: [ { name: "bookingId", type: "Path", desc: "The affected booking ID." } ],
+                        requestBody: JSON.stringify({
+                            refundMethod: "Wallet" // "Wallet" or "Original"
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Refund processed successfully."
+                        }, null, 2)
+                    },
+                    {
+                        title: "Get Alternative Tours", method: "GET", url: "/api/users/tour-cancellations/{bookingId}/alternatives",
+                        desc: "User wants to see other available tours they can switch to instead of a refund.",
+                        requestParams: [ { name: "bookingId", type: "Path", desc: "The affected booking ID." } ],
+                        requestBody: null,
+                        response: JSON.stringify({
+                            success: true,
+                            data: [
+                                {
+                                    tourId: 99,
+                                    title: "Pyramids VIP Tour",
+                                    price: 150.00,
+                                    priceDifference: 30.00,
+                                    date: "2026-06-26T09:00:00Z"
+                                }
+                            ]
+                        }, null, 2),
+                        notes: `
+                            <div class="alert-box success">
+                                <strong>Price Differences:</strong> If <code>priceDifference</code> is positive, the user must pay the difference. If negative, the difference is automatically refunded to their Wallet.
+                            </div>
+                        `
+                    },
+                    {
+                        title: "Option B: Choose Alternative", method: "POST", url: "/api/users/tour-cancellations/{bookingId}/choose-alternative",
+                        desc: "User selects an alternative tour.",
+                        requestParams: [ { name: "bookingId", type: "Path", desc: "The affected booking ID." } ],
+                        requestBody: JSON.stringify({
+                            alternativeTourId: 99
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Requires payment for price difference.",
+                            data: {
+                                requiresPayment: true,
+                                checkoutUrl: "https://checkout.stripe.com/pay/cs_test_abc123",
+                                checkoutSessionId: 5011
+                            }
+                        }, null, 2)
+                    },
+                    {
+                        title: "Finalize Alternative (Stripe)", method: "POST", url: "/api/users/tour-cancellations/{bookingId}/finalize-alternative-stripe",
+                        desc: "Called after a successful Stripe redirect to confirm the payment difference for the new alternative tour.",
+                        requestParams: [ { name: "bookingId", type: "Path", desc: "The affected booking ID." } ],
+                        requestBody: JSON.stringify({
+                            stripeSessionId: "cs_test_abc123",
+                            alternativeTourId: 99
+                        }, null, 2),
+                        response: JSON.stringify({
+                            success: true,
+                            message: "Alternative tour booked successfully."
+                        }, null, 2)
+                    }
+                ]
+            }
+        ];
+
+        // --- Render Sidebar ---
+        function renderSidebar(filterQuery = "") {
+            const sidebarList = document.getElementById('sidebarList');
+            let html = '';
+            const query = filterQuery.toLowerCase().trim();
+
+            apiData.forEach((cat, catIdx) => {
+                const filteredEndpoints = cat.endpoints.filter(ep => {
+                    return ep.title.toLowerCase().includes(query) || 
+                           ep.url.toLowerCase().includes(query) || 
+                           ep.desc.toLowerCase().includes(query);
+                });
+
+                if (filteredEndpoints.length > 0) {
+                    html += `<div class="category-title">${cat.category}</div>`;
+                    filteredEndpoints.forEach((ep) => {
+                        const originalEpIdx = cat.endpoints.indexOf(ep);
+                        html += `
+                            <div class="endpoint-link" onclick="showDetails(${catIdx}, ${originalEpIdx}, this)">
+                                <span class="method-badge method-${ep.method}">${ep.method}</span>
+                                <span style="font-size: 0.85rem;">${ep.title}</span>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            sidebarList.innerHTML = html || `<div style="padding: 24px; color: var(--text-muted); font-size: 0.9rem; text-align: center;">No matches found</div>`;
+        }
+
+        function filterSidebar() {
+            const query = document.getElementById('searchSidebar').value;
+            renderSidebar(query);
+        }
+
+        // --- Show Details ---
+        function showDetails(catIdx, epIdx, el) {
+            document.querySelectorAll('.endpoint-link').forEach(link => link.classList.remove('active'));
+            if(el) el.classList.add('active');
+
+            const ep = apiData[catIdx].endpoints[epIdx];
+            const content = document.getElementById('mainContent');
+
+            if (ep.isGuide) {
+                content.innerHTML = `
+                    <div class="card">
+                        <h2>${ep.title}</h2>
+                        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.5; margin-bottom: 25px;">${ep.desc}</p>
+                        <div style="border-top: 1px solid var(--border); padding-top: 25px;">
+                            ${ep.content}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let paramsHtml = '';
+            if (ep.requestParams && ep.requestParams.length > 0) {
+                paramsHtml = `
+                    <h3><span style="color:#38bdf8; font-weight:600;"><i class="fas fa-filter"></i> Request Parameters</span> (Query/Path)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Type / Location</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ep.requestParams.map(p => `
+                                <tr>
+                                    <td style="color:var(--text-main);"><code>${p.name}</code></td>
+                                    <td style="color:var(--text-muted);">${p.type}</td>
+                                    <td>${p.desc}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            let bodyHtml = '';
+            if (ep.requestBody) {
+                bodyHtml = `
+                    <h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span> (JSON Format)</h3>
+                    <pre><code>${ep.requestBody}</code></pre>
+                `;
+            } else {
+                bodyHtml = `
+                    <h3><span class="hl-req"><i class="fas fa-file-export"></i> Request Body</span></h3>
+                    <pre><code style="color: #64748b; font-style: italic;">// No JSON body payload is required for this request.</code></pre>
+                `;
+            }
+
+            let notesHtml = '';
+            if (ep.notes) {
+                notesHtml = `
+                    <div style="margin-top: 30px;">
+                        ${ep.notes}
+                    </div>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="card">
+                    <h2>${ep.title}</h2>
+                    <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.5;">${ep.desc}</p>
+                    
+                    <div class="url-box">
+                        <span class="method-badge method-${ep.method}" style="font-size: 0.85rem; padding: 6px 12px; margin-right: 10px;">${ep.method}</span>
+                        <span style="color: #a5b4fc; font-weight: 600;">http://localhost:5210</span>${ep.url}
+                    </div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 25px; padding-left: 5px;">
+                        <i class="fas fa-globe"></i> Production base URL placeholder: <code>https://YOUR_BACKEND_BASE_URL${ep.url}</code>
+                    </div>
+
+                    ${paramsHtml}
+                    ${bodyHtml}
+
+                    <h3><span class="hl-res"><i class="fas fa-file-import"></i> Response Payload</span></h3>
+                    <pre><code>${ep.response}</code></pre>
+
+                    ${notesHtml}
+                </div>
+            `;
+        }
+
+        // Initialize
+        renderSidebar();
+    </script>
+</body>
+</html>

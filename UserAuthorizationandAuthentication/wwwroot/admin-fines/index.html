@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Provider Fines - Lumière Admin</title>
+    <link rel="stylesheet" href="../hotel/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --admin-bg: #070708;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-gold: #e2b45b;
+            --gold-gradient: linear-gradient(135deg, #e2b45b 0%, #a67c37 100%);
+        }
+
+        body { 
+            background-color: var(--admin-bg); 
+            color: #d1d1d1; 
+            font-family: 'Outfit', sans-serif; 
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-actions {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .header-actions a {
+            color: var(--accent-gold);
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .header-actions a:hover {
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        .main-content {
+            padding: 60px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.5rem;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: rgba(255,255,255,0.5);
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+        }
+
+        .filters select, .filters input {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--card-border);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 12px;
+            outline: none;
+        }
+
+        .btn-add {
+            background: var(--accent-gold);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+        }
+
+        .btn-add:hover {
+            box-shadow: 0 0 20px rgba(226, 180, 91, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 15px;
+            color: var(--accent-gold);
+            border-bottom: 1px solid var(--card-border);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+
+        td {
+            padding: 20px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.02);
+            color: #fff;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-active { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .status-deducted { background: rgba(226, 180, 91, 0.1); color: var(--accent-gold); }
+
+        .actions a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            margin-right: 15px;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .actions a:hover { color: #fff; }
+
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            padding: 10px 25px;
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            cursor: pointer;
+            color: rgba(255,255,255,0.6);
+            transition: 0.3s;
+        }
+
+        .tab.active {
+            background: var(--accent-gold);
+            color: #000;
+            border-color: var(--accent-gold);
+        }
+    </style>
+</head>
+<body>
+    <div class="header-actions">
+        <a href="../hotel/admin-dashboard.html" title="Dashboard"><i class="fas fa-home"></i></a>
+    </div>
+
+    <div class="main-content">
+        <h1>Provider Fines</h1>
+        <div class="subtitle">Manage monetary penalties for platform providers</div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="setProviderType('')">All Providers</div>
+            <div class="tab" onclick="setProviderType('Hotel')">Hotels</div>
+            <div class="tab" onclick="setProviderType('TourGuide')">Tour Guides</div>
+            <div class="tab" onclick="setProviderType('Airline')">Airlines</div>
+        </div>
+
+        <div class="controls" style="flex-direction: column; align-items: stretch; gap: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="filters" style="flex-wrap: wrap;">
+                    <select id="statusFilter" onchange="loadFines()">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Deducted">Deducted</option>
+                    </select>
+                    <input type="number" id="fineIdFilter" placeholder="Exact Fine ID" oninput="debounceLoad()" style="width: 120px;">
+                    <input type="text" id="providerNameFilter" placeholder="Provider Name" oninput="debounceLoad()" style="width: 150px;">
+                    <input type="text" id="searchFilter" placeholder="Search reason, notes..." oninput="debounceLoad()" style="width: 200px;">
+                    <input type="number" id="amountFrom" placeholder="Amount From" oninput="debounceLoad()" style="width: 120px;">
+                    <input type="number" id="amountTo" placeholder="Amount To" oninput="debounceLoad()" style="width: 120px;">
+                    <input type="text" id="currency" placeholder="Currency" oninput="debounceLoad()" style="width: 100px;">
+                </div>
+                <a href="create.html" class="btn-add" style="white-space: nowrap;"><i class="fas fa-plus"></i> Create Fine</a>
+            </div>
+            <div class="filters" style="flex-wrap: wrap;">
+                <input type="text" id="createdBy" placeholder="Created By (Admin)" oninput="debounceLoad()" style="width: 180px;">
+                <input type="date" id="createdAtFilter" onchange="loadFines()" title="Created At Date">
+                <input type="date" id="dateFrom" onchange="loadFines()" title="Date From (Range)">
+                <input type="date" id="dateTo" onchange="loadFines()" title="Date To (Range)">
+                <button onclick="clearFilters()" class="btn-add" style="background: rgba(255,255,255,0.1); color: #fff; padding: 12px 20px;"><i class="fas fa-times"></i> Clear Filters</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Provider</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="finesBody">
+                    <tr><td colspan="8" style="text-align:center;">Loading fines...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="../hotel/js/config.js"></script>
+    <script>
+        const user = Auth.getUser();
+        if (!Auth.isLoggedIn() || (user.role !== 'Admin' && user.Role !== 'Admin')) {
+            window.location.href = '../hotel/login.html';
+        }
+
+        let currentProviderType = '';
+        let searchTimeout;
+
+        function setProviderType(type) {
+            currentProviderType = type;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            loadFines();
+        }
+
+        function debounceLoad() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(loadFines, 500);
+        }
+
+        function clearFilters() {
+            document.getElementById('fineIdFilter').value = '';
+            document.getElementById('providerNameFilter').value = '';
+            document.getElementById('createdAtFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('searchFilter').value = '';
+            document.getElementById('amountFrom').value = '';
+            document.getElementById('amountTo').value = '';
+            document.getElementById('currency').value = '';
+            document.getElementById('createdBy').value = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value = '';
+            loadFines();
+        }
+
+        async function loadFines() {
+            const fineId = document.getElementById('fineIdFilter').value;
+            const providerName = document.getElementById('providerNameFilter').value;
+            const createdAt = document.getElementById('createdAtFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchFilter').value;
+            const amountFrom = document.getElementById('amountFrom').value;
+            const amountTo = document.getElementById('amountTo').value;
+            const currency = document.getElementById('currency').value;
+            const createdBy = document.getElementById('createdBy').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+
+            let url = '/admin/fines?';
+            if (fineId) url += `fineId=${fineId}&`;
+            if (providerName) url += `providerName=${encodeURIComponent(providerName)}&`;
+            if (createdAt) url += `createdAt=${createdAt}&`;
+            if (currentProviderType) url += `providerType=${currentProviderType}&`;
+            if (status) url += `status=${status}&`;
+            if (search) url += `search=${encodeURIComponent(search)}&`;
+            if (amountFrom) url += `amountFrom=${amountFrom}&`;
+            if (amountTo) url += `amountTo=${amountTo}&`;
+            if (currency) url += `currency=${encodeURIComponent(currency)}&`;
+            if (createdBy) url += `createdByAdminName=${encodeURIComponent(createdBy)}&`;
+            if (dateFrom) url += `fromDate=${dateFrom}&`;
+            if (dateTo) url += `toDate=${dateTo}&`;
+
+            try {
+                const res = await API.get(url);
+                const tbody = document.getElementById('finesBody');
+                
+                if (res.success) {
+                    if (res.data.length > 0) {
+                        tbody.innerHTML = res.data.map(f => `
+                            <tr>
+                                <td style="opacity:0.6;">#${f.id}</td>
+                                <td style="font-weight:600;">${f.providerDisplayName}</td>
+                                <td><span style="opacity:0.8;">${f.providerType}</span></td>
+                                <td>
+                                    ${f.sourceType === 'TourGuideCancellation' ? `
+                                        <div style="font-weight:600;">Tour Guide Cancellation</div>
+
+                                        ${f.tourBookingId ? `<a href="tour-cancellation-details.html?tourBookingId=${f.tourBookingId}" class="btn-add" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 6px; display:inline-block; margin-top:8px;"><i class="fas fa-eye"></i> View Cancellation Details</a>` : ''}
+                                    ` : `
+                                        ${f.sourceType}
+                                        ${f.complaintId ? `<a href="../hotel/admin-complaint-details.html?id=${f.complaintId}" class="btn-add" style="padding: 4px 8px; font-size: 0.75rem; margin-left: 10px; border-radius: 6px; display:inline-block;"><i class="fas fa-eye"></i> View Complaint #${f.complaintId}</a>` : ''}
+                                    `}
+                                </td>
+                                <td style="font-weight:bold; color:var(--accent-gold);">$${f.amount.toFixed(2)}</td>
+                                <td><span class="status status-${f.status.toLowerCase()}">${f.status}</span></td>
+                                <td style="opacity:0.6; font-size:0.9rem;">${new Date(f.createdAt).toLocaleDateString()}</td>
+                                <td class="actions">
+                                    <a href="details.html?id=${f.id}">Details</a>
+                                </td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; opacity:0.5;">No fines found.</td></tr>';
+                    }
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:red;">Failed to load fines. Please check server error. ${res.message || ''}</td></tr>`;
+                    console.error("API Error:", res.message);
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('finesBody').innerHTML = '<tr><td colspan="8" style="text-align:center; color:red;">Failed to load fines. Please check server error.</td></tr>';
+            }
+        }
+
+        window.onload = loadFines;
+    </script>
+</body>
+</html>
