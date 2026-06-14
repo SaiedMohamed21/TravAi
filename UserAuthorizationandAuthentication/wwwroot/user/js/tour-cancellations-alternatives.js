@@ -90,9 +90,7 @@ async function loadAlternatives(bookingId) {
             </div>
             <div class="alt-price-btn">
                 <div style="display:flex; flex-direction:column; align-items:flex-end;">
-                    <span style="text-decoration:line-through; color:var(--text-muted); font-size:0.8rem;">$${originalPrice.toFixed(2)}</span>
                     <span class="alt-price" style="margin-bottom:0;">$${finalPrice.toFixed(2)}</span>
-                    <span style="font-size:0.7rem; color:var(--accent); font-weight:600;">(5% comp applied)</span>
                 </div>
                 <button onclick="chooseAlternative(${id}, ${payExtraAmount}, ${refundWalletAmount})" class="alt-btn" ${isFull ? 'disabled' : ''} style="margin-top:5px;">${actionText}</button>
             </div>

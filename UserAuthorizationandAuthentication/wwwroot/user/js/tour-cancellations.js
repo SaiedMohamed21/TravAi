@@ -98,7 +98,6 @@ function createCancellationCard(b) {
     const tourTime = b.tourTime || b.TourTime || 'TBD';
     const totalPrice = Number(b.totalPrice || b.TotalPrice || 0);
     const reason = b.cancellationReason || b.CancellationReason || 'Tour guide cancelled due to emergency.';
-    const compMsg = b.compensationMessage || b.CompensationMessage || '5% compensation coupon';
 
     const formattedDate = tourDate ? new Date(tourDate).toLocaleDateString('en-US', {
         month: 'short',
@@ -137,15 +136,6 @@ function createCancellationCard(b) {
             <div class="alert-text">
                 <h4>Guide Cancellation Reason</h4>
                 <p>"${reason}"</p>
-            </div>
-        </div>
-
-        <!-- Compensation Coupon -->
-        <div class="alert-comp">
-            <i class="fas fa-gift"></i>
-            <div class="alert-comp-text">
-                <h4>Compensation Discount</h4>
-                <p>${compMsg} ($${(totalPrice * 0.05).toFixed(2)} USD)</p>
             </div>
         </div>
 

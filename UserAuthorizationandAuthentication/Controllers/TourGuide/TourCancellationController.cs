@@ -117,22 +117,6 @@ namespace TravAi.Controllers.TourGuide
                 
                 resolution.RefundAmount = refundAmount;
 
-                // Issue 5% compensation coupon
-                var couponAmount = refundAmount * 0.05m;
-                if (couponAmount > 0)
-                {
-                    var coupon = new UserTourCompensationCoupon
-                    {
-                        UserId = userId,
-                        TriggeringBookingId = booking.Id,
-                        CouponCode = $"COMP-TOUR-{booking.Id}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
-                        DiscountPercentage = 5.0m,
-                        IsUsed = false,
-                        IssuedAt = DateTime.UtcNow
-                    };
-                    _context.UserTourCompensationCoupons.Add(coupon);
-                }
-
                 booking.Status = BookingStatus.Cancelled;
             }
             else if (dto.Decision == "Alternative")
@@ -190,8 +174,7 @@ namespace TravAi.Controllers.TourGuide
                     TourDate = b.TourDate ?? b.Tour?.AvailableDateTime ?? b.BookingDate,
                     TourTime = b.TourTime,
                     TotalPrice = b.TotalPrice,
-                    CancellationReason = cancellationReason,
-                    CompensationMessage = "5% compensation coupon will be issued automatically upon refund"
+                    CancellationReason = cancellationReason
                 });
             }
 
@@ -273,8 +256,7 @@ namespace TravAi.Controllers.TourGuide
 
                     var originalAltPricePerPerson = t.BasePriceUsd ?? 0;
                     var originalAltPriceTotal = originalAltPricePerPerson * participantsCount;
-                    var discountAmountTotal = originalAltPriceTotal * 0.05m;
-                    var finalPriceTotal = originalAltPriceTotal - discountAmountTotal;
+                    var finalPriceTotal = originalAltPriceTotal;
                     
                     var difference = finalPriceTotal - originalTotalPrice; // Positive means user pays, negative means wallet refund
 
@@ -285,7 +267,6 @@ namespace TravAi.Controllers.TourGuide
                         City = t.City,
                         AvailableDateTime = t.AvailableDateTime,
                         OriginalPrice = originalAltPriceTotal,
-                        DiscountAmount = discountAmountTotal,
                         FinalPrice = finalPriceTotal,
                         Difference = difference,
                         RefundWalletAmount = difference < 0 ? Math.Abs(difference) : 0,
@@ -306,7 +287,6 @@ namespace TravAi.Controllers.TourGuide
                     City = ((dynamic)x).City,
                     AvailableDateTime = ((dynamic)x).AvailableDateTime,
                     OriginalPrice = ((dynamic)x).OriginalPrice,
-                    DiscountAmount = ((dynamic)x).DiscountAmount,
                     FinalPrice = ((dynamic)x).FinalPrice,
                     Difference = ((dynamic)x).Difference,
                     RefundWalletAmount = ((dynamic)x).RefundWalletAmount,
@@ -340,8 +320,7 @@ namespace TravAi.Controllers.TourGuide
 
             var originalAltPricePerPerson = altTour.BasePriceUsd ?? 0;
             var originalAltPriceTotal = originalAltPricePerPerson * participantsCount;
-            var discountAmountTotal = originalAltPriceTotal * 0.05m;
-            var finalPriceTotal = originalAltPriceTotal - discountAmountTotal;
+            var finalPriceTotal = originalAltPriceTotal;
             
             var difference = finalPriceTotal - originalTotalPrice;
 
@@ -418,18 +397,6 @@ namespace TravAi.Controllers.TourGuide
                 await _walletService.RefundToWalletAsync(userId, refundAmount, $"Refund-AltDiff-{booking.Id}", $"Refund difference for choosing cheaper alternative tour {altTour.Id}");
             }
 
-            // Consume coupon if applicable
-            var coupon = new UserTourCompensationCoupon
-            {
-                UserId = userId,
-                TriggeringBookingId = booking.Id,
-                CouponCode = $"COMP-TOUR-{booking.Id}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
-                DiscountPercentage = 5.0m,
-                IsUsed = true, // instantly marked used since it's applied
-                IssuedAt = DateTime.UtcNow
-            };
-            _context.UserTourCompensationCoupons.Add(coupon);
-
             // Rebook to alternative and update all relevant trip details to correctly reflect the new tour
             booking.TourId = altTour.Id;
             booking.TourGuideId = altTour.TourGuideId;
@@ -505,18 +472,6 @@ namespace TravAi.Controllers.TourGuide
             var altTour = await _context.Tours.FindAsync(altTourId);
             if (altTour == null) return BadRequest("Alternative tour not found.");
 
-            // Consume coupon
-            var coupon = new UserTourCompensationCoupon
-            {
-                UserId = booking.UserId,
-                TriggeringBookingId = booking.Id,
-                CouponCode = $"COMP-TOUR-{booking.Id}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
-                DiscountPercentage = 5.0m,
-                IsUsed = true,
-                IssuedAt = DateTime.UtcNow
-            };
-            _context.UserTourCompensationCoupons.Add(coupon);
-
             booking.TourId = altTour.Id;
             booking.TourGuideId = altTour.TourGuideId;
             booking.Status = BookingStatus.Confirmed;
@@ -524,8 +479,7 @@ namespace TravAi.Controllers.TourGuide
             var participantsCount = Math.Max(1, booking.ParticipantsCount);
             var originalAltPricePerPerson = altTour.BasePriceUsd ?? 0;
             var originalAltPriceTotal = originalAltPricePerPerson * participantsCount;
-            var discountAmountTotal = originalAltPriceTotal * 0.05m;
-            var finalPriceTotal = originalAltPriceTotal - discountAmountTotal;
+            var finalPriceTotal = originalAltPriceTotal;
 
             booking.TotalPrice = finalPriceTotal;
             if (!string.IsNullOrEmpty(altTour.Currency)) booking.Currency = altTour.Currency;
@@ -680,21 +634,6 @@ namespace TravAi.Controllers.TourGuide
             }
             
             resolution.RefundAmount = refundAmount;
-
-            var couponAmount = refundAmount * 0.05m;
-            if (couponAmount > 0)
-            {
-                var coupon = new UserTourCompensationCoupon
-                {
-                    UserId = userId,
-                    TriggeringBookingId = booking.Id,
-                    CouponCode = $"COMP-TOUR-{booking.Id}-{Guid.NewGuid().ToString().Substring(0, 4).ToUpper()}",
-                    DiscountPercentage = 5.0m,
-                    IsUsed = false,
-                    IssuedAt = DateTime.UtcNow
-                };
-                _context.UserTourCompensationCoupons.Add(coupon);
-            }
 
             booking.Status = BookingStatus.Cancelled;
 
