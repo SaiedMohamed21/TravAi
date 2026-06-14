@@ -358,10 +358,14 @@
                             data: [
                                 {
                                     bookingId: 76,
-                                    tourName: "Historic Cairo",
-                                    cancellationDate: "2026-06-12T08:00:00Z",
-                                    amountPaid: 120.00,
-                                    status: "Pending User Decision"
+                                    tourTitle: "Historic Cairo",
+                                    city: "Cairo",
+                                    tourDate: "2026-06-12T00:00:00",
+                                    tourTime: "10:00 AM",
+                                    participantsCount: 3,
+                                    pricePerPerson: 40.00,
+                                    totalPrice: 120.00,
+                                    cancellationReason: "Guide had an emergency."
                                 }
                             ]
                         }, null, 2)
@@ -374,10 +378,12 @@
                         response: JSON.stringify({
                             success: true,
                             data: {
-                                isRefundable: true,
+                                bookingId: 76,
+                                tourName: "Historic Cairo",
                                 refundAmount: 120.00,
-                                cancellationFee: 0.00,
-                                reason: "Guide initiated cancellation. Full refund guaranteed."
+                                availableRefundMethods: ["Wallet", "OriginalPaymentMethod"],
+                                originalPaymentMethodAvailable: true,
+                                originalPaymentUnavailableReason: null
                             }
                         }, null, 2)
                     },
@@ -389,7 +395,6 @@
                             refundMethod: "Wallet" // "Wallet" or "Original"
                         }, null, 2),
                         response: JSON.stringify({
-                            success: true,
                             message: "Refund processed successfully."
                         }, null, 2)
                     },
@@ -402,17 +407,24 @@
                             success: true,
                             data: [
                                 {
-                                    tourId: 99,
-                                    title: "Pyramids VIP Tour",
-                                    price: 150.00,
-                                    priceDifference: 30.00,
-                                    date: "2026-06-26T09:00:00Z"
+                                    id: 99,
+                                    tourTitle: "Pyramids VIP Tour",
+                                    city: "Giza",
+                                    availableDateTime: "2026-06-26T09:00:00Z",
+                                    participantsCount: 3,
+                                    pricePerPerson: 50.00,
+                                    originalPrice: 120.00,
+                                    finalPrice: 150.00,
+                                    difference: 30.00,
+                                    refundWalletAmount: 0.00,
+                                    payExtraAmount: 30.00,
+                                    availableSeats: 5
                                 }
                             ]
                         }, null, 2),
                         notes: `
                             <div class="alert-box success">
-                                <strong>Price Differences:</strong> If <code>priceDifference</code> is positive, the user must pay the difference. If negative, the difference is automatically refunded to their Wallet.
+                                <strong>Price Differences:</strong> If <code>difference</code> is positive, the user must pay the difference (<code>payExtraAmount</code>). If negative, the difference is automatically refunded to their Wallet (<code>refundWalletAmount</code>).
                             </div>
                         `
                     },
@@ -424,14 +436,15 @@
                             alternativeTourId: 99
                         }, null, 2),
                         response: JSON.stringify({
-                            success: true,
-                            message: "Requires payment for price difference.",
-                            data: {
-                                requiresPayment: true,
-                                checkoutUrl: "https://checkout.stripe.com/pay/cs_test_abc123",
-                                checkoutSessionId: 5011
-                            }
-                        }, null, 2)
+                            requiresPayment: true,
+                            sessionId: "cs_test_a1b2c3d4",
+                            sessionUrl: "https://checkout.stripe.com/pay/cs_test_a1b2c3d4"
+                        }, null, 2),
+                        notes: `
+                            <div class="alert-box info">
+                                <strong>Note:</strong> If the alternative is equal or cheaper in price, no payment is required, and the response will simply be <code>{ "message": "Successfully rebooked to alternative tour." }</code>
+                            </div>
+                        `
                     },
                     {
                         title: "Finalize Alternative (Stripe)", method: "POST", url: "/api/users/tour-cancellations/{bookingId}/finalize-alternative-stripe",

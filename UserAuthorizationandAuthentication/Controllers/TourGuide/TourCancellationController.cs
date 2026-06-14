@@ -173,6 +173,8 @@ namespace TravAi.Controllers.TourGuide
                     City = b.Tour?.City ?? "Unknown Destination",
                     TourDate = b.TourDate ?? b.Tour?.AvailableDateTime ?? b.BookingDate,
                     TourTime = b.TourTime,
+                    ParticipantsCount = b.ParticipantsCount,
+                    PricePerPerson = b.Tour?.BasePriceUsd ?? 0,
                     TotalPrice = b.TotalPrice,
                     CancellationReason = cancellationReason
                 });
@@ -266,6 +268,8 @@ namespace TravAi.Controllers.TourGuide
                         TourTitle = t.TourTitle,
                         City = t.City,
                         AvailableDateTime = t.AvailableDateTime,
+                        ParticipantsCount = participantsCount,
+                        PricePerPerson = originalAltPricePerPerson,
                         OriginalPrice = originalAltPriceTotal,
                         FinalPrice = finalPriceTotal,
                         Difference = difference,
@@ -286,6 +290,8 @@ namespace TravAi.Controllers.TourGuide
                     TourTitle = ((dynamic)x).TourTitle,
                     City = ((dynamic)x).City,
                     AvailableDateTime = ((dynamic)x).AvailableDateTime,
+                    ParticipantsCount = ((dynamic)x).ParticipantsCount,
+                    PricePerPerson = ((dynamic)x).PricePerPerson,
                     OriginalPrice = ((dynamic)x).OriginalPrice,
                     FinalPrice = ((dynamic)x).FinalPrice,
                     Difference = ((dynamic)x).Difference,

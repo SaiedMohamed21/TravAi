@@ -55,6 +55,9 @@ async function loadAlternatives(bookingId) {
         const refundWalletAmount = Number(alt.refundWalletAmount || alt.RefundWalletAmount || 0);
         const payExtraAmount = Number(alt.payExtraAmount || alt.PayExtraAmount || 0);
         const seats = Number(alt.availableSeats !== undefined ? alt.availableSeats : alt.AvailableSeats || 0);
+        const participantsCount = alt.participantsCount || alt.ParticipantsCount || 1;
+        const pricePerPerson = Number(alt.pricePerPerson || alt.PricePerPerson || 0);
+        const breakdownText = `$${pricePerPerson.toFixed(2)} × ${participantsCount} participant${participantsCount > 1 ? 's' : ''} = $${finalPrice.toFixed(2)} total`;
 
         const formattedDate = dateStr ? new Date(dateStr).toLocaleDateString('en-US', {
             month: 'short',
@@ -83,6 +86,9 @@ async function loadAlternatives(bookingId) {
         card.innerHTML = `
             <div class="alt-info">
                 <span class="alt-title">${title}</span>
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin: 3px 0;">
+                    ${breakdownText}
+                </div>
                 <span class="tour-city" style="font-size: 0.8rem; margin: 2px 0;"><i class="fas fa-map-marker-alt" style="font-size:0.75rem;"></i> ${city}</span>
                 <span style="font-size: 0.85rem; color: var(--text-muted);"><i class="fas fa-calendar-day" style="font-size:0.8rem; color:var(--primary); margin-right:5px;"></i> ${formattedDate}</span>
                 <span class="alt-seats ${seatsBadgeClass}">${isFull ? 'FULLY BOOKED' : `${seats} seats left`}</span>

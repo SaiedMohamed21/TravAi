@@ -97,7 +97,10 @@ function createCancellationCard(b) {
     const tourDate = b.tourDate || b.TourDate;
     const tourTime = b.tourTime || b.TourTime || 'TBD';
     const totalPrice = Number(b.totalPrice || b.TotalPrice || 0);
+    const participantsCount = b.participantsCount || b.ParticipantsCount || 1;
+    const pricePerPerson = Number(b.pricePerPerson || b.PricePerPerson || 0);
     const reason = b.cancellationReason || b.CancellationReason || 'Tour guide cancelled due to emergency.';
+    const breakdownText = `$${pricePerPerson.toFixed(2)} × ${participantsCount} participant${participantsCount > 1 ? 's' : ''} = $${totalPrice.toFixed(2)} total`;
 
     const formattedDate = tourDate ? new Date(tourDate).toLocaleDateString('en-US', {
         month: 'short',
@@ -117,6 +120,9 @@ function createCancellationCard(b) {
                 <div class="tour-city"><i class="fas fa-map-marker-alt"></i> ${city}</div>
             </div>
             <div class="price-badge">$${formattedPrice}</div>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin: 5px 20px;">
+            ${breakdownText}
         </div>
 
         <div class="details-list">
