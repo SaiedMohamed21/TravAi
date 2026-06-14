@@ -40,6 +40,7 @@ namespace TravAi.DTOs.AdminManagement
         public decimal TotalRevenue { get; set; }
         public VerificationStatus Status { get; set; }
         public bool IsActive { get; set; }
+        public int? StarRating { get; set; }
 
         public bool CanApprove { get; set; }
         public bool CanSuspend { get; set; }

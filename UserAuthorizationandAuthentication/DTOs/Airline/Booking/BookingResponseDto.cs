@@ -18,6 +18,7 @@ namespace TravAi.Airline.DTOs.Booking
         public DateTime? BookingDate { get; set; }
         public string? FlightNumber { get; set; }
         public string? RouteTitle { get; set; }
+        public string? Route { get; set; }
         public string? UiBadge { get; set; }
         public bool CanCancel { get; set; }
         public bool CanReview { get; set; }
