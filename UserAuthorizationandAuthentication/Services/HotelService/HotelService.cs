@@ -1704,7 +1704,7 @@ namespace TravAi.Services.HotelService
                     CityArea = h.CityArea,
                     Governorate = h.Governorate,
                     Country = h.Country,
-                    TotalRooms = h.Rooms.Sum(r => r.Quantity),
+                    TotalRooms = h.Rooms.Sum(r => (int?)r.Quantity) ?? 0,
                     Verified = h.Verified,
                     VerificationStatus = h.VerificationStatus.ToString(),
                     RejectionReason = h.RejectionReason,
@@ -1731,7 +1731,7 @@ namespace TravAi.Services.HotelService
                     CityArea = h.CityArea,
                     Governorate = h.Governorate,
                     Country = h.Country,
-                    TotalRooms = h.Rooms.Sum(r => r.Quantity),
+                    TotalRooms = h.Rooms.Sum(r => (int?)r.Quantity) ?? 0,
                     Verified = h.Verified,
                     VerificationStatus = h.VerificationStatus.ToString(),
                     RejectionReason = h.RejectionReason,
@@ -3125,6 +3125,7 @@ namespace TravAi.Services.HotelService
                     City = h.CityArea ?? h.Governorate ?? "Unknown",
                     Status = h.VerificationStatus,
                     IsActive = h.Active,
+                    StarRating = h.StarRating,
                     TotalBookings = h.Bookings.Count(b => b.Status == BookingStatus.Confirmed || b.Status == BookingStatus.CheckedIn || b.Status == BookingStatus.CheckedOut),
                     TotalRevenue = _context.HotelPayments
                         .Where(p => p.HotelId == h.Id && p.Status == HotelPaymentStatus.Paid)

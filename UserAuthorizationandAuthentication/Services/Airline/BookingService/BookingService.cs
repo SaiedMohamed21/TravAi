@@ -190,6 +190,7 @@ namespace TravAi.Airline.Services.BookingService
                 BookingDate = b.BookingDate,
                 FlightNumber = b.Flight?.FlightNumber ?? $"FL-{b.FlightId}",
                 RouteTitle = $"{b.Flight?.DepartureAirportCode} to {b.Flight?.ArrivalAirportCode}",
+                Route = b.Flight != null ? $"{b.Flight.DepartureAirportCode} → {b.Flight.ArrivalAirportCode}" : "TBD → TBD",
                 UiBadge = b.Status == "Cancelled" ? "Cancelled" : (departureTime > DateTime.UtcNow ? "Upcoming" : "Completed"),
                 CanCancel = b.Status != "Cancelled" && departureTime > DateTime.UtcNow.AddHours(24),
                 CanReview = canReview,
